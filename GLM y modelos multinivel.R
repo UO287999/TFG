@@ -10,7 +10,6 @@ library(kableExtra)
 library(tidyverse)  
 library(gitcreds)
 # TOKEN EJEMPLO GITHUB: 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
-gitcreds::gitcreds_set()
 
 # CASO 1: INFLUENCIA DE LA ANSIEDAD EN EL RENDIMIENTO DE MÚSICOS
 music = read.csv("data/musicdata.csv")
