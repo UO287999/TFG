@@ -1,6 +1,6 @@
 # GLM y Modelos multinivel
 # Capítulo 8: INTRODUCCIÓN A MODELOS MULTINIVEL
-# Packages required for Chapter 8
+# Paquetes
 library(MASS)
 library(gridExtra)  
 library(mnormt) 
