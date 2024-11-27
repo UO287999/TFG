@@ -1,0 +1,52 @@
+[
+  {
+    "objectID": "summary.html",
+    "href": "summary.html",
+    "title": "2  Capítulo 2: Datos longitudinales",
+    "section": "",
+    "text": "2.1 ¿Qué son los datos longitudinales?\nLos datos longitudinales son aquellos que se recopilan observando repetidamente las mismas unidades (individuos, regiones, células, etc.) a lo largo del tiempo. Este tipo de datos es común en estudios donde se busca evaluar cómo evolucionan ciertas características o mediciones bajo distintas condiciones o tratamientos.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Capítulo 2: Datos longitudinales</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html#qué-son-los-datos-longitudinales",
+    "href": "summary.html#qué-son-los-datos-longitudinales",
+    "title": "2  Capítulo 2: Datos longitudinales",
+    "section": "",
+    "text": "2.1.1 Características principales\n\nMedidas repetidas: Cada unidad tiene varias observaciones en diferentes momentos temporales.\nEstructura jerárquica: Las observaciones están agrupadas por unidades (e.g., pacientes, regiones).\nDependencia entre observaciones: Las mediciones dentro de la misma unidad tienden a estar correlacionadas.\n\n\n\n2.1.2 Ejemplos de datos longitudinales\n\nÁmbito biosanitario: Medidas repetidas de presión arterial en un grupo de pacientes durante un tratamiento.\nEducación: Evaluación de los puntajes de un estudiante a lo largo de varios exámenes anuales.\nCiencias sociales: Encuestas de opinión realizadas periódicamente a las mismas personas.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Capítulo 2: Datos longitudinales</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html#por-qué-no-se-puede-usar-la-estadística-clásica",
+    "href": "summary.html#por-qué-no-se-puede-usar-la-estadística-clásica",
+    "title": "2  Capítulo 2: Datos longitudinales",
+    "section": "2.2 ¿Por qué no se puede usar la estadística clásica?",
+    "text": "2.2 ¿Por qué no se puede usar la estadística clásica?\nLa estadística clásica (e.g., regresión lineal simple) supone que todas las observaciones son independientes entre sí. Sin embargo, en datos longitudinales, esta suposición no se cumple debido a la correlación entre observaciones tomadas de la misma unidad.\n\n2.2.1 Problemas al aplicar técnicas clásicas\n\nSubestimación de la incertidumbre: Ignorar la dependencia lleva a errores estándar más pequeños, inflando la significancia estadística.\nModelos mal ajustados: No considerar la estructura jerárquica puede llevar a conclusiones erróneas.\nViolación de las hipótesis básicas: En regresión lineal simple, se viola la suposición de independencia de los errores.\n\n\n\n2.2.2 Ejemplo conceptual\nConsideremos un conjunto de datos en el que medimos un marcador biomédico en varios pacientes durante 3 años consecutivos. Si intentáramos aplicar una regresión lineal simple para modelar la evolución del marcador en función del tiempo, ignoraríamos que las mediciones de un mismo paciente están correlacionadas.\n\n# Ejemplo conceptual: Datos longitudinales simulados\nset.seed(123)\ndata_long &lt;- data.frame(\n  id = rep(1:5, each = 3),\n  year = rep(0:2, times = 5),\n  biomarker = c(50, 52, 54, 48, 49, 51, 55, 57, 59, 47, 49, 50, 53, 54, 56)\n)\n# CON REGRESIÓN LINEAL\nmodel_incorrect &lt;- lm(biomarker ~ year, data = data_long)\nsummary(model_incorrect)\n\n\nCall:\nlm(formula = biomarker ~ year, data = data_long)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-3.9667 -3.1167 -0.2667  2.2333  5.0333 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)   50.567      1.368  36.956 1.49e-14 ***\nyear           1.700      1.060   1.604    0.133    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 3.352 on 13 degrees of freedom\nMultiple R-squared:  0.1652,    Adjusted R-squared:  0.101 \nF-statistic: 2.573 on 1 and 13 DF,  p-value: 0.1327\n\n\nEn el modelo de regresión lineal, las mediciones de un paciente afectan a las estimaciones de los demás, lo que genera resultados sesgados",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Capítulo 2: Datos longitudinales</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html#modelos-mixtos",
+    "href": "summary.html#modelos-mixtos",
+    "title": "2  Capítulo 2: Datos longitudinales",
+    "section": "2.3 Modelos mixtos",
+    "text": "2.3 Modelos mixtos\nPara analizar datos longitudinales de manera adecuada, se deben emplear modelos mixtos, que permiten: - Capturar la variabilidad entre individuos mediante efectos aleatorios. - Modelar la correlación entre observaciones dentro de una misma unidad. - Incluir covariables tanto a nivel individual como grupal.\n\n2.3.1 Ventajas de los modelos mixtos\n\nFlexibilidad para incluir efectos específicos por individuo o grupo.\nEstimación precisa de la incertidumbre, respetando la dependencia entre observaciones.\nGeneralización a estructuras de datos complejas.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Capítulo 2: Datos longitudinales</span>"
+    ]
+  },
+  {
+    "objectID": "intro.html",
+    "href": "intro.html",
+    "title": "1  Introducción",
+    "section": "",
+    "text": "1 + 1\n\n[1] 2",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introducción</span>"
+    ]
+  }
+]
