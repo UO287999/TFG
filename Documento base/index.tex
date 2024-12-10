@@ -265,11 +265,21 @@ longitudinales}\label{capuxedtulo-2-datos-longitudinales}
 \section{¿Qué son los datos
 longitudinales?}\label{quuxe9-son-los-datos-longitudinales}
 
-Los \textbf{datos longitudinales} son aquellos que se recopilan
-observando repetidamente las mismas unidades (individuos, regiones,
-células, etc.) a lo largo del tiempo. Este tipo de datos es común en
-estudios donde se busca evaluar cómo evolucionan ciertas características
-o mediciones bajo distintas condiciones o tratamientos.
+Los \textbf{datos longitudinales} son aquellos que obtenemos al realizar
+distintas medidas a un individuo (individuos, regiones, células, etc.).
+Dichas medidas se pueden observar repetidamente a lo largo del tiempo
+(análisis temporal), del espacio (análisis espacial), o a lo largo del
+espacio y tiempo (análisis espacio-temporal); es por eso que a los datos
+longitudinales también se les conoce como medidas repetidas. Esta forma
+de observar las medidas nos permite detectar cambios o tendencias
+temporales en nuestras variables, lo cual nos puede llevar a observar
+patrones que nos sería difícil examinar en otro tipo de investigaciones.
+Este tipo de datos es común en estudios donde se busca evaluar cómo
+evolucionan ciertas características o mediciones bajo distintas
+condiciones o tratamientos. En el ámbito biosanitario, los datos
+longitudinales son fundamentales para investigar la progresión de
+enfermedades, la efectividad de tratamientos y el impacto de
+intervenciones médicas.
 
 \subsection{Características
 principales}\label{caracteruxedsticas-principales}
@@ -278,14 +288,53 @@ principales}\label{caracteruxedsticas-principales}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  \textbf{Medidas repetidas}: Cada unidad tiene varias observaciones en
+  \textbf{Medidas repetidas}: cada unidad tiene varias observaciones en
   diferentes momentos temporales.
 \item
-  \textbf{Estructura jerárquica}: Las observaciones están agrupadas por
+  \textbf{Estructura jerárquica}: las observaciones están agrupadas por
   unidades (e.g., pacientes, regiones).
 \item
-  \textbf{Dependencia entre observaciones}: Las mediciones dentro de la
+  \textbf{Dependencia entre observaciones}: las mediciones dentro de la
   misma unidad tienden a estar correlacionadas.
+\item
+  \textbf{Variables}: como la mayoría de medidas se realizan en
+  distintos del tiempo, diremos que son variables
+  \textbf{tiempo-dependientes}; pero también hay que tener en cuenta que
+  hay otras variables que cambian igual en el tiempo para todos los
+  sujetos (como la edad) que \textbf{no} consideraremos
+  tiempo-dependientes y otras que directamente consideraremos
+  \textbf{constantes} como el sexo.
+\end{enumerate}
+
+\subsection{Componentes de la respuesta de cada
+individuo}\label{componentes-de-la-respuesta-de-cada-individuo}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Efecto fijo}: función de las covariables
+\item
+  \textbf{Efecto aleatorio}: muestra la variación entre individuos
+\item
+  \textbf{Error}: originado por las mediciones o a variables no
+  registradas
+\end{enumerate}
+
+\subsection{Objetivos}\label{objetivos}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Observar la \textbf{evolución} de una variable a lo largo del
+  tiempo/espacio
+\item
+  Comparar si la \textbf{evolución} de una variable a lo largo del
+  tiempo/espacio es \textbf{igual} para distintas partes de la población
+\item
+  Tratar de observar e identificar \textbf{patrones} en el desarrollo de
+  una variable a lo largo del tiempo/espacio
 \end{enumerate}
 
 \subsection{Ejemplos de datos
@@ -295,14 +344,18 @@ longitudinales}\label{ejemplos-de-datos-longitudinales}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  \textbf{Ámbito biosanitario}: Medidas repetidas de presión arterial en
+  \textbf{Ámbito biosanitario}: medidas repetidas de presión arterial en
   un grupo de pacientes durante un tratamiento.
 \item
-  \textbf{Educación}: Evaluación de los puntajes de un estudiante a lo
+  \textbf{Educación}: evaluación de los puntajes de un estudiante a lo
   largo de varios exámenes anuales.
 \item
-  \textbf{Ciencias sociales}: Encuestas de opinión realizadas
+  \textbf{Ciencias sociales}: encuestas de opinión realizadas
   periódicamente a las mismas personas.
+\item
+  \textbf{Alimentación}: estudio de diferentes dietas a diferentes
+  grupos de la población a lo largo del tiempo a través de medidas tales
+  como actividad física, medidas antropométricas, etc.
 \end{enumerate}
 
 \section{¿Por qué no se puede usar la estadística
@@ -311,7 +364,9 @@ clásica?}\label{por-quuxe9-no-se-puede-usar-la-estaduxedstica-cluxe1sica}
 La \textbf{estadística clásica} (e.g., regresión lineal simple) supone
 que todas las observaciones son independientes entre sí. Sin embargo, en
 datos longitudinales, esta suposición no se cumple debido a la
-correlación entre observaciones tomadas de la misma unidad.
+correlación entre observaciones tomadas de la misma unidad. Pero este no
+es el único motivo por el cual no podemos usar la estadística clásica
+únicamente para analizar datos longitudinales.
 
 \subsection{Problemas al aplicar técnicas
 clásicas}\label{problemas-al-aplicar-tuxe9cnicas-cluxe1sicas}
@@ -320,63 +375,105 @@ clásicas}\label{problemas-al-aplicar-tuxe9cnicas-cluxe1sicas}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  \textbf{Subestimación de la incertidumbre}: Ignorar la dependencia
-  lleva a errores estándar más pequeños, inflando la significancia
-  estadística.
+  \textbf{Dependencia entre observaciones}: como bien habíamos
+  comentado, los datos longitudinales tienen una estructura que lleva a
+  que las observaciones sobre el mismo individuo estén correlacionadas.
 \item
-  \textbf{Modelos mal ajustados}: No considerar la estructura jerárquica
-  puede llevar a conclusiones erróneas.
+  \textbf{Correlación de los errores}: siguiendo el punto anterior, los
+  datos longitudinales contienen una correlación en los errores que no
+  puede ser modelada correctamente a través de modelos de estadística
+  clásica como podría ser un modelo de regresión lineal simple. Esto
+  ocurre porque las medidas repetidas pueden estar influenciadas por
+  factores externos o por variables no registradas en modelos clásicos.
 \item
-  \textbf{Violación de las hipótesis básicas}: En regresión lineal
-  simple, se viola la suposición de independencia de los errores.
+  \textbf{Variabilidad}: otro de los motivos por los que no se pueden
+  usar modelos clásicos para datos longitudinales es que estos modelos
+  no tienen un enfoque apropiado para la variabilidad de los datos, ya
+  que adaptan una estructura homogénea la cual no corresponde con un
+  modelo de datos longitudinales en el cual hay que tener en cuenta las
+  diferencias entre individuos.
+\item
+  \textbf{Sesgo}: a raíz del punto anterior, surge otro problema que
+  lleva a evitar utilizar estadística clásica para este tipo de datos:
+  los sesgos. Al ignorar dichas diferencias entre individuos y la
+  dependencia entre observaciones, las estimaciones no reflejan
+  correctamente la relación entre variables ya que no cuentan con la
+  existencia de efectos aleatorios, entre otros.
 \end{enumerate}
 
 \subsection{Ejemplo conceptual}\label{ejemplo-conceptual}
 
-Consideremos un conjunto de datos en el que medimos un marcador
-biomédico en varios pacientes durante 3 años consecutivos. Si
-intentáramos aplicar una regresión lineal simple para modelar la
-evolución del marcador en función del tiempo, ignoraríamos que las
-mediciones de un mismo paciente están correlacionadas.
+Vamos a considerar un conjunto de datos sobre ingresos anuales de
+personas a lo largo de varios años (psid). Vamos a utilizar un modelo
+regresión lineal simple para modelar los ingresos en función del tiempo,
+ignorando la correlación entre mediciones.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{\# Ejemplo conceptual: Datos longitudinales simulados}
-\FunctionTok{set.seed}\NormalTok{(}\DecValTok{123}\NormalTok{)}
-\NormalTok{data\_long }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
-  \AttributeTok{id =} \FunctionTok{rep}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\DecValTok{5}\NormalTok{, }\AttributeTok{each =} \DecValTok{3}\NormalTok{),}
-  \AttributeTok{year =} \FunctionTok{rep}\NormalTok{(}\DecValTok{0}\SpecialCharTok{:}\DecValTok{2}\NormalTok{, }\AttributeTok{times =} \DecValTok{5}\NormalTok{),}
-  \AttributeTok{biomarker =} \FunctionTok{c}\NormalTok{(}\DecValTok{50}\NormalTok{, }\DecValTok{52}\NormalTok{, }\DecValTok{54}\NormalTok{, }\DecValTok{48}\NormalTok{, }\DecValTok{49}\NormalTok{, }\DecValTok{51}\NormalTok{, }\DecValTok{55}\NormalTok{, }\DecValTok{57}\NormalTok{, }\DecValTok{59}\NormalTok{, }\DecValTok{47}\NormalTok{, }\DecValTok{49}\NormalTok{, }\DecValTok{50}\NormalTok{, }\DecValTok{53}\NormalTok{, }\DecValTok{54}\NormalTok{, }\DecValTok{56}\NormalTok{)}
-\NormalTok{)}
-\CommentTok{\# CON REGRESIÓN LINEAL}
-\NormalTok{model\_incorrect }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(biomarker }\SpecialCharTok{\textasciitilde{}}\NormalTok{ year, }\AttributeTok{data =}\NormalTok{ data\_long)}
-\FunctionTok{summary}\NormalTok{(model\_incorrect)}
-\end{Highlighting}
-\end{Shaded}
+\begin{verbatim}
+Warning: package 'faraway' was built under R version 4.4.2
+\end{verbatim}
+
+\begin{verbatim}
+Warning: package 'ggplot2' was built under R version 4.4.2
+\end{verbatim}
+
+\includegraphics{cap2_files/figure-pdf/unnamed-chunk-1-1.pdf}
+
+Este gráfico muestra la evolución de los ingresos anuales para
+diferentes personas a lo largo del tiempo. Se observa que los datos son
+heterogéneos y varían significativamente entre individuos, lo que
+muestra la dependencia entre observaciones; algo que viola los supuestos
+básicos de independencia de las observaciones, fundamentales para
+modelos clásicos como la regresión lineal simple.
 
 \begin{verbatim}
 
 Call:
-lm(formula = biomarker ~ year, data = data_long)
+lm(formula = income ~ year, data = psid_subset)
 
 Residuals:
-    Min      1Q  Median      3Q     Max 
--3.9667 -3.1167 -0.2667  2.2333  5.0333 
+     Min       1Q   Median       3Q      Max 
+-17956.7  -7314.1   -380.3   4693.2  24996.3 
 
 Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept)   50.567      1.368  36.956 1.49e-14 ***
-year           1.700      1.060   1.604    0.133    
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -46198.57    7519.91  -6.143 4.02e-09 ***
+year           726.46      95.33   7.621 8.65e-13 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 3.352 on 13 degrees of freedom
-Multiple R-squared:  0.1652,    Adjusted R-squared:  0.101 
-F-statistic: 2.573 on 1 and 13 DF,  p-value: 0.1327
+Residual standard error: 9192 on 209 degrees of freedom
+Multiple R-squared:  0.2175,    Adjusted R-squared:  0.2137 
+F-statistic: 58.08 on 1 and 209 DF,  p-value: 8.655e-13
 \end{verbatim}
 
-En el modelo de regresión lineal, las mediciones de un paciente afectan
-a las estimaciones de los demás, lo que genera resultados sesgados
+En la salida del modelo, vemos cómo el modelo asume que la variabilidad
+entre individuos se puede representar con un único coeficiente,
+ignorando por completo la dependencia entre observaciones. Además, dicho
+coeficiente tiene un valor muy bajo, mostrando que el modelo explica muy
+poca variabilidad de los datos y que, por tanto, no nos sirve para
+analizar datos longitudinales.
+
+\begin{verbatim}
+`geom_smooth()` using formula = 'y ~ x'
+\end{verbatim}
+
+\includegraphics{cap2_files/figure-pdf/unnamed-chunk-3-1.pdf}
+
+Este gráfico muestra cómo la regresión lineal simple aplicada a estos
+datos genera una representación distorsionada, ignorando por completo la
+correlación de los datos longitudinales; dando lugar a un mal ajuste y a
+resultados estadísticos inapropiados que demuestran por qué no debemos
+utilizar estadística clásica para este tipo de datos.
+
+\begin{verbatim}
+`geom_smooth()` using formula = 'y ~ x'
+\end{verbatim}
+
+\includegraphics{cap2_files/figure-pdf/unnamed-chunk-4-1.pdf}
+
+En esta gráfica, en la que ajustamos un modelo para cada individuo,
+mostrando que las pendientes e interceptos varían significativamente,
+destacando la necesidad de modelos mixtos.
 
 \section{Modelos mixtos}\label{modelos-mixtos}
 
