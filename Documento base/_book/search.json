@@ -48,5 +48,25 @@
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introducción</span>"
     ]
+  },
+  {
+    "objectID": "references.html",
+    "href": "references.html",
+    "title": "Referencias",
+    "section": "",
+    "text": "Faraway, J. J. (2006). Extending the Linear Model with R: Generalized Linear, Mixed Effects and Nonparametric Regression Models. Chapman & Hall/CRC.\nFernández Hernández, B. (2024). Modelos mixtos con R.\nRoback, P., & Legler, J. (2021). Beyond Multiple Linear Regression: Applied Generalized Linear Models and Multilevel Models in R.\nSubirana, I. (2020). Análisis de datos longitudinales.",
+    "crumbs": [
+      "Referencias"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Documento base",
+    "section": "",
+    "text": "Capítulos\n\n1 + 1\n\n[1] 2",
+    "crumbs": [
+      "Capítulos"
+    ]
   }
 ]

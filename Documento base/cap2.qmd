@@ -83,7 +83,7 @@ ggplot(psid_subset, aes(x = year, y = income)) +
   theme_minimal() +
   labs(title = "Modelo clásico incorrecto: Regresión lineal simple",
        x = "Año", y = "Ingresos") +
-  annotate("text", x = 1980, y = max(psid_subset$income) * 0.8,
+  annotate("text", x = 70, y = max(psid_subset$income) * 0.8,
            label = "Ignora la variabilidad entre individuos",
            color = "red", hjust = 0)
 ```
