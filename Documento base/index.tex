@@ -453,10 +453,6 @@ coeficiente tiene un valor muy bajo, mostrando que el modelo explica muy
 poca variabilidad de los datos y que, por tanto, no nos sirve para
 analizar datos longitudinales.
 
-\begin{verbatim}
-`geom_smooth()` using formula = 'y ~ x'
-\end{verbatim}
-
 \includegraphics{cap2_files/figure-pdf/unnamed-chunk-3-1.pdf}
 
 Este gráfico muestra cómo la regresión lineal simple aplicada a estos
@@ -464,10 +460,6 @@ datos genera una representación distorsionada, ignorando por completo la
 correlación de los datos longitudinales; dando lugar a un mal ajuste y a
 resultados estadísticos inapropiados que demuestran por qué no debemos
 utilizar estadística clásica para este tipo de datos.
-
-\begin{verbatim}
-`geom_smooth()` using formula = 'y ~ x'
-\end{verbatim}
 
 \includegraphics{cap2_files/figure-pdf/unnamed-chunk-4-1.pdf}
 
@@ -478,10 +470,17 @@ destacando la necesidad de modelos mixtos.
 \section{Modelos mixtos}\label{modelos-mixtos}
 
 Para analizar datos longitudinales de manera adecuada, se deben emplear
-modelos mixtos, que permiten: - Capturar la variabilidad entre
-individuos mediante efectos aleatorios. - Modelar la correlación entre
-observaciones dentro de una misma unidad. - Incluir covariables tanto a
-nivel individual como grupal.
+modelos mixtos, que permiten:
+
+\begin{itemize}
+\tightlist
+\item
+  Capturar la variabilidad entre individuos mediante efectos aleatorios.
+\item
+  Modelar la correlación entre observaciones dentro de una misma unidad.
+\item
+  Incluir covariables tanto a nivel individual como grupal.
+\end{itemize}
 
 \subsection{Ventajas de los modelos
 mixtos}\label{ventajas-de-los-modelos-mixtos}
@@ -506,6 +505,21 @@ mixtos}\label{ventajas-de-los-modelos-mixtos}
 
 \phantomsection\label{refs}
 \begin{CSLReferences}{0}{1}
+\begin{itemize}
+\item
+  Faraway, J. J. (2006). \emph{Extending the Linear Model with R:
+  Generalized Linear, Mixed Effects and Nonparametric Regression
+  Models}. Chapman \& Hall/CRC.
+\item
+  Fernández Hernández, B. (2024). \emph{Modelos mixtos con R}.
+\item
+  Roback, P., \& Legler, J. (2021). \emph{Beyond Multiple Linear
+  Regression: Applied Generalized Linear Models and Multilevel Models in
+  R}.
+\item
+  Subirana, I. (2020). \emph{Análisis de datos longitudinales}.
+\end{itemize}
+
 \end{CSLReferences}
 
 

@@ -1,0 +1,25 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## Modelos mixtos
+
+Para analizar datos longitudinales de manera adecuada, se deben emplear modelos mixtos, que permiten:
+
+-   Capturar la variabilidad entre individuos mediante efectos aleatorios.
+-   Modelar la correlación entre observaciones dentro de una misma unidad.
+-   Incluir covariables tanto a nivel individual como grupal.
+
+### Ventajas de los modelos mixtos
+
+-   Flexibilidad para incluir efectos específicos por individuo o grupo.
+-   Estimación precisa de la incertidumbre, respetando la dependencia entre observaciones.
+-   Generalización a estructuras de datos complejas.
+
+### Componentes de la respuesta de cada individuo
+
+1.  **Efecto fijo**: función de las covariables
+2.  **Efecto aleatorio**: muestra la variación entre individuos
+3.  **Error**: originado por las mediciones o a variables no registradas
