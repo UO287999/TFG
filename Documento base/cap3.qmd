@@ -4,7 +4,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-## Modelos mixtos
+# Capítulo 3: Modelos mixtos
 
 Para analizar datos longitudinales de manera adecuada, se deben emplear modelos mixtos, que permiten:
 
@@ -23,3 +23,16 @@ Para analizar datos longitudinales de manera adecuada, se deben emplear modelos 
 1.  **Efecto fijo**: función de las covariables
 2.  **Efecto aleatorio**: muestra la variación entre individuos
 3.  **Error**: originado por las mediciones o a variables no registradas
+
+## Modelos Lineales Mixtos (LLM)
+
+Son métodos y modelos estadísticos que sirven para analizar datos longitudinales cuando la variable respuesta sigue una distribución normal. Se considera la técnica más eficaz cuando se trabaja con distribuciones normales en este campo ya que permite introducir efectos aleatorios y concretar la estructura de las correlaciones de los residuos del mismo sujeto; además de que puede emplearse con datos faltantes.
+
+La ecuación para este tipo de modelos, en los que i es el individuo y j la observación es la siguiente:
+$$
+y_{ij} = \beta_{0i} + \sum_{k=1}^{K} \beta_{ki}x_{ijk} + e_{ij} 
+$$ 
+- x_{ijk} es el valor de la k-ésima variable independiente por parte del individuo i en la observación j
+- beta_{0i} 
+
+## Modelos Lineales Generalizados

@@ -34,6 +34,35 @@ ul.task-list li input[type="checkbox"] {
 <link href="cap3_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="cap3_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -46,8 +75,8 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<section id="modelos-mixtos" class="level2">
-<h2 class="anchored" data-anchor-id="modelos-mixtos">Modelos mixtos</h2>
+<section id="capítulo-3-modelos-mixtos" class="level1">
+<h1>Capítulo 3: Modelos mixtos</h1>
 <p>Para analizar datos longitudinales de manera adecuada, se deben emplear modelos mixtos, que permiten:</p>
 <ul>
 <li>Capturar la variabilidad entre individuos mediante efectos aleatorios.</li>
@@ -69,6 +98,16 @@ ul.task-list li input[type="checkbox"] {
 <li><strong>Efecto aleatorio</strong>: muestra la variación entre individuos</li>
 <li><strong>Error</strong>: originado por las mediciones o a variables no registradas</li>
 </ol>
+</section>
+<section id="modelos-lineales-mixtos-llm" class="level2">
+<h2 class="anchored" data-anchor-id="modelos-lineales-mixtos-llm">Modelos Lineales Mixtos (LLM)</h2>
+<p>Son métodos y modelos estadísticos que sirven para analizar datos longitudinales cuando la variable respuesta sigue una distribución normal. Se considera la técnica más eficaz cuando se trabaja con distribuciones normales en este campo ya que permite introducir efectos aleatorios y concretar la estructura de las correlaciones de los residuos del mismo sujeto; además de que puede emplearse con datos faltantes.</p>
+<p>La ecuación para este tipo de modelos, en los que i es el individuo y j la observación es la siguiente: <span class="math display">\[
+y_{ij} = \beta_{0i} + \sum_{k=1}^{K} \beta_{ki}x_{ijk} + e_{ij}
+\]</span> - x_{ijk} es el valor de la k-ésima variable independiente por parte del individuo i en la observación j - beta_{0i}</p>
+</section>
+<section id="modelos-lineales-generalizados" class="level2">
+<h2 class="anchored" data-anchor-id="modelos-lineales-generalizados">Modelos Lineales Generalizados</h2>
 </section>
 </section>
 
