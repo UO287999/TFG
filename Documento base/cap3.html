@@ -77,37 +77,89 @@ window.Quarto = {
 
 <section id="capítulo-3-modelos-mixtos" class="level1">
 <h1>Capítulo 3: Modelos mixtos</h1>
-<p>Para analizar datos longitudinales de manera adecuada, se deben emplear modelos mixtos, que permiten:</p>
-<ul>
-<li>Capturar la variabilidad entre individuos mediante efectos aleatorios.</li>
-<li>Modelar la correlación entre observaciones dentro de una misma unidad.</li>
-<li>Incluir covariables tanto a nivel individual como grupal.</li>
-</ul>
-<section id="ventajas-de-los-modelos-mixtos" class="level3">
-<h3 class="anchored" data-anchor-id="ventajas-de-los-modelos-mixtos">Ventajas de los modelos mixtos</h3>
-<ul>
-<li>Flexibilidad para incluir efectos específicos por individuo o grupo.</li>
-<li>Estimación precisa de la incertidumbre, respetando la dependencia entre observaciones.</li>
-<li>Generalización a estructuras de datos complejas.</li>
-</ul>
-</section>
-<section id="componentes-de-la-respuesta-de-cada-individuo" class="level3">
-<h3 class="anchored" data-anchor-id="componentes-de-la-respuesta-de-cada-individuo">Componentes de la respuesta de cada individuo</h3>
-<ol type="1">
-<li><strong>Efecto fijo</strong>: función de las covariables</li>
-<li><strong>Efecto aleatorio</strong>: muestra la variación entre individuos</li>
-<li><strong>Error</strong>: originado por las mediciones o a variables no registradas</li>
-</ol>
-</section>
 <section id="modelos-lineales-mixtos-llm" class="level2">
 <h2 class="anchored" data-anchor-id="modelos-lineales-mixtos-llm">Modelos Lineales Mixtos (LLM)</h2>
-<p>Son métodos y modelos estadísticos que sirven para analizar datos longitudinales cuando la variable respuesta sigue una distribución normal. Se considera la técnica más eficaz cuando se trabaja con distribuciones normales en este campo ya que permite introducir efectos aleatorios y concretar la estructura de las correlaciones de los residuos del mismo sujeto; además de que puede emplearse con datos faltantes.</p>
-<p>La ecuación para este tipo de modelos, en los que i es el individuo y j la observación es la siguiente: <span class="math display">\[
+<p>Son métodos y modelos estadísticos que sirven para analizar datos longitudinales cuando la variable respuesta sigue una distribución normal. Se considera la técnica más eficaz cuando se trabaja con distribuciones normales en este campo ya que permite introducir efectos aleatorios y concretar la estructura de las correlaciones de los residuos del mismo sujeto; además de que puede emplearse con datos faltantes. Estos modelos nos permiten modelar la correlación entre observaciones dentro de una misma unidad e incluir covariables tanto a nivel individual como grupal. Permiten realizar una estimación precisa de la incertidumbre, respetando la dependencia entre observaciones, y la capacidad de generalización a estructuras de datos complejas son otro de los motivos por los cuales se recomienda su uso con datos longitudinales. Otra de sus ventajas es su flexibilidad para incluir efectos específicos por individuo o grupo; algo que veremos más adelante.</p>
+<p>La ecuación para este tipo de modelos, en los que <span class="math inline">\(i\)</span> es el individuo y <span class="math inline">\(j\)</span> la observación es la siguiente: <span class="math display">\[
 y_{ij} = \beta_{0i} + \sum_{k=1}^{K} \beta_{ki}x_{ijk} + e_{ij}
-\]</span> - x_{ijk} es el valor de la k-ésima variable independiente por parte del individuo i en la observación j - beta_{0i}</p>
+\]</span></p>
+<ul>
+<li><p><span class="math inline">\(x_{ijk}\)</span> es el valor de la k-ésima variable independiente por parte del individuo <span class="math inline">\(i\)</span> en la observación <span class="math inline">\(j\)</span>.</p></li>
+<li><p><span class="math inline">\(\beta_{0i}\)</span> sigue <span class="math inline">\(N(\beta_{0}, \sigma^2_{\beta_{0}})\)</span>; es la constante del modelo, que suele tener cierta varianza centrada en <span class="math inline">\(\mu\)</span> porque se supone aleatoria.</p></li>
+<li><p><span class="math inline">\(\beta_{ki}\)</span> sigue <span class="math inline">\(N(\beta_{k}, \sigma^2_{\beta_{k}})\)</span>; son las pendientes o coeficientes de las variables independientes del modelo, que suelen ser aleatorias.</p></li>
+</ul>
+<p>Los <strong>efectos aleatorios</strong> es el vector formado por la constante y los coeficientes aleatorios del modelo. Nos permiten capturar la variabilidad entre individuos, y se escriben de esta forma: <span class="math display">\[
+\vec{\beta}_i = (\beta_{0i}, \beta_{1i}, \ldots, \beta_{Ki})^t \sim N(\vec{\beta}, \Omega)
+\]</span> Cabe destacar que los errores de un individuo, al no tener todos el mismo número de observaciones, son <strong>independientes</strong> de los efectos aleatorios.</p>
+<p>Para ajustar un modelo lineal mixto, se tienen que disponer los datos de forma vertical. Una de las ventajas del LLM es su flexibilidad ya que no sólo permite especificar efectos aleatorios para evaluar la <strong>variabilidad</strong> de algunas variables entre los individuos, sino que también permite evaluar la <strong>correlación</strong> entre distintos datos longitudinales del mismo individuo. La constante y los coeficientes aleatorios tienen <strong>homocedasticidad</strong>, ya que la esperanza y la matriz de covarianzas es la misma para todos los individuos. Una de las características de los LLM es que introducen el concepto de <strong>efectos fijos</strong>, los cuales son la esperanza de los efectos aleatorios. De hecho, cuando un coeficiente no es aleatorio, se puede asumir que sigue una distribución normal con varianza cero; denominándolo fijo. En estos modelos, el número de efectos aleatorios es limitado, ya que no pueden superar en ningún caso el número de medidas que tenemos por individuo. Estos efectos inducen una <strong>correlación</strong> entre datos para el mismo individuo, pero dependiendo de su estructura la correlación sólo se puede obtener a partir de la correlación entre residuos; ya que si consideramos los coeficientes de variables <strong>cambiantes</strong> en el tiempo como aleatorios la correlación es distinta según los tiempos de las medidas, mientras que si consideramos los coeficientes de variables <strong>constantes</strong> en el tiempo inducimos <strong>heterocedasticidad</strong> entre individuos.</p>
+<p>A la hora de trabajar con Modelos Lineales Mixtos, se puede trabajar de diferentes formas. Podemos establecer un modelo con la constante aleatoria y varios coeficientes fijos en el tiempo, en cuyo caso, si asumimos que los errores son independientes, tendríamos una correlación <strong>constante</strong> entre las variables del mismo individuo que no depende de la distancia entre las medidas; lo que se denomina como coeficiente de correlación intraclase (ICC). Otra forma de definir estos modelos podría ser con la constante y los coeficientes aleatorios, donde, asumiendo independencia entre residuos, la correlación entre observaciones pasa a depender tanto del tiempo como de la distancia entre ellas. Sin embargo, pese a ser las dos buenas opciones, es preferible trabajar de otra forma para LLM.</p>
+<p>Para empezar, no asumiremos independencia de los residuos; sino que trabajaremos con un modelo más general en el que contemos con el mayor número posible de efectos aleatorios correlacionados y fijos. A continuación, procederemos a simplificar el modelo a través de la significación de <strong>efectos aleatorios</strong>: <span class="math display">\[
+\begin{cases}
+H_0 : \sigma^2_{\beta_0} = 0 \\
+H_1 : \sigma^2_{\beta_0} &gt; 0
+\end{cases}
+\]</span> Para comprobar que hay más de un efecto aleatorio significativo, se utilizan diferentes técnicas estadísticas para contrastar que se permite asumir que podemos rechazar la hipótesis nula: los efectos aleatorios tienen varianza igual a cero. En caso afirmativo, tenemos que contrastar que si su correlación es distinta de 0; para lo que tendremos que elegir la matriz de covarianzas de los efectos aleatorios: <span class="math display">\[
+\begin{cases}
+H_0 : \Omega =
+\begin{pmatrix}
+\sigma^2_{\beta_0} &amp; 0 \\
+0 &amp; \sigma^2_{\beta_1}
+\end{pmatrix} \\
+H_1 : \Omega =
+\begin{pmatrix}
+\sigma^2_{\beta_0} &amp; \sigma_{\beta_0 \beta_1} \\
+\sigma_{\beta_0 \beta_1} &amp; \sigma^2_{\beta_1}
+\end{pmatrix}
+\end{cases}
+\]</span> En este caso, utilizaremos un test de razón de verosimilitudes para escoger la estructura de covarianzas de los efectos aleatorios y de sus errores. Para ello, hay que tener en cuenta que los modelos estén <strong>anidados</strong>, es decir, que la matriz de covarianzas de los residuos de un modelo se expresen como un caso particular de la matriz de covarianzas de los residuos del otro modelo.</p>
+<p>Una vez hemos terminado con los efectos aleatorios, procedemos a determinar la significación de los efectos fijos a través de dos métodos. Si queremos testear un sólo parámetro, utilizaremos el test de Wald en el que: <span class="math display">\[
+\begin{cases}
+H_0 : \beta_1 = 0 \\
+H_1 : \beta_1 \neq 0
+\end{cases}
+\]</span> En caso de querer testear más de un parámetro, utilizaremos un test de razón de verosimilitudes: <span class="math display">\[
+\begin{cases}
+H_0 : \beta_1 = \beta_2 = 0 \\
+H_1 : \text{alguno diferente de 0}
+\end{cases}
+\]</span> Una vez hemos definido ya nuestro modelo, tenemos que realizar su validación a través de comprobar que se cumplen las asunciones sobre los residuos; al igual que hacíamos con Regresión Lineal Simple. Para poder asumir que el modelo es correcto, en el gráfico <strong>residuos estandarizados vs valores predichos</strong>, debería de aparecer una especie de nube de puntos en los que no haya ningún patrón ni ninguna tendencia aparente; mientras que en el <strong>QQ-plot</strong>, si los residuos se encuentran alrededor de la diagonal sin seguir tampoco ningún patrón, podremos asumir que los residuos tienen normalidad. Para validar lod efectos aleatorios, podemos utilizar <strong>Empirical Bayes Estimates</strong> en lugar de asumir su normalidad.</p>
 </section>
-<section id="modelos-lineales-generalizados" class="level2">
-<h2 class="anchored" data-anchor-id="modelos-lineales-generalizados">Modelos Lineales Generalizados</h2>
+<section id="modelos-lineales-generalizados-glm" class="level2">
+<h2 class="anchored" data-anchor-id="modelos-lineales-generalizados-glm">Modelos Lineales Generalizados (GLM)</h2>
+<p>Los Modelos Lineales Generalizados son una generalización de los modelos lineales para una variable respuesta perteneciente a la familia exponencial, en la que tenemos una función link que describe como la media de la variable respuesta y la combinación lineal de variables explicativas están relacionadas.</p>
+<p>La <strong>familia exponencial</strong> suele tener esta forma: <span class="math display">\[
+f(y \mid \theta, \phi) = \exp \left[ \frac{y\theta - b(\theta)}{a(\phi)} + c(y, \phi) \right]
+\]</span> En esta ecuación, <span class="math inline">\(\theta\)</span> es el <strong>parámetro canónico</strong> y representa la posición (location); mientras que <span class="math inline">\(\phi\)</span> es el <strong>parámetro de dispersión</strong> y representa la escala (scale). De la misma forma, <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span> y <span class="math inline">\(c\)</span> representan diferentes miembros de la familia exponencial. En función del parámetro de dispersión, podemos distinguir entre familias exponenciales de <strong>un</strong> parámetro, y familias exponenciales de <strong>dos</strong> parámetros.</p>
+<p>Para determinar si un modelo está basado en un único parámetro <span class="math inline">\(\theta\)</span>, tenemos que poder escribir su función de probabilidad de la siguiente forma: <span class="math display">\[
+f(y; \theta) = e^{[a(y)b(\theta) + c(\theta) + d(y)]}
+\]</span> Si el conjunto de posibles valores de entrada no depende de <span class="math inline">\(\theta\)</span>, la familia exponencial será de un parámetro. Como familias exponenciales de un parámetro, tenemos las distribuciones de Poisson y la Binomial. Vamos a demostrar que la distribución de Poisson es, en efecto, una familia exponencial de un parámetro.</p>
+<p>Para ello, aplicando propiedades logarítmicas, podemos definir la distribución de Poisson como: <span class="math display">\[
+P(Y = y) = e^{-\lambda} e^{y \log \lambda} e^{-\log(y!)} \\
+= e^{y \log \lambda - \lambda - \log(y!)}
+\]</span> Si comparamos esta función de masa de probabilidad con la fnción de probabilidad general para familias con un único parámetro, podemos ver que: <span class="math display">\[
+\begin{aligned}
+a(y) &amp;= y \\
+b(\theta) &amp;= \log(\lambda) \\
+c(\theta) &amp;= -\lambda \\
+d(y) &amp;= -\log(y!)
+\end{aligned}
+\]</span> La función <span class="math inline">\(b(\theta)\)</span> es lo que denominamos <strong>link canónico</strong>, una función que nos permite modelar como una función lineal de variables explicativas.</p>
+<p>Como familias exponenciales de dos parámetros, tenemos la distribución Gamma y la Normal. De forma parecida a la anterior, podemos demostrar que la distribución Normal es una familia exponencial de dos parámetros.</p>
+<p>Podemos definir la función de densidad de una distribución Normal como: <span class="math display">\[
+f(y | \mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \left( -\frac{(y - \mu)^2}{2\sigma^2} \right)
+\]</span> Si separamos términos y los escribimos como términos logarítmicos, tenemos que: <span class="math display">\[
+f(y | \mu, \sigma^2) = \exp \left( y \cdot \frac{\mu}{\sigma^2} - \frac{y^2}{2\sigma^2} + \left( -\frac{\mu^2}{2\sigma^2} - \frac{1}{2} \log(2\pi\sigma^2) \right) \right)
+\]</span> Si comparamos esta función de densidad con la forma general de la familia exponencial, podemos ver que: <span class="math display">\[
+\begin{aligned}
+a(y) = y\\
+b(\mu, \sigma^2) = \frac{\mu}{\sigma^2}\\
+c(\mu, \sigma^2) = -\frac{\mu^2}{2\sigma^2} - \frac{1}{2} \log(2\pi\sigma^2)\\
+d(y, \sigma^2) = -\frac{y^2}{2\sigma^2}\\
+\end{aligned}
+\]</span> Por lo tanto, demostramos que la distribución normal también pertenece a la familia exponencial, pero con una peculiaridad respecto a la distribución de Poisson: es una familia exponencial de dos parámetros, la media <span class="math inline">\(\mu\)</span> y la varianza <span class="math inline">\(\sigma^2\)</span>. En este caso, el término <span class="math inline">\(b(\mu, \sigma^2)\)</span> es el <strong>link canónico</strong> que conecta las variables explicativas con el modelo.</p>
+<p>En concreto, para los casos en los que la respuesta no es normal, la ecuación del modelo es la siguiente: <span class="math display">\[
+g\left(E(y_{ij} \mid x_{ijk}, \beta_{0i}, \dots, \beta_{Ki})\right) = \beta_{0i} + \sum_{k=1}^{K} \beta_{ki}x_{ijk}
+\]</span> Donde g es la función link y, pese a que puede parecerse mucho a la función para modelos LMM, tienen algunas diferencias, como que en el primer miembro tenemos el link del valor esperado en vez de la variable respuesta, y en el segundo miembro no se cuenta con los errores; por lo que no existe una matriz de correlaciones de los residuos. De esta forma, ya hemos <strong>generalizado</strong> nuestro modelo para manejar variables respuesta que no siguen una distribución normal. A través de esta generalización, somos capaces de escribir la función de masa o densidad de probabilidad de distintas distribuciones para poder modelar el link canónico como función lineal de las variables predictoras.</p>
 </section>
 </section>
 
