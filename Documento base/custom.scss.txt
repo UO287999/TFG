@@ -1,4 +1,8 @@
 /*-- scss:rules --*/
 .header{
   content: "Capítulo: ";
+<<<<<<< HEAD
 }
+=======
+} 
+>>>>>>> 4e23c7b (Capítulo 2 con vuestras correcciones)

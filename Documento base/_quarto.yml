@@ -7,7 +7,6 @@ book:
   date: "26/11/2024"
   chapters:
     - index.qmd
-    - intro.qmd
     - cap2.qmd
     - cap3.qmd
     - references.qmd
@@ -21,6 +20,9 @@ format:
     # - custom.scss
   pdf:
     documentclass: scrreprt
-
+    toc: true
+    toc-depth: 2
+    toc-title: "Contenido"
+    number-sections: false
 editor: visual
 

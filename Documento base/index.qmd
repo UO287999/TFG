@@ -1,4 +1,4 @@
-# Capítulos {.unnumbered}
+# Introducción
 
 ```{r}
 1 + 1
