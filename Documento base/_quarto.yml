@@ -20,9 +20,6 @@ format:
     # - custom.scss
   pdf:
     documentclass: scrreprt
-    toc: true
-    toc-depth: 2
     toc-title: "Contenido"
-    number-sections: false
 editor: visual
 
