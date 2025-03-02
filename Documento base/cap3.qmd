@@ -8,6 +8,136 @@ editor_options:
 
 En este capítulo, exploraremos los **Modelos Lineales Mixtos (LLM)** y los **Modelos Lineales Generalizados (GLM)**, dos enfoques estadísticos fundamentales para el análisis de datos longitudinales. Veremos cómo los LLM permiten modelar la variabilidad entre individuos mediante la inclusión de efectos aleatorios y fijos, lo que facilita el estudio de la correlación entre observaciones repetidas. Luego, introduciremos los GLM, que extienden la regresión lineal para manejar variables respuesta que no siguen una distribución normal, utilizando funciones de enlace y la familia exponencial. A lo largo del capítulo, revisaremos sus formulaciones matemáticas, sus hipótesis clave y cómo validarlas en la práctica.
 
+Para ilustrar estos modelos, comenzaremos con un ejemplo aplicado al conjunto de datos Orthodont del paquete nlme, donde analizaremos la evolución de la distancia entre los dientes (distance) en función de la edad (age) en diferentes sujetos. Compararemos tres enfoques distintos:
+
+- Modelo con sólo **efectos fijos**: Se asume que todos los sujetos siguen la misma relación.
+
+- Modelo con sólo **efectos aleatorios**: Se permite que cada sujeto tenga su propio valor inicial (intercepto), pero no afecta la pendiente.
+
+- **Modelo mixto**: Se permite que tanto el intercepto como la pendiente varíen entre sujetos.
+
+## Comparación de modelos con efectos fijos, aleatorios y mixtos
+La base de datos Orthodont proviene del paquete nlme en R y contiene información sobre el crecimiento dental en niños. Sus variables principales son:
+
+- distance: distancia entre los dientes (variable respuesta).
+
+- age: edad del niño (variable predictora principal).
+
+- Subject: identificador del niño (variable de agrupación para efectos aleatorios).
+
+A continuación, ajustaremos y visualizaremos los distintos modelos.
+
+### Modelo con efectos fijos
+El primer modelo que consideramos es una regresión lineal simple, en la que asumimos que la distancia interdental (distance) varía en función de la edad (age), pero asumimos que todas las observaciones son independientes e ignoramos la estructura jerárquica del estudio (mediciones repetidas por individuo). La ecuación del modelo es:
+$$
+distance_i = \beta_0 + \beta_1 age_i + \epsilon_i
+$$
+```{r include=FALSE, warning=FALSE}
+# Cargar paquetes
+library(nlme)
+library(lme4)
+
+# Cargar datos longitudinales
+data(Orthodont, package = "nlme")
+
+# Ajustar modelo de regresión lineal simple (solo efectos fijos)
+modelo_fijo <- lm(distance ~ age, data = Orthodont)
+
+# Resumen del modelo
+r2 <- summary(modelo_fijo)$r.squared
+```
+
+```{r echo=FALSE, warning=FALSE}
+library(ggplot2)
+ggplot(Orthodont, aes(x = age, y = distance)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(title = "Modelo con efectos fijos: Regresión Lineal Simple",
+       x = "Edad", y = "Distancia interdental")
+
+```
+Este modelo considera únicamente la edad (age) como predictor de la distancia (distance) y no tiene en cuenta que los datos son mediciones repetidas de los mismos individuos, lo que puede llevar a errores de estimación debido a la correlación entre observaciones de un mismo sujeto. Como podemos comprobar a través de este ejemplo, si se ignora la estructura jerárquica, podríamos obtener estimaciones erróneas de la variabilidad en la población; obteniendo un coficiente de determinación R² bajísimo (**`r round(r2, 3)`**).
+
+### Modelo con efectos aleatorios
+Ahora ajustamos un modelo con efectos aleatorios, en el que permitimos que cada niño tenga su propio intercepto aleatorio ($$u_i$$), capturando la variabilidad entre individuos. La ecuación del modelo es:
+$$
+distance_{ij} = \beta_0 + u_i +\beta_1 age_{ij} + \epsilon_{ij}
+$$
+```{r include=FALSE, warning=FALSE}
+# Cargar paquetes
+library(nlme)
+library(lme4)
+
+# Cargar datos longitudinales
+data(Orthodont, package = "nlme")
+
+modelo_aleatorio <- lmer(distance ~ age + (1 | Subject), data = Orthodont)
+summary(modelo_aleatorio)
+
+
+# Resumen del modelo
+r2 <- summary(modelo_aleatorio)$r.squared
+# Extraer la varianza del intercepto por sujeto
+var_intercept <- as.numeric(VarCorr(modelo_aleatorio)$Subject[1])
+# Extraer la varianza residual
+var_residual <- attr(VarCorr(modelo_aleatorio), "sc")^2
+
+```
+
+```{r echo=FALSE, warning=FALSE}
+library(ggplot2)
+ggplot(Orthodont, aes(x = age, y = distance, group = Subject, color = Subject)) +
+  geom_line() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Modelo con efectos aleatorios",
+       x = "Edad", y = "Distancia interdental", color = "Individuo")
+
+```
+Ahora tenemos un término indica que cada individuo (Subject) tiene su propia intersección aleatoria, permitiendo que la relación entre la distancia y la edad varíe entre individuos en lugar de asumir una única intersección fija para todos. Esto significa que algunos sujetos pueden tener valores iniciales más altos o más bajos de distance sin que eso afecte la tendencia general de la población. La diferencia crucial de los efectos aleatorios la podemos apreciar en la variabilidad del modelo, ya que tenemos una varianza del intercepto por sujeto de **`r round(var_intercept, 3)`** y una varianza residual de **`r round(var_residual, 3)`**, lo que significa que cada sujeto tiene un punto de partida diferente en distance, pero que todavía hay una parte de la variabilidad del modelo que no se explica por los efectos fijos ni por las diferencias entre sujetos.
+
+Este modelo permite que cada niño tenga su propio intercepto aleatorio, modelando mejor la variabilidad individual.
+
+### Modelo mixto
+Finalmente, ajustamos un **Modelo Lineal Mixto (LLM)** en el que consideramos tanto efectos fijos como aleatorios. Permitimos que cada niño tenga su propio intercepto ($$u_i$$)y pendiente ($$v_i$$) aleatorios, permitiendo que la relación entre edad y distancia interdental varíe entre individuos. La ecuación del modelo es:
+$$
+distance_{ij} = \beta_0 + u_i + (\beta_1 + v_i) age_{ij} + \epsilon_{ij}
+$$
+```{r include=FALSE, warning=FALSE}
+# Cargar paquetes
+library(nlme)
+library(lme4)
+
+# Cargar datos longitudinales
+data(Orthodont, package = "nlme")
+
+modelo_mixto <- lmer(distance ~ age + (1 + age | Subject), data = Orthodont)
+summary(modelo_mixto)
+
+
+# Resumen del modelo
+r2 <- summary(modelo_mixto)$r.squared
+# Extraer la varianza del intercepto por sujeto
+var_intercept_completo <- as.numeric(VarCorr(modelo_mixto)$Subject[1])
+var_pendiente_completo <- as.numeric(VarCorr(modelo_mixto)$Subject["age", "age"])
+# Extraer la varianza residual
+var_residual_completo <- attr(VarCorr(modelo_mixto), "sc")^2
+```
+
+```{r echo=FALSE, warning=FALSE}
+library(ggplot2)
+ggplot(Orthodont, aes(x = age, y = distance, group = Subject, color = Subject)) +
+  geom_line() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Modelo con efectos aleatorios",
+       x = "Edad", y = "Distancia interdental", color = "Individuo")
+
+```
+Ahora no solo permitimos una intersección aleatoria, sino que también permitimos que la pendiente (efecto de la edad) varíe entre sujetos; es decir, en este modelo cada sujeto puede tener una tasa de crecimiento diferente en la distancia dental a lo largo del tiempo. Observando el modelo, vemos como ahora hemos reducido la varianza residual a **`r round(var_residual_completo, 3)`**, y ahora contamos con una varianza del intercepto por sujeto de **`r round(var_intercept_completo, 3)`** y una variación de la pendiente entre sujetos de **`r round(var_pendiente_completo, 3)`**; obteniendo una mejora significativa. Este tipo de modelos es más realista cuando hay variabilidad individual en la evolución de la variable respuesta.
+
+Este modelo es más flexible, ya que permite que tanto la intersección como la pendiente de la relación entre edad y distancia varíen entre individuos.
+
+Si comparamos los 3 modelos, podemos observar que el modelo con solo **efectos fijos** asume una única relación entre edad y distancia interdental, ignorando la variabilidad entre individuos. El modelo con solo **efectos aleatorios** permite que cada sujeto tenga su propio intercepto, pero mantiene una pendiente común para todos. El **modelo mixto (LLM)** es el más completo, permitiendo que tanto la intersección como la pendiente varíen entre individuos. Esto demuestra la importancia de los Modelos Lineales Mixtos en el análisis de datos longitudinales, ya que incorporan tanto la variabilidad individual como la estructura jerárquica de los datos.
+
 ## Modelos Lineales Mixtos (LLM)
 
 Son métodos y modelos estadísticos que sirven para analizar datos longitudinales cuando la variable respuesta sigue una distribución normal. Uno de sus aspectos más característicos lo indica Francisco Hernández-Barrera en su libro *Modelos mixtos con R* [@modelos_mixtos], ya que se asume que existe una relación entre el vector de observaciones y las covariables. Se considera la técnica más eficaz cuando se trabaja con distribuciones normales en este campo ya que permite introducir efectos aleatorios y concretar la estructura de las correlaciones de los residuos del mismo sujeto; además de que puede emplearse con datos faltantes. Estos modelos nos permiten modelar la correlación entre observaciones dentro de una misma unidad e incluir covariables tanto a nivel individual como grupal. Los LLM permiten realizar una estimación precisa de la incertidumbre, respetando la dependencia entre observaciones. Por otro lado, su capacidad de generalización a estructuras de datos complejas es otro de los motivos por los cuales se recomienda su uso con datos longitudinales. Otra de sus ventajas es su flexibilidad para incluir efectos específicos por individuo o grupo; algo que veremos más adelante.
@@ -27,56 +157,6 @@ Los **efectos aleatorios** se representan mediante el vector formado por la cons
 $$ Cabe destacar que los errores de un individuo, al no tener todos el mismo número de observaciones, son **independientes** de los efectos aleatorios.
 
 Para ajustar un modelo lineal mixto, se tienen que disponer los datos de forma vertical. Una de las ventajas del LLM es su flexibilidad ya que no sólo permite especificar efectos aleatorios para evaluar la **variabilidad** de algunas variables entre los individuos, sino que también permite evaluar la **correlación** entre distintos datos longitudinales del mismo individuo. La constante y los coeficientes aleatorios tienen **homocedasticidad**, ya que la esperanza y la matriz de covarianzas es la misma para todos los individuos. Una de las características de los LLM es que introducen el concepto de **efectos fijos**, los cuales son la esperanza de los efectos aleatorios. Según Julian Faraway en *Extending the Linear Model with R: Generalized Linear, Mixed Effects and Nonparametric Regression Models* [@faraway], un efecto fijo es una constante desconocida que intentaremos estimar a partir de los datos, mientras que los efectos aleatorios son variables aleatorias. De hecho, cuando un coeficiente no es aleatorio, se puede asumir que sigue una distribución normal con varianza cero; denominándolo fijo. En estos modelos, el número de efectos aleatorios es limitado, ya que no pueden superar en ningún caso el número de medidas que tenemos por individuo. Estos efectos inducen una **correlación** entre datos para el mismo individuo, pero dependiendo de su estructura la correlación sólo se puede obtener a partir de la correlación entre residuos; ya que si consideramos los coeficientes de variables **cambiantes** en el tiempo como aleatorios la correlación es distinta según los tiempos de las medidas, mientras que si consideramos los coeficientes de variables **constantes** en el tiempo inducimos **heterocedasticidad** entre individuos.
-
-Una buena forma de distinguir entre efectos fijos y aleatorios es a partir de ejemplos prácticos en los que podamos apreciar claramente sus diferencias.
-
-En este primer ejemplo, trabajaremos con un modelo que cuenta únicamente con efectos fijos: Regresión Lineal Simple. Este modelo asume que todas las observaciones son independientes y no considera la estructura jerárquica de los datos longitudinales. En este caso, utilizamos un dataset de crecimiento de niños (Orthodont del paquete nlme), donde queremos predecir la distancia entre los dientes (distance) en función de la edad (age).
-```{r include=FALSE, warning=FALSE}
-# Cargar paquetes
-library(nlme)
-library(lme4)
-
-# Cargar datos longitudinales
-data(Orthodont, package = "nlme")
-
-# Ajustar modelo de regresión lineal simple (solo efectos fijos)
-modelo_fijo <- lm(distance ~ age, data = Orthodont)
-
-# Resumen del modelo
-r2 <- summary(modelo_fijo)$r.squared
-```
-Este modelo considera únicamente la edad (age) como predictor de la distancia (distance) y no tiene en cuenta que los datos son mediciones repetidas de los mismos individuos, lo que puede llevar a errores de estimación debido a la correlación entre observaciones de un mismo sujeto. Como podemos comprobar a través de este ejemplo, si se ignora la estructura jerárquica, podríamos obtener estimaciones erróneas de la variabilidad en la población; obteniendo un coficiente de determinación R² bajísimo(**`r round(r2, 3)`**).
-
-
-Un segundo ejemplo que puede ayudarnos a entender mejor la diferencia entre efectos es un modelo con efectos aleatorios (Modelo Lineal Mixto). Para corregir la falta de independencia en los datos que hemos visto antes, agregamos un efecto aleatorio para capturar la variabilidad individual de cada sujeto (Subject).
-```{r include=FALSE, warning=FALSE}
-# Ajustar un modelo mixto con efectos aleatorios por individuo
-modelo_mixto <- lmer(distance ~ age + (1 | Subject), data = Orthodont)
-# Resumen del modelo
-summary(modelo_mixto)
-# Extraer la varianza del intercepto por sujeto
-var_intercept <- as.numeric(VarCorr(modelo_mixto)$Subject[1])
-# Extraer la varianza residual
-var_residual <- attr(VarCorr(modelo_mixto), "sc")^2
-
-```
-Ahora tenemos un término indica que cada individuo (Subject) tiene su propia intersección aleatoria, permitiendo que la relación entre la distancia y la edad varíe entre individuos en lugar de asumir una única intersección fija para todos. Esto significa que algunos sujetos pueden tener valores iniciales más altos o más bajos de distance sin que eso afecte la tendencia general de la población. La diferencia crucial de los efectos aleatorios la podemos apreciar en la variabilidad del modelo, ya que tenemos una varianza del intercepto por sujeto de (**`r round(var_intercept, 3)`**) y una varianza residual de (**`r round(var_residual, 3)`**), lo que significa que cada sujeto tiene un punto de partida diferente en distance, pero que todavía hay una parte de la variabilidad del modelo que no se explica por los efectos fijos ni por las diferencias entre sujetos.
-
-No obstante, podemos extender el modelo incluyendo efectos fijos y aleatorios en la pendiente de age, es decir, permitiendo que la relación entre distance y age varíe entre sujetos.
-```{r include=FALSE, warning=FALSE}
-# Modelo con efectos fijos y aleatorios en la pendiente
-modelo_mixto_completo <- lmer(distance ~ age + (1 + age | Subject), data = Orthodont)
-# Resumen del modelo
-summary(modelo_mixto_completo)
-# Extraer la varianza del intercepto por sujeto
-var_intercept_completo <- as.numeric(VarCorr(modelo_mixto_completo)$Subject[1])
-var_pendiente_completo <- as.numeric(VarCorr(modelo_mixto_completo)$Subject["age", "age"])
-# Extraer la varianza residual
-var_residual_completo <- attr(VarCorr(modelo_mixto_completo), "sc")^2
-```
-Ahora no solo permitimos una intersección aleatoria, sino que también permitimos que la pendiente (efecto de la edad) varíe entre sujetos; es decir, en este modelo cada sujeto puede tener una tasa de crecimiento diferente en la distancia dental a lo largo del tiempo. Observando el modelo, vemos como ahora hemos reducido la varianza residual a (**`r round(var_residual_completo, 3)`**), y ahora contamos con una varianza del intercepto por sujeto de (**`r round(var_intercept_completo, 3)`**) y una variación de la pendiente entre sujetos de (**`r round(var_pendiente_completo, 3)`**); obteniendo una mejora significativa. Este tipo de modelos es más realista cuando hay variabilidad individual en la evolución de la variable respuesta.
-
-Si comparamos modelos, el modelo que sólo utiliza efectos fijos asume que todos los individuos siguen la misma relación, además de que ignora la dependencia entre mediciones del mismo sujeto. Por otro lado, el modelo que sólo cuenta con efectos aleatorios permite que cada sujeto tenga su propia intersección, pero, aunque sea mejor que el modelo anterior, sigue sin ser del todo flexible. Para ello, podemos definir un modelo que cuente con efectos tanto fijos como aleatorios, el cual no sólo permite que cada usuario tenga su propia intersección, sino que también tiene su propia tasa de cambio; siendo un modelo mucho más completo, aunque algo más complejo de ajustar.
 
 A la hora de trabajar con Modelos Lineales Mixtos, se puede trabajar de diferentes formas. Podemos establecer un modelo con la constante aleatoria y varios coeficientes fijos en el tiempo, en cuyo caso, si asumimos que los errores son independientes, tendríamos una correlación **constante** entre las variables del mismo individuo que no depende de la distancia entre las medidas; lo que se denomina como coeficiente de correlación intraclase (ICC). Otra forma de definir estos modelos podría ser con la constante y los coeficientes aleatorios, donde, asumiendo independencia entre residuos, la correlación entre observaciones pasa a depender tanto del tiempo como de la distancia entre ellas. Sin embargo, pese a ser las dos buenas opciones, es preferible trabajar de otra forma para LLM.
 
