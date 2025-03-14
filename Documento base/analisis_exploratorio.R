@@ -41,6 +41,7 @@ boxplot(df$healthy_life_expectancy)
 boxplot(df$freedom_to_make_life_choices)
 boxplot(df$generosity)
 boxplot(df$perceptions_of_corruption)
+hist(df$perceptions_of_corruption)
 # Como podemos apreciar gráficamente, hay algunas variables numéricas en las que puede haber valores atípicos
 outliers::grubbs.test(df$happiness_score)
 outliers::grubbs.test(df$gdp_per_capita)
@@ -64,6 +65,10 @@ library(car)
 # Planteamiento del modelo ----)
 plot(df) # Hay muchas variables categóricas de las cuales nos desharemos
 df_filtrado <- df %>%
+  filter(year == 2024) %>%
+  select(happiness_score, gdp_per_capita, social_support, healthy_life_expectancy, 
+         freedom_to_make_life_choices, generosity, perceptions_of_corruption)
+df_filtrado_años <- df %>%
   filter(year == 2024) %>%
   select(happiness_score, gdp_per_capita, social_support, healthy_life_expectancy, 
          freedom_to_make_life_choices, generosity, perceptions_of_corruption)

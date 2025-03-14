@@ -9,6 +9,7 @@ book:
     - index.qmd
     - cap2.qmd
     - cap3.qmd
+    - cap4.qmd
     - references.qmd
 
 bibliography: references.bib
@@ -20,6 +21,6 @@ format:
     # - custom.scss
   pdf:
     documentclass: scrreprt
-    toc-title: "Contenido"
+    toc-title: "Tabla de contenidos"
 editor: visual
 

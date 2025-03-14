@@ -6,37 +6,64 @@ editor_options:
 
 # Datos longitudinales
 
-## Qué son los datos longitudinales
-
-Como bien dice Isaac Subirana en *Curso de datos longitudinales* [@longitudinal_data], los **datos longitudinales** son aquellos que obtenemos al realizar distintas medidas a un individuo (individuos, regiones, células, etc.). Dichas medidas se pueden observar repetidamente a lo largo del tiempo (análisis temporal), del espacio (análisis espacial), o a lo largo del espacio y tiempo (análisis espacio-temporal); es por eso que a los datos longitudinales también se les conoce como medidas repetidas. Esta forma de observar las medidas nos permite detectar cambios o tendencias temporales en nuestras variables, lo cual nos puede llevar a observar patrones que nos sería difícil examinar en otro tipo de investigaciones. Este tipo de datos es común en estudios donde se busca evaluar cómo evolucionan ciertas características o mediciones bajo distintas condiciones o tratamientos. En el ámbito biosanitario, los datos longitudinales son fundamentales para investigar la progresión de enfermedades, la efectividad de tratamientos y el impacto de intervenciones médicas. En este capítulo, exploraremos las características clave de los datos longitudinales y profundizaremos en las razones por las que los métodos clásicos, como la regresión lineal simple, fallan al aplicarse a este tipo de datos.
+## Datos con medidas repetidas
 
 Los **datos longitudinales** son aquellos que obtenemos al realizar distintas medidas a un individuo (personas, regiones, células, etc.). Dichas medidas se pueden observar repetidamente a lo largo del tiempo (análisis temporal), como el ingreso anual de diferentes personas a lo largo de varios años; del espacio (análisis espacial), por ejemplo, al medir la contaminación del aire de distintas ciudades en un mismo día; o a lo largo del espacio y tiempo (análisis espacio-temporal), como puede ser la monitorización de la expansión de una enfermedad en distintas regiones a lo largo del tiempo. Como la causa más usual de medidas repetidas es el tiempo, haremos referencia a este caso en concreto, aunque los otros dos también serían aplicables. Por esto, a los datos longitudinales también se les conoce como medidas repetidas.
 
-El análisis de este tipo de medidas nos permite detectar cambios o tendencias temporales en nuestras variables, lo cual nos puede llevar a observar patrones que nos sería difícil examinar en otro tipo de investigaciones. Es común usar este tipo de datos en estudios donde se busca evaluar cómo evolucionan ciertas características o mediciones bajo distintas condiciones o tratamientos. En el ámbito biosanitario, los datos longitudinales son fundamentales para investigar la progresión de enfermedades, la efectividad de tratamientos y el impacto de intervenciones médicas. En este capítulo, exploraremos las características clave de los datos longitudinales y profundizaremos en las razones por las que los métodos clásicos, como la regresión lineal simple, fallan al aplicarse a este tipo de datos.
+El análisis de este tipo de medidas nos permite detectar cambios o tendencias temporales en nuestras variables, lo cual nos puede llevar a observar patrones que nos sería difícil descubrir usando otro tipo de técnicas. Es común usar este tipo de datos en estudios donde se busca evaluar cómo evolucionan ciertas características o mediciones bajo distintas condiciones o tratamientos. En el ámbito biosanitario, los datos longitudinales son fundamentales para investigar la progresión de enfermedades, la efectividad de tratamientos y el impacto de intervenciones médicas. En este capítulo, exploraremos las características clave de los datos longitudinales y profundizaremos en las razones por las que los métodos clásicos, como la regresión lineal simple, fallan al aplicarse a este tipo de datos.
 
-Como ya hemos mencionado anteriormente, una de las características que definen a los datos longitudinales es que tenemos **medidas repetidas** del mismo sujeto, lo que significa que cada unidad tiene varias observaciones en diferentes momentos temporales. No obstante, dichas observaciones no están organizadas de cualquier manera, sino que están agrupadas por unidades (e.g., pacientes, regiones); haciendo que los datos longitudinales adopten una **estructura jerárquica**. Esta estructura nos lleva a asumir una de las claves en todo este proceso, ya que en los datos longitudinales existe una **dependencia entre las observaciones**, la cual nos indica que las mediciones dentro de la misma unidad tienden a estar correlacionadas. También tenemos que destacar las distintas variables que definen a dichos datos, y las cuales suelen clasificarse según diferentes propiedades. Como la mayoría de medidas se realizan en distintos instantes de tiempo, es normal que su valor varíe a lo largo del tiempo, permitiendo considerarlas como variables **tiempo-dependientes**, lo que significa que sus cambios pueden estar relacionados con el tiempo y pueden ser modeladas para entender tendencias o patrones; pero también hay que tener en cuenta que hay otras variables que cambian igual en el tiempo para todos los sujetos (como la edad) que **no** consideraremos tiempo-dependientes y otras que directamente son **constantes** como el sexo.
+Como ya hemos mencionado anteriormente, una de las características que definen a los datos longitudinales es que tenemos medidas repetidas del mismo sujeto a través de diferentes observaciones. No obstante, dichas observaciones no están organizadas de cualquier manera, sino que están agrupadas por unidades (e.g., pacientes, regiones). Todo ello significa que cada unidad tiene varias observaciones en diferentes momentos temporales; haciendo que los datos longitudinales adopten una estructura jerárquica.
 
-El análisis de datos longitudinales se centra en aprovechar las medidas repetidas para abordar preguntas específicas que no pueden ser respondidas adecuadamente con otros tipos de datos. Uno de los principales objetivos del análisis de estos datos es observar la **evolución** de una variable a lo largo del tiempo/espacio, lo cual nos permitiría poder detectar si los cambios de las variables siguen ciertos patrones o fluctuaciones que tendríamos que tener en cuenta en el estudio. Esta identificación de **patrones** nos puede aportar información y conocimientos clave en nuestro análisis, ya que nos ayuda a formular ciertas hipótesis que orientan nuestro estudio hacia una visión concreta. Otra parte importante de nuestro análisis reside en comparar si la **evolución** de una variable a lo largo del tiempo/espacio es **igual** para distintas partes de la población, y ver si existen factores que regulan la evolución de dicha variable; en cuyo caso deberíamos de estudiar cómo dichos factores interactúan con el tiempo o el espacio.
+Esta estructura nos lleva a asumir una de las claves en todo este proceso, la dependencia entre las observaciones, la cual nos indica que las mediciones dentro de la misma unidad tienden a estar correlacionadas. También tenemos que destacar las distintas variables que definen a dichos datos, que suelen clasificarse según diferentes propiedades. Como la mayoría de medidas se realizan en distintos instantes de tiempo, es normal que su valor varíe a lo largo del tiempo, permitiendo considerarlas como variables tiempo-dependientes, lo que significa que sus cambios pueden estar relacionados con el tiempo y pueden ser modeladas para entender tendencias o patrones; pero también hay que tener en cuenta que hay otras variables que cambian igual en el tiempo para todos los sujetos (como la edad) que no consideraremos tiempo-dependientes y otras que directamente son constantes como el sexo.
 
-Los datos longitudinales tienen aplicaciones en una gran diversidad de áreas, ya que el estudio de medidas a lo largo del tiempo está presente en diferentes ámbitos científicos. Por ejemplo, los datos longitudinales tienen una gran importancia en el **ámbito biosanitario**, como puede ser en estudios donde hay medidas repetidas de presión arterial en un grupo de pacientes durante un tratamiento que nos permiten monitorear la salud de los pacientes para poder evaluar la efectividad del tratamiento e identificar posibles efectos secundarios. No obstante, este tipo de datos también tiene su relevancia en otras áreas como la **educación**; por ejemplo, la evaluación de los puntajes de un estudiante a lo largo de varios exámenes anuales podría identificar áreas de mejora por parte del alumnado o algunas estrategias pedagógicas que se puedan implementar en la docencia. En otros ámbitos como en el **marketing** también nos encontramos con casos en los que se utilizan datos longitudinales, ya que se pueden hacer encuestas de opinión realizadas periódicamente a las mismas personas que pueden llegar a ser de gran utilidad a la hora de evaluar posibles campañas de concienciación, o simplemente estudiar el comportamiento y la opinión de la población. Por último, otra de las áreas en la que los datos longitudinales juegan un papel clave es el área de la **alimentación** mediante el estudio de diferentes dietas a diferentes grupos de la población a lo largo del tiempo a través de medidas tales como la actividad física, peso corporal, nivel de colesterol, etc. y cómo estas rutinas aportan ciertos beneficios o riesgos a la salud de los individuos.
+El análisis de datos longitudinales se centra en aprovechar las medidas repetidas para abordar preguntas específicas que no pueden ser respondidas adecuadamente con otros tipos de datos. Uno de los principales objetivos del análisis de estos datos es observar la evolución de una variable a lo largo del tiempo, lo cual nos permitiría poder detectar si los cambios de las variables siguen ciertos patrones o fluctuaciones que tendríamos que tener en cuenta en el análisis. Esta identificación de patrones nos puede aportar información y conocimientos clave, ya que nos ayuda a formular ciertas hipótesis que nos orientan hacia una visión concreta. Otra parte importante reside en comparar si la evolución de una variable a lo largo del tiempo es igual para distintas partes de la población, y ver si existen factores que regulan la evolución de dicha variable; en cuyo caso deberíamos de estudiar cómo dichos factores interactúan con el tiempo.
 
-A pesar de su gran utilidad, los datos longitudinales presentan varias complicaciones adicionales. En primer lugar, aunque las mediciones suelen realizarse en intervalos de tiempo predefinidos, no siempre disponemos de todas las observaciones esperadas debido a la presencia de **valores faltantes**. Esto puede ocurrir por razones como la ausencia de un paciente en una consulta médica, la falta de respuesta en una encuesta periódica o errores en la recolección de datos. Además, en muchos estudios, los individuos no necesariamente son medidos en los mismos instantes de tiempo, por lo que no siempre tenemos el mismo número de mediciones repetidas por individuo, lo que lleva a una estructura desigual en los datos que debe ser abordada con técnicas adecuadas. Estas dificultades pueden generar desafíos en el modelado y en la comparación de trayectorias individuales, por lo que es fundamental aplicar estrategias estadísticas como imputación de valores faltantes, modelado con efectos aleatorios o técnicas específicas para datos desbalanceados.
+Los datos longitudinales tienen aplicaciones en una gran diversidad de áreas, ya que el estudio de medidas a lo largo del tiempo está presente en diferentes ámbitos científicos. Por ejemplo, los datos longitudinales tienen una gran importancia en el ámbito biosanitario, como puede ser en estudios donde hay medidas repetidas de presión arterial en un grupo de pacientes durante un tratamiento que nos permiten monitorear la salud de los pacientes para poder evaluar la efectividad del tratamiento e identificar posibles efectos secundarios. No obstante, este tipo de datos también tiene su relevancia en otras áreas como la educación; por ejemplo, la evaluación de los puntajes de un estudiante a lo largo de varios exámenes anuales podría identificar áreas de mejora por parte del alumnado o algunas estrategias pedagógicas que se puedan implementar en la docencia. Otra de las áreas en la que los datos longitudinales juegan un papel clave es la alimentación mediante el estudio de diferentes dietas a diferentes grupos de la población a lo largo del tiempo a través de medidas tales como la actividad física, peso corporal, nivel de colesterol, etc. y cómo estas rutinas aportan ciertos beneficios o riesgos a la salud de los individuos. En otros ámbitos como en el marketing también nos encontramos con casos en los que se utilizan datos longitudinales, como son encuestas de opinión realizadas periódicamente a las mismas personas que pueden ser de gran utilidad a la hora de evaluar posibles campañas de concienciación, o simplemente estudiar el comportamiento y la opinión de la población. Además, los datos longitudinales juegan un papel clave en el estudio de aspectos sociales, políticos y demográficos. Un ejemplo es el análisis de la felicidad y bienestar de los países a lo largo del tiempo, lo que permite identificar cómo factores como el crecimiento económico, la percepción de la corrupción, el acceso a servicios de salud y la cohesión social influyen en el bienestar de la población. Estos estudios pueden ser fundamentales para que los gobiernos diseñen políticas públicas que promuevan un mayor nivel de calidad de vida y bienestar social. También, en el ámbito demográfico, los datos longitudinales pueden ayudar a analizar la evolución de indicadores clave como la esperanza de vida, la migración o el desarrollo humano en diferentes regiones del mundo, proporcionando información valiosa para la toma de decisiones a nivel global.
+
+A pesar de su gran utilidad, los datos longitudinales presentan varias complicaciones adicionales. En primer lugar, aunque las mediciones suelen realizarse en intervalos de tiempo predefinidos, no siempre disponemos de todas las observaciones esperadas debido a la presencia de valores faltantes. Esto puede ocurrir por razones como la ausencia de un paciente en una consulta médica, la falta de respuesta en una encuesta periódica o errores en la recolección de datos. Además, en muchos estudios, los individuos no necesariamente son medidos en los mismos instantes de tiempo, por lo que no siempre tenemos el mismo número de mediciones repetidas por individuo, lo que lleva a una estructura desigual en los datos que debe ser abordada con técnicas adecuadas. Estas dificultades pueden generar desafíos en el modelado y en la comparación de trayectorias individuales, por lo que es fundamental aplicar estrategias estadísticas como imputación de valores faltantes, modelado con efectos aleatorios o técnicas específicas para datos desbalanceados. Según Isaac Subirana en su *Curso de datos longitudinales* [@longitudinal_data], los modelos lineales mixtos proporcionan una herramienta útil para abordar estos problemas, permitiendo modelar la estructura de correlación y manejar la heterogeneidad de las observaciones. Esto se puede apreciar en el siguiente ejemplo:
+
+```{r echo=FALSE, warning=FALSE}
+# Cargar paquetes necesarios
+library(ggplot2)
+
+# Crear un dataframe con los diferentes tipos de medición
+df <- data.frame(
+  tiempo = c(1,2,3,4,5,6,7,8,9,10, # Regulares
+             1,2,4,5,6,8,9,10,      # Regulares con faltantes (sin 3 y 7)
+             1,2,4,6,7,9,11),       # Irregulares
+  tipo = rep(c("Regular", "Con Faltantes", "Irregular"), 
+             times = c(10,8,7))
+)
+
+# Visualización de las mediciones en el tiempo
+ggplot(df, aes(x = tiempo, y = tipo, color = tipo)) +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(
+    title = "Ejemplo de Medidas Repetidas",
+    x = "Tiempo",
+    y = "Tipo de Medición"
+  ) +
+  theme(legend.position = "none")
+```
+
+Como podemos apreciar en la gráfica, tenemos por un lado intervalos regulares en los que las mediciones se toman a intervalos de tiempo predefinidos, intervalos regulares con valores ausentes en los que se han perdido algunas mediciones a lo largo del tiempo, y, por último, intervalos irregulares en los que las mediciones no siguen una periodicidad fija. Estas complicaciones pueden suponer un problema, y es importante tenerlas en cuenta.
 
 ## Conceptos básicos de la regresión lineal simple
 
-La **regresión lineal simple** es un método estadístico utilizado para modelar la relación entre una **variable dependiente** (respuesta) y una **variable independiente** (predictora) mediante una ecuación lineal. El modelo se define matemáticamente de la siguiente manera:
+La **regresión lineal simple** es un método estadístico utilizado para modelar la relación entre una **variable dependiente** $Y$ (respuesta) y una **variable independiente** $X$ (predictora) mediante una ecuación lineal. El modelo se define matemáticamente de la siguiente manera:
 
 $$
-y_i = \beta_0 + \beta_1 x_i + \epsilon_i
+Y_i = \beta_0 + \beta_1 X_i + \varepsilon_i
 $$
 
 donde:
 
--   $y_i$ representa la variable dependiente (respuesta).
--   $x_i$ es la variable independiente (predictora).
+-   $Y_i$ representa la variable dependiente (respuesta).
+-   $X_i$ es la variable independiente (predictora).
 -   $\beta_0$ es el **intercepto**, que indica el valor esperado de $Y$ cuando $X = 0$.
 -   $\beta_1$ es la **pendiente**, que mide el cambio esperado en $Y$ por cada unidad de cambio en $X$.
--   $\epsilon_i$ representa el **término de error**, que captura la variabilidad no explicada por el modelo.
+-   $\varepsilon_i$ representa el **término de error**, que captura la variabilidad no explicada por el modelo.
 
 Para que la regresión lineal simple sea válida y produzca estimaciones confiables, deben cumplirse ciertos **supuestos** fundamentales:
 
@@ -44,7 +71,7 @@ Para que la regresión lineal simple sea válida y produzca estimaciones confiab
 
 2.  **Independencia:** Las observaciones deben ser independientes entre sí. Es decir, los valores de $Y$ no deben estar correlacionados con otras observaciones.
 
-3.  **Normalidad de los errores:** Se asume que los errores $\epsilon_i$ siguen una distribución normal con media cero ($\epsilon_i$ $\sim N(0, \sigma^2))$. Esto es especialmente importante para hacer inferencias estadísticas sobre los coeficientes $\beta_0$ y $\beta_1$.
+3.  **Normalidad de los errores:** Se asume que los errores $\epsilon_i$ siguen una distribución normal con media cero ($\varepsilon_i$ $\sim N(0, \sigma^2))$. Esto es especialmente importante para hacer inferencias estadísticas sobre los coeficientes $\beta_0$ y $\beta_1$.
 
 4.  **Homocedasticidad:** La varianza de los errores debe ser constante para todos los valores de $X$. Es decir, la dispersión de los valores de $Y$ en torno a la línea de regresión debe ser uniforme.
 
@@ -52,18 +79,17 @@ Cuando estos supuestos se cumplen, la regresión lineal simple proporciona **est
 
 ## ¿Por qué no se puede usar la estadística clásica?
 
-La **estadística clásica** (e.g., regresión lineal simple) supone que todas las observaciones son independientes entre sí. Sin embargo, en datos longitudinales, esta suposición no se cumple debido a la correlación entre observaciones tomadas de la misma unidad. Pero este no es el único motivo por el cual no podemos usar la estadística clásica únicamente para analizar datos longitudinales.
+La estadística clásica (e.g., regresión lineal simple) parte de la suposición fundamental de que todas las observaciones son independientes entre sí. Sin embargo, en datos longitudinales, esta independencia no se cumple debido a la correlación entre mediciones repetidas de la misma unidad a lo largo del tiempo. Los longitudinales presentan características específicas que requieren enfoques estadísticos más avanzados.
 
-Aplicar estas técnicas clásicas a datos longitudinales nos puede llevar a una serie de problemas que entorpecerían bastante nuestro estudio. Uno de los motivos por los que no debemos utilizar técnicas de estadística clásica para estos datos es que debemos tener en cuenta la **dependencia entre observaciones**, porque los datos longitudinales tienen una estructura que lleva a que las observaciones sobre el mismo individuo estén correlacionadas; y esta dependencia no se tiene en cuenta en métodos como la regresión lineal simple. Siguiendo el punto anterior, la **correlación de los errores** nos fuerza a evitar estas técnicas, ya que no puede ser modelada por estas. Esto ocurre porque las medidas repetidas pueden estar influenciadas por factores externos o por variables no registradas en modelos clásicos. La **variabilidad** es otro de los motivos por los que no se pueden usar modelos clásicos para datos longitudinales, y es que estos modelos no tienen un enfoque apropiado para la varianza de los datos; ya que adaptan una estructura homogénea la cual no corresponde con un modelo de datos longitudinales en el cual hay que tener en cuenta las diferencias entre individuos. Todos estos problemas nos llevan a evitar el uso de técnicas de estadística clásica como la regresión lineal simple, pero la mejor forma de ver esto es a través de un ejemplo práctico.
+Uno de los principales desafíos, ya mencionado anteriormente, es la dependencia entre observaciones, ya que los datos recogidos de un mismo individuo suelen estar correlacionados, lo que genera un patrón estructurado que no es capturado por modelos clásicos. Esta correlación también afecta a la estructura de los errores, ya que las mediciones repetidas pueden estar influenciadas por factores externos o por variables no observadas, lo que genera una relación entre los errores que los modelos tradicionales no pueden modelar correctamente. Además, la variabilidad entre individuos es un aspecto clave en datos longitudinales, ya que no todos los sujetos presentan la misma evolución en el tiempo. Los modelos clásicos suelen asumir una varianza homogénea, lo que no es adecuado en este contexto, ya que no permite capturar diferencias individuales ni estructuras de correlación complejas.
+
+Todos estos factores hacen que el uso de modelos estadísticos convencionales, como la regresión lineal simple, no sea adecuado para el análisis de datos longitudinales. En su lugar, es necesario recurrir a enfoques específicos, como los modelos lineales mixtos, que permiten modelar tanto los efectos fijos como los efectos aleatorios para capturar adecuadamente la variabilidad y dependencia inherente a estos datos. La mejor manera de comprender estas limitaciones es a través de un ejemplo práctico.
 
 ### Ejemplo conceptual
 
-Para ilustrar las limitaciones de la estadística clásica en el análisis de datos longitudinales, vamos a considerar un conjunto de datos sobre ingresos anuales de personas a lo largo de varios años (psid). Vamos a utilizar un modelo regresión lineal simple para modelar los ingresos en función del tiempo, ignorando la correlación entre mediciones.
+Para ilustrar las limitaciones de la estadística clásica en el análisis de datos longitudinales, vamos a considerar un conjunto de datos sobre ingresos anuales (en euros) de 10 personas medidos a lo largo de varios años (*psid*). Vamos a utilizar un modelo regresión lineal simple para modelar los ingresos en función del tiempo, ignorando la correlación entre mediciones.
 
-En este ejemplo:
-
--   La variable **dependiente** $Y$ es el **ingreso anual** de cada persona.
--   La variable **independiente** $X$ es el **año**, representando el tiempo.
+En este ejemplo, la variable **dependiente** $Y$ es el **ingreso anual** de cada persona; mientras que la variable **independiente** $X$ es el **año**, representando el tiempo.
 
 El objetivo del modelo es analizar si existe una tendencia en la evolución de los ingresos y, en caso afirmativo, estimar la relación entre el año y el nivel de ingresos de los individuos. Sin embargo, al aplicar un modelo de regresión lineal simple, ignoraremos la dependencia entre las observaciones de cada persona, lo que resultará en una estimación sesgada y poco fiable.
 
@@ -87,14 +113,12 @@ La figura 1 muestra la evolución de los ingresos anuales para diferentes person
 
 Esto permite mostrar cómo los ingresos varían entre individuos y años, observando que los datos son heterogéneos y varían significativamente entre individuos. Sin embargo, dentro de cada individuo, los ingresos en un año determinado tienden a ser similares a los del año anterior y el siguiente, lo que sugiere una correlación temporal en las mediciones. Esta dependencia entre observaciones dentro de cada individuo es una característica fundamental de los datos longitudinales, ya que implica que el valor de la variable en un momento dado está influenciado por valores previos del mismo individuo; algo que viola los supuestos básicos de independencia de las observaciones, fundamentales para modelos clásicos como la regresión lineal simple.
 
-Visto esto, modelaremos la relación entre los ingresos y el tiempo utilizando una regresión lineal simple, ignorando la dependencia entre observaciones.
+Visto esto, modelaremos la relación entre los ingresos y el tiempo utilizando una regresión lineal simple, ignorando la dependencia entre observaciones, para mostrar las consecuencias de no cumplir las hipótesis requeridas. La figura 2 muestra el ajuste de la regresión lineal simple aplicada a los datos.
 
 ```{r echo=FALSE}
 # Modelo incorrecto: regresión lineal simple
 lm_incorrect <- lm(income ~ year, data = psid_subset)
 ```
-
-La figura 2 muestra el ajuste de la regresión lineal simple aplicada a los datos:
 
 ```{r echo=FALSE}
 # Visualización del modelo incorrecto
@@ -109,17 +133,17 @@ ggplot(psid_subset, aes(x = year, y = income)) +
            color = "red", hjust = 0)
 ```
 
-**Figura 2**. Ajuste de un modelo de regresión lineal simple a los datos observados. La línea roja representa la pendiente estimada, que asume que todos los individuos comparten la misma relación entre ingresos y tiempo.
+**Figura 2**. Ajuste de un modelo de regresión lineal simple a los datos observados. La línea roja representa la predicción para cada año, con una única pendiente que asume que todos los individuos comparten la misma relación entre ingresos y tiempo.
 
-Este gráfico muestra cómo la regresión lineal simple aplicada a estos datos genera una representación distorsionada, ignorando por completo la correlación de los datos longitudinales; dando lugar a un mal ajuste y a resultados estadísticos inapropiados que demuestran por qué no debemos utilizar estadística clásica para este tipo de datos. No obstante, vamos a analizar la adecuación y diagnóstico del modelo para ver realmente cómo las técnicas de estadística clásica no son las correctas para trabajar con datos longitudinales.
+Este gráfico muestra cómo la regresión lineal simple aplicada a estos datos genera una representación distorsionada, ignorando por completo la correlación de los datos longitudinales; dando lugar a un mal ajuste y a resultados estadísticos inapropiados que demuestran por qué no debemos utilizar estadística clásica para este tipo de datos. No obstante, vamos a analizar la adecuación y diagnóstico del modelo para ver en detalle los motivos por los que las técnicas de estadística clásica no son las correctas para trabajar con datos longitudinales.
 
 ```{r include=FALSE}
 r2 <- summary(lm_incorrect)$r.squared
 ```
 
-Ya solo al utilizar un modelo de regresión lineal simple, estamos asumiendo que la variabilidad entre individuos se puede representar con un único coeficiente, ignorando por completo la dependencia entre observaciones. Para evaluar la adecuación del modelo, fijémonos en una medida de bondad de ajuste como el coficiente de determinación R². El R² obtenido (**`r round(r2, 3)`**) es muy bajo, indicando que el modelo explica muy poca variabilidad en los datos (21%) y que, por tanto, no nos sirve para analizar datos longitudinales ya que no captura adecuadamente la relación entre las variables.
+Al utilizar un modelo de regresión lineal simple estamos asumiendo que la variabilidad entre individuos se puede representar con un único coeficiente, ignorando por completo la dependencia entre observaciones. Para evaluar la adecuación del modelo, nos fijamos en una medida de bondad de ajuste como el coficiente de determinación R². El R² obtenido (**`r round(r2, 3)`**) es muy bajo, indicando que el modelo explica muy poca variabilidad en los datos (21%) y que, por tanto, no nos sirve para analizar datos longitudinales ya que no captura adecuadamente la relación entre las variables.
 
-Para realizar el diagnóstico del modelo, haremos un análisis de los residuos del modelo. Recordemos que dicho análisis se basa en 4 partes fundamentales: la normalidad de los residuos, que tengan media cero, la no correlación y la homocedasticidad.
+Para realizar el diagnóstico del modelo, haremos un análisis de los residuos. Recordemos que dicho análisis se basa en 4 partes fundamentales: la normalidad de los residuos, que tengan media cero, la no correlación y la homocedasticidad.
 
 ```{r echo=FALSE}
 par(mfrow=c(2,2), mar=c(4,4,2,1))
@@ -128,10 +152,43 @@ plot(lm_incorrect)
 
 **Figura 3**. Gráficas de los residuos del modelo.
 
-Primero de todo, analicemos la **normalidad** de los residuos. Para ello, nos fijamos en la gráfica superior derecha (Normal Q-Q), en la cual vemos que aunque la mayoría de los puntos se alinean con la línea teórica, no son pocas las desviaciones que hay en los extremos; lo que sugiere que los residuos no son perfectamente normales. Para salir de dudas, podemos aplicar un test de Jarque Bera. El test de Jarque Bera comprueba si los residuos siguen una distribución normal evaluando su asimetría y curtosis. Sus hipótesis son las siguientes: $$
+Primero de todo, vamos a analizar es la **media cero** de los residuos. Su hipótesis de asunción es la siguiente: 
+$$
 \begin{cases} 
-H_0 : \text{Los residuos siguen una distribución normal} \\ 
-H_1 : \text{Los residuos no siguen una distribución normal}
+H_0 : \text{Los residuos tienen una media esperada de 0.} \\ 
+H_1 : \text{Los residuos no tienen una media esperada de 0.}
+\end{cases}
+$$
+
+```{r include=FALSE, warning=FALSE}
+media0 <- mean(lm_incorrect$residuals)
+```
+
+Si calculamos la media de los residuos del modelo, comprobamos que la media es **`r round(media0, 3)`**, pero esta no es una forma correcta de anlizar la media cero ya que esto no significa que la suposición de media cero se cumpla en todas partes del rango de los valores ajustados. Para hacer un correcto análisis, nos vamos a fijar en la primera gráfica de la figura 3: Residuals vs Fitted. Teóricamente, para que los residuos tengan media cero, deberían de estar uniformemente dispersos alrededor del eje horizontal en $y=0$. Viendo la gráfica, podemos observar que los errores no tienen media cero ya que para los valores ajustados más altos se alejan mucho de la recta $y=0$; por lo que esta es otra muestra más de que el modelo no es correcto para este tipo de datos.
+
+Lo segundo que vamos a analizar es la **no correlación** entre los errores, la cual se puede analizar en la primera gráfica. Si nos fijamos, se observa un patrón curvilíneo a medida que aumenta el valor de los valores ajustados, por lo que se podría concluir que los errores están correlacionados. No obstante, para una verificación numérica haremos un test de Durbin-Watson para comprobar la no correlación. El test de Durbin-Watson verifica si los residuos están correlacionados en el tiempo. Sus hipótesis son las siguientes: 
+$$
+\begin{cases} 
+H_0 : \text{No hay autocorrelación entre los residuos.} \\ 
+H_1 : \text{Existe autocorrelación entre los residuos.}
+\end{cases}
+$$
+
+```{r include=FALSE, warning=FALSE}
+suppressPackageStartupMessages({
+  library(lmtest)
+  library(zoo)
+})
+dw <- dwtest(lm_incorrect, alternative="two.sided")$p.value
+```
+
+En efecto, haciendo el test de Durbin-Watson vemos como el p-valor (**`r round(dw, 3)`**) es extremadamente bajo y nos permite concluir que podemos rechazar la hipótesis nula. Por tanto, podemos asumir que la correlación entre los errores no es 0; otro motivo más para ver que este modelo no funciona bien con datos longitudinales.
+
+La tercera parte que vamos a analizar es la **normalidad** de los residuos. Para ello, nos fijamos en la gráfica superior derecha (Normal Q-Q) de la figura 3, en la cual vemos que, aunque la mayoría de los puntos se alinean con la línea teórica, no son pocas las desviaciones que hay en los extremos; lo que sugiere que los residuos no son perfectamente normales. De hecho, también puede ser el caso paradigmático de normalidad heterocedástica, en la que la varianza depende de la media. Para salir de dudas, podemos aplicar un test de Jarque Bera. El test de Jarque Bera comprueba si los residuos siguen una distribución normal evaluando su asimetría y curtosis. Sus hipótesis son las siguientes: 
+$$
+\begin{cases} 
+H_0 : \text{Los residuos siguen una distribución normal.} \\ 
+H_1 : \text{Los residuos no siguen una distribución normal.}
 \end{cases}
 $$ Si el p-valor es menor a un umbral significativo (por defecto decimos que es 0.05), se rechaza la hipótesis nula, indicando que los residuos no siguen una distribución normal.
 
@@ -145,40 +202,11 @@ jq <- jarque.bera.test(lm_incorrect$residuals)$p.value
 
 A través de este test, el p-valor (**`r round(jq, 3)`**) nos permite concluir que podemos rechazar la hipótesis nula y que, por tanto, los residuos no tienen normalidad.
 
-Lo segundo que vamos a analizar es la **media cero** de los residuos. Su hipótesis de asunción es la siguiente: $$
-\begin{cases} 
-H_0 : \text{Los residuos tienen una media esperada de 0} \\ 
-H_1 : \text{Los residuos no tienen una media esperada de 0}
-\end{cases}
+Por último, analizaremos la **homocedasticidad** de los errores. Para ello, nos fijaremos en la primera (Residuals vs Fitted) y en la tercera gráfica (Scale-Location). A través de la gráfica Residuals vs Fitted, vemos como los residuos no tienen una varianza constante, sino que a medida que aumenta el valor de los valores ajustados aumenta su dispersión; por lo que no tienen homocedasticidad, sino heterocedasticidad. Mirando la gráfica Scale-Location, podemos observar una tendencia creciente por parte de los residuos que nos permite ver cómo no tienen varianza constante. Para confirmarlo, haremos un test de Breusch-Pagan. El test de Breusch-Pagan evalúa si los residuos presentan heterocedasticidad; es decir, si su varianza no es constante. Sus hipótesis son las siguientes: 
 $$
-
-```{r include=FALSE, warning=FALSE}
-media0 <- mean(lm_incorrect$residuals)
-```
-
-Si calculamos la media de los residuos del modelo, comprobamos que la media es **`r round(media0, 3)`**, pero esta no es una forma correcta de anlizar la media cero ya que esto no significa que la suposición de media cero se cumpla en todas partes del rango de los valores ajustados. Para hacer un correcto análisis, nos vamos a fijar en la primera gráfica: Residuals vs Fitted. Teóricamente, para que los residuos tengan media cero, deberían de estar uniformemente dispersos alrededor del eje horizontal en $y=0$. Viendo la gráfica, podemos observar que los errores no tienen media cero ya que para los valores ajustados más altos se alejan mucho de la recta $y=0$; por lo que esta es otra muestra más de que el modelo no es correcto para este tipo de datos.
-
-La tercera parte que vamos a analizar es la **no correlación** entre los errores, la cual se puede analizar en la primera gráfica. Si nos fijamos, se observa un patrón curvilíneo a medida que aumenta el valor de los valores ajustados, por lo que se podría concluir que los errores están correlacionados. No obstante, para una verificación numérica haremos un test de Durbin-Watson para comprobar la no correlación. El test de Durbin-Watson verifica si los residuos están correlacionados en el tiempo. Sus hipótesis son las siguientes: $$
 \begin{cases} 
-H_0 : \text{No hay autocorrelación entre los residuos} \\ 
-H_1 : \text{Existe autocorrelación entre los residuos}
-\end{cases}
-$$
-
-```{r include=FALSE, warning=FALSE}
-suppressPackageStartupMessages({
-  library(lmtest)
-  library(zoo)
-})
-dw <- dwtest(lm_incorrect, alternative="two.sided")$p.value
-```
-
-En efecto, haciendo el test de Durbin-Watson vemos como el p-valor (**`r round(dw, 3)`**) es extremadamente bajo y nos permite concluir que podemos rechazar la hipótesis nula y, por tanto, asumir que la correlación entre los errores no es 0; otro motivo más para ver que este modelo no funciona bien con datos longitudinales.
-
-Por último, analizaremos la **homocedasticidad** de los errores. Para ello, nos fijaremos en la primera (Residuals vs Fitted) y en la tercera gráfica (Scale-Location). A través de la gráfica Residuals vs Fitted, vemos como los residuos no tienen una varianza constante, sino que a medida que aumenta el valor de los valores ajustados aumenta su dispersión; por lo que no tienen homocedasticidad, sino heterocedasticidad. Mirando la gráfica Scale-Location, podemos observar una tendencia creciente por parte de los residuos que nos permite ver cómo no tienen varianza constante. Para confirmarlo, haremos un test de Breusch-Pagan. El test de Breusch-Pagan evalúa si los residuos presentan heterocedasticidad; es decir, si su varianza no es constante. Sus hipótesis son las siguientes: $$
-\begin{cases} 
-H_0 : \text{Los residuos tienen varianza constante (homocedasticidad)} \\ 
-H_1 : \text{Los residuos no tienen varianza constante (heterocedasticidad)}
+H_0 : \text{Los residuos tienen varianza constante (homocedasticidad).} \\ 
+H_1 : \text{Los residuos no tienen varianza constante (heterocedasticidad).}
 \end{cases}
 $$
 
@@ -186,11 +214,11 @@ $$
 bp <- bptest(lm_incorrect, studentize = FALSE)$p.value
 ```
 
-De nuevo, vemos cómo el p-valor (**`r round(bp, 3)`**) es extremadamente pequeño, lo que nos permite rechazar la hipótesis nula y, por lo tanto, concluir que los residuos no tienen varianza constante.
+De nuevo, vemos cómo el p-valor (**<0.001**) es extremadamente pequeño, lo que nos permite rechazar la hipótesis nula y, por lo tanto, concluir que los residuos no tienen varianza constante.
 
 A través de este análisis, hemos podido comprobar que no podemos usar modelos de estadística clásica, tal y como la regresión lineal simple, para trabajar con datos longitudinales.
 
-Una visión más acertada sería utilizar un modelo que se ajuste a cada individuo.
+Una visión más acertada sería utilizar un modelo que se ajuste a cada individuo, como se hace en la figura 4.
 
 ```{r echo=FALSE}
 # Modelo correcto: visualización separada por persona
@@ -205,4 +233,4 @@ ggplot(psid_subset, aes(x = year, y = income, group = person, color = factor(per
 
 **Figura 4**. Gráfica del modelo para cada individuo.
 
-En esta gráfica, podemos observar que cada individuo tiene un comportamiento único en cuanto a la evolución de sus ingresos a lo largo del tiempo. Los interceptos y las pendientes varían considerablemente entre las personas, lo que evidencia que un único modelo no puede capturar adecuadamente la relación entre el tiempo y los ingresos para todos los individuos. Este resultado destaca la heterogeneidad presente en los datos y la necesidad de utilizar modelos que consideren esta variabilidad. Al ajustar un modelo por cada individuo, capturamos mejor las características específicas de cada sujeto, pero esta estrategia presenta limitaciones: aunque mejora la representación de la variabilidad entre individuos, no permite hacer inferencias generales sobre la población; además de que en escenarios con un gran número de individuos, esta aproximación no es práctica. Por ello, los **modelos mixtos** emergen como una solución adecuada, ya que combinan los llamados efectos fijos y aleatorios para capturar tanto las tendencias generales de la población como las diferencias específicas entre individuos. Esta aproximación ofrece un equilibrio entre flexibilidad y generalización, respetando las características únicas de los datos longitudinales.
+En esta gráfica, podemos observar que cada individuo tiene un comportamiento único en cuanto a la evolución de sus ingresos a lo largo del tiempo. Los interceptos y las pendientes varían considerablemente entre las personas, lo que evidencia que un único modelo no puede capturar adecuadamente la relación entre el tiempo y los ingresos para todos los individuos. Este resultado destaca la heterogeneidad presente en los datos y la necesidad de utilizar modelos que consideren esta variabilidad. Al ajustar un modelo por cada individuo, capturamos mejor las características específicas de cada sujeto, pero esta estrategia presenta limitaciones: aunque mejora la representación de la variabilidad entre individuos, no permite hacer inferencias generales sobre la población; además de que en escenarios con un gran número de individuos, esta aproximación no es práctica. Por ello, los **modelos mixtos**, que se explicarán en el siguiente capítulo, emergen como una solución adecuada, ya que combinan los llamados efectos fijos y aleatorios para capturar tanto las tendencias generales de la población como las diferencias específicas entre individuos. Esta aproximación ofrece un equilibrio entre flexibilidad y generalización, respetando las características únicas de los datos longitudinales.

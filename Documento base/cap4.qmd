@@ -5,26 +5,27 @@ editor_options:
 ---
 
 # Análisis de la base de datos
+
 El conjunto de datos World Happiness 2015-2024 recopila información sobre la felicidad percibida en diferentes países a lo largo de los años. Este dataset proviene de los informes anuales de felicidad publicados por la Red de Soluciones para el Desarrollo Sostenible de la ONU, los cuales se basan en encuestas realizadas a nivel mundial. El dataset tiene una buena cobertura temporal, ya que abarca datos de 2015 a 2024 y permite analizar tendencias a lo largo del tiempo, pero también geográfica, dado que icluye información de diferentes países y regiones del mundo. Este dataset es ampliamente utilizado en estudios de bienestar, calidad de vida y políticas públicas, y contiene métricas económicas y sociales que permiten un análisis estadístico y comparativo. Cada fila del dataset representa un país en un año determinado y contiene variables socioeconómicas y de bienestar que pueden influir en la percepción de felicidad de su población. Estas variables son:
 
-- Country: Nombre del país.
+-   Country: Nombre del país.
 
-- Region: Continente o agrupación geográfica del país.
+-   Region: Continente o agrupación geográfica del país.
 
-- Happiness Score: Puntuación de felicidad promedio en el país (escala de 0 a 10).
+-   Happiness Score: Puntuación de felicidad promedio en el país (escala de 0 a 10).
 
-- GDP per capita: Producto Interno Bruto per cápita ajustado por poder adquisitivo.
+-   GDP per capita: Producto Interno Bruto per cápita ajustado por poder adquisitivo.
 
-- Social Support: Medida de apoyo social basado en la percepción de las personas sobre la ayuda que pueden recibir de familiares y amigos.
+-   Social Support: Medida de apoyo social basado en la percepción de las personas sobre la ayuda que pueden recibir de familiares y amigos.
 
-- Healthy Life Expectancy: Esperanza de vida saludable en años.
+-   Healthy Life Expectancy: Esperanza de vida saludable en años.
 
-- Freedom to Make Life Choices: Libertad para tomar decisiones personales, según encuestas de percepción.
+-   Freedom to Make Life Choices: Libertad para tomar decisiones personales, según encuestas de percepción.
 
-- Generosity: Nivel de generosidad en la sociedad, basado en donaciones y ayuda a otros.
+-   Generosity: Nivel de generosidad en la sociedad, basado en donaciones y ayuda a otros.
 
-- Perceptions of Corruption: Nivel de percepción de corrupción en el gobierno y los negocios.
-## Análisis exploratorio inicial
+-   Perceptions of Corruption: Nivel de percepción de corrupción en el gobierno y los negocios. \## Análisis exploratorio inicial
+
 ```{r echo=FALSE, warning=FALSE}
 # Carga de paquetes 
 library(readr)
@@ -77,9 +78,11 @@ outliers::grubbs.test(df$generosity)
 outliers::grubbs.test(df$perceptions_of_corruption)
 # Como el p-valor es > alpha en todos los test, no tenemos outliers
 ```
+
 Podemos ver como en la base de datos no hay valores faltantes, y a través de este estudio, vemos como tampoco hay valores atípicos.
 
 ## Regresión Lineal Múltiple
+
 ```{r echo=FALSE, warning=FALSE}
 # Paquetes necesarios -----
 library(ggplot2) 
@@ -161,5 +164,5 @@ dwtest(fit, alternative='two.sided')
 # Como el p-valor > alpha, no rechazamos H0, por lo que los residuos no est?n autocorrelacionados
 # Por todo esto, el modelo no es fiable.
 ```
-Al principio, podemos observar que hay bastantes variables que pueden ser buenas predictoras del happiness_score. No obstante, en la selección de variables explicativas, vemos que el mejor modelo es aquel que cuenta con la percepción de la corrupción, la esperanza de vida, la libertad de tomar decisiones y el apoyo social. Al hacer el diagnóstico del modelo, vemos que el modelo no es fiable ya que los errores no tienen homocedasticidad ni normalidad.
 
+Al principio, podemos observar que hay bastantes variables que pueden ser buenas predictoras del happiness_score. No obstante, en la selección de variables explicativas, vemos que el mejor modelo es aquel que cuenta con la percepción de la corrupción, la esperanza de vida, la libertad de tomar decisiones y el apoyo social. Al hacer el diagnóstico del modelo, vemos que el modelo no es fiable ya que los errores no tienen homocedasticidad ni normalidad.
