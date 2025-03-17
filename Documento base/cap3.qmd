@@ -64,7 +64,7 @@ Este modelo considera únicamente la edad (age) como predictor de la distancia (
 
 ### Modelo con efectos aleatorios
 
-Ahora ajustamos un modelo con efectos aleatorios, en el que permitimos que cada niño tenga su propio intercepto aleatorio ($$u_i$$), capturando la variabilidad entre individuos. La ecuación del modelo es: 
+Ahora ajustamos un modelo con efectos aleatorios, en el que permitimos que cada niño tenga su propio intercepto aleatorio ($u_i$), capturando la variabilidad entre individuos. La ecuación del modelo es: 
 $$
 distance_{ij} = \beta_0 + u_i +\beta_1 age_{ij} + \epsilon_{ij}
 $$
@@ -106,7 +106,7 @@ Este modelo permite que cada niño tenga su propio intercepto aleatorio, modelan
 
 ### Modelo mixto
 
-Finalmente, ajustamos un **Modelo Lineal Mixto (LLM)** en el que consideramos tanto efectos fijos como aleatorios. Permitimos que cada niño tenga su propio intercepto ($$u_i$$)y pendiente ($$v_i$$) aleatorios, permitiendo que la relación entre edad y distancia interdental varíe entre individuos. La ecuación del modelo es: 
+Finalmente, ajustamos un **Modelo Lineal Mixto (LLM)** en el que consideramos tanto efectos fijos como aleatorios. Permitimos que cada niño tenga su propio intercepto ($u_i$) y pendiente ($v_i$) aleatorios, permitiendo que la relación entre edad y distancia interdental varíe entre individuos. La ecuación del modelo es: 
 $$
 distance_{ij} = \beta_0 + u_i + (\beta_1 + v_i) age_{ij} + \epsilon_{ij}
 $$
