@@ -152,8 +152,7 @@ plot(lm_incorrect)
 
 **Figura 3**. Gráficas de los residuos del modelo.
 
-Primero de todo, vamos a analizar es la **media cero** de los residuos. Su hipótesis de asunción es la siguiente: 
-$$
+Primero de todo, vamos a analizar es la **media cero** de los residuos. Su hipótesis de asunción es la siguiente: $$
 \begin{cases} 
 H_0 : \text{Los residuos tienen una media esperada de 0.} \\ 
 H_1 : \text{Los residuos no tienen una media esperada de 0.}
@@ -166,8 +165,7 @@ media0 <- mean(lm_incorrect$residuals)
 
 Si calculamos la media de los residuos del modelo, comprobamos que la media es **`r round(media0, 3)`**, pero esta no es una forma correcta de anlizar la media cero ya que esto no significa que la suposición de media cero se cumpla en todas partes del rango de los valores ajustados. Para hacer un correcto análisis, nos vamos a fijar en la primera gráfica de la figura 3: Residuals vs Fitted. Teóricamente, para que los residuos tengan media cero, deberían de estar uniformemente dispersos alrededor del eje horizontal en $y=0$. Viendo la gráfica, podemos observar que los errores no tienen media cero ya que para los valores ajustados más altos se alejan mucho de la recta $y=0$; por lo que esta es otra muestra más de que el modelo no es correcto para este tipo de datos.
 
-Lo segundo que vamos a analizar es la **no correlación** entre los errores, la cual se puede analizar en la primera gráfica. Si nos fijamos, se observa un patrón curvilíneo a medida que aumenta el valor de los valores ajustados, por lo que se podría concluir que los errores están correlacionados. No obstante, para una verificación numérica haremos un test de Durbin-Watson para comprobar la no correlación. El test de Durbin-Watson verifica si los residuos están correlacionados en el tiempo. Sus hipótesis son las siguientes: 
-$$
+Lo segundo que vamos a analizar es la **no correlación** entre los errores, la cual se puede analizar en la primera gráfica. Si nos fijamos, se observa un patrón curvilíneo a medida que aumenta el valor de los valores ajustados, por lo que se podría concluir que los errores están correlacionados. No obstante, para una verificación numérica haremos un test de Durbin-Watson para comprobar la no correlación. El test de Durbin-Watson verifica si los residuos están correlacionados en el tiempo. Sus hipótesis son las siguientes: $$
 \begin{cases} 
 H_0 : \text{No hay autocorrelación entre los residuos.} \\ 
 H_1 : \text{Existe autocorrelación entre los residuos.}
@@ -184,8 +182,7 @@ dw <- dwtest(lm_incorrect, alternative="two.sided")$p.value
 
 En efecto, haciendo el test de Durbin-Watson vemos como el p-valor (**`r round(dw, 3)`**) es extremadamente bajo y nos permite concluir que podemos rechazar la hipótesis nula. Por tanto, podemos asumir que la correlación entre los errores no es 0; otro motivo más para ver que este modelo no funciona bien con datos longitudinales.
 
-La tercera parte que vamos a analizar es la **normalidad** de los residuos. Para ello, nos fijamos en la gráfica superior derecha (Normal Q-Q) de la figura 3, en la cual vemos que, aunque la mayoría de los puntos se alinean con la línea teórica, no son pocas las desviaciones que hay en los extremos; lo que sugiere que los residuos no son perfectamente normales. De hecho, también puede ser el caso paradigmático de normalidad heterocedástica, en la que la varianza depende de la media. Para salir de dudas, podemos aplicar un test de Jarque Bera. El test de Jarque Bera comprueba si los residuos siguen una distribución normal evaluando su asimetría y curtosis. Sus hipótesis son las siguientes: 
-$$
+La tercera parte que vamos a analizar es la **normalidad** de los residuos. Para ello, nos fijamos en la gráfica superior derecha (Normal Q-Q) de la figura 3, en la cual vemos que, aunque la mayoría de los puntos se alinean con la línea teórica, no son pocas las desviaciones que hay en los extremos; lo que sugiere que los residuos no son perfectamente normales. De hecho, también puede ser el caso paradigmático de normalidad heterocedástica, en la que la varianza depende de la media. Para salir de dudas, podemos aplicar un test de Jarque Bera. El test de Jarque Bera comprueba si los residuos siguen una distribución normal evaluando su asimetría y curtosis. Sus hipótesis son las siguientes: $$
 \begin{cases} 
 H_0 : \text{Los residuos siguen una distribución normal.} \\ 
 H_1 : \text{Los residuos no siguen una distribución normal.}
@@ -202,8 +199,7 @@ jq <- jarque.bera.test(lm_incorrect$residuals)$p.value
 
 A través de este test, el p-valor (**`r round(jq, 3)`**) nos permite concluir que podemos rechazar la hipótesis nula y que, por tanto, los residuos no tienen normalidad.
 
-Por último, analizaremos la **homocedasticidad** de los errores. Para ello, nos fijaremos en la primera (Residuals vs Fitted) y en la tercera gráfica (Scale-Location). A través de la gráfica Residuals vs Fitted, vemos como los residuos no tienen una varianza constante, sino que a medida que aumenta el valor de los valores ajustados aumenta su dispersión; por lo que no tienen homocedasticidad, sino heterocedasticidad. Mirando la gráfica Scale-Location, podemos observar una tendencia creciente por parte de los residuos que nos permite ver cómo no tienen varianza constante. Para confirmarlo, haremos un test de Breusch-Pagan. El test de Breusch-Pagan evalúa si los residuos presentan heterocedasticidad; es decir, si su varianza no es constante. Sus hipótesis son las siguientes: 
-$$
+Por último, analizaremos la **homocedasticidad** de los errores. Para ello, nos fijaremos en la primera (Residuals vs Fitted) y en la tercera gráfica (Scale-Location). A través de la gráfica Residuals vs Fitted, vemos como los residuos no tienen una varianza constante, sino que a medida que aumenta el valor de los valores ajustados aumenta su dispersión; por lo que no tienen homocedasticidad, sino heterocedasticidad. Mirando la gráfica Scale-Location, podemos observar una tendencia creciente por parte de los residuos que nos permite ver cómo no tienen varianza constante. Para confirmarlo, haremos un test de Breusch-Pagan. El test de Breusch-Pagan evalúa si los residuos presentan heterocedasticidad; es decir, si su varianza no es constante. Sus hipótesis son las siguientes: $$
 \begin{cases} 
 H_0 : \text{Los residuos tienen varianza constante (homocedasticidad).} \\ 
 H_1 : \text{Los residuos no tienen varianza constante (heterocedasticidad).}
@@ -214,7 +210,7 @@ $$
 bp <- bptest(lm_incorrect, studentize = FALSE)$p.value
 ```
 
-De nuevo, vemos cómo el p-valor (**<0.001**) es extremadamente pequeño, lo que nos permite rechazar la hipótesis nula y, por lo tanto, concluir que los residuos no tienen varianza constante.
+De nuevo, vemos cómo el p-valor (**\<0.001**) es extremadamente pequeño, lo que nos permite rechazar la hipótesis nula y, por lo tanto, concluir que los residuos no tienen varianza constante.
 
 A través de este análisis, hemos podido comprobar que no podemos usar modelos de estadística clásica, tal y como la regresión lineal simple, para trabajar con datos longitudinales.
 

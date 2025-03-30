@@ -391,7 +391,9 @@ p <- ggplot(df_completo_sin_na, aes(x = regional_indicator, y = perceptions_of_c
   labs(title = "Distribución de la Percepción de Corrupción por Región", x = "Región", y = "Percepción de Corrupción") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ggplotly(p)
-p <- ggplot(df_sin_democracia_sin_na, aes(x = regional_indicator, y = perceptions_of_corruption, fill = regional_indicator)) +
+año2024 <- df_sin_democracia_sin_na %>%
+  filter(year == 2015)
+p <- ggplot(año2024, aes(x = regional_indicator, y = perceptions_of_corruption, fill = regional_indicator)) +
   geom_violin(alpha = 0.7) + 
   theme_minimal() + 
   labs(title = "Distribución de la Percepción de Corrupción por Región", x = "Región", y = "Percepción de Corrupción") +

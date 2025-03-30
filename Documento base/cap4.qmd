@@ -26,7 +26,7 @@ El conjunto de datos World Happiness 2015-2024 recopila información sobre la fe
 
 -   Perceptions of Corruption: Nivel de percepción de corrupción en el gobierno y los negocios. \## Análisis exploratorio inicial
 
-```{r include=FALSE, warning=FALSE}
+```{r warning=FALSE, include=FALSE}
 # Carga de paquetes 
 library(readr)
 library(readxl)
@@ -81,49 +81,59 @@ outliers::grubbs.test(df_original$perceptions_of_corruption)
 ```
 
 ```{r echo=FALSE, warning=FALSE}
-boxplot(df_original$happiness_score)
-boxplot(df_original$gdp_per_capita)
-boxplot(df_original$social_support)  
-boxplot(df_original$healthy_life_expectancy)
-boxplot(df_original$freedom_to_make_life_choices)
-boxplot(df_original$generosity)
-boxplot(df_original$perceptions_of_corruption)
-```
+# Seleccionamos solo las variables numéricas de interés
+df_box <- df_original %>%
+  select(happiness_score, gdp_per_capita, social_support, 
+         healthy_life_expectancy, freedom_to_make_life_choices, 
+         generosity, perceptions_of_corruption)
 
+# Reestructuramos a formato largo para ggplot
+df_box_long <- df_box %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "valor")
+
+# Gráfico unificado de boxplots
+ggplot(df_box_long, aes(x = variable, y = valor, fill = variable)) +
+  geom_boxplot(alpha = 0.7) +
+  labs(title = "Distribución de variables cuantitativas",
+       x = "Variable",
+       y = "Valor") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+```
 
 Podemos ver como en la base de datos no hay valores faltantes, y a través de este análisis, vemos como tampoco hay valores atípicos. No obstante, para complementar nuestro análisis de la base de datos World Happiness, hemos considerado integrar información de dos fuentes externas que aportan indicadores políticos y de libertades civiles en los países. Estas bases de datos nos permitirán explorar hasta qué punto la democracia, los derechos políticos y las libertades influyen en la percepción de felicidad de las sociedades.
 
 La primera base de datos que hemos considerado es "Freedom in the World", un informe anual de la organización Freedom House, que evalúa el estado de las libertades políticas y civiles en el mundo. Cada país es clasificado en función de indicadores de democracia, libertades individuales y derechos políticos. El motivo por el que hemos elegido esta base de datos es porque los estudios en ciencias sociales han mostrado que la percepción de felicidad no solo está ligada a factores económicos, sino también a la capacidad de los ciudadanos para expresarse libremente, participar en la política y vivir sin restricciones autoritarias. Incorporar estos datos nos permitirá ver si existe una correlación entre los niveles de libertad y la felicidad percibida en cada país. Como esta base de datos cuenta con una gran cantidad de variables, hemos elegido las siguientes variables de interés:
 
-- Country/Territory: Identificación del país o territorio.
-- Region: Indica la zona geográfica del país, similar al regional_indicator del dataset original.
-- c/T: Diferencia entre países y territorios, aunque este concepto puede ser delicado según el análisis.
-- Edition: Año del reporte, fundamental para el análisis longitudinal.
-- Status: Clasificación del país en cuanto a su libertad: Libre (F), Parcialmente Libre (PF) o No Libre (NF).
-- PR rating (Political Rights): Puntuación de 1 a 7 sobre derechos políticos.
-- CL rating (Civil Liberties): Puntuación de 1 a 7 sobre libertades civiles.
+-   Country/Territory: Identificación del país o territorio.
+-   Region: Indica la zona geográfica del país, similar al regional_indicator del dataset original.
+-   c/T: Diferencia entre países y territorios, aunque este concepto puede ser delicado según el análisis.
+-   Edition: Año del reporte, fundamental para el análisis longitudinal.
+-   Status: Clasificación del país en cuanto a su libertad: Libre (F), Parcialmente Libre (PF) o No Libre (NF).
+-   PR rating (Political Rights): Puntuación de 1 a 7 sobre derechos políticos.
+-   CL rating (Civil Liberties): Puntuación de 1 a 7 sobre libertades civiles.
 
 La otra base de datos que hemos elegido para nuestro análisis es "Democracy Data", un dataset que proviene del proyecto TidyTuesday y está basado en estudios académicos sobre democracia y regímenes políticos. Clasifica los países según su sistema de gobierno y proporciona información detallada sobre su historia política. Una de las características que tiene esta base de datos es que tiene datos hasta 2020, por lo que tenemos que considerar que, si vamos a trabajar con ella, tendremos las características completas de las observaciones en un período reducido. Dado que la felicidad no solo depende de factores económicos, sino también de la estabilidad política y la gobernanza, estas variables pueden ayudarnos a explicar por qué algunos países presentan niveles bajos de felicidad a pesar de tener una economía sólida. Al igual que en el caso anterior, como esta base de datos contiene más de 40 variables, hemos decidido quedarnos con aquellas que pensamos que mejor se adaptan a nuestro análisis. Estas variables son:
 
-- country_name: Nombre del país.
-- year: Año de observación.
-- regime_category: Clasificación del sistema de gobierno (democracia parlamentaria, autocracia civil, dictadura militar, monarquía, etc.).
-- is_monarchy: Indica si el país es una monarquía.
-- is_democracy: Indica si el país es una democracia.
-- is_presidential: Indica si el sistema es presidencialista.
-- is_colony: Identifica si el país sigue siendo una colonia.
-- is_communist: Indica si el país sigue un régimen comunista.
-- spatial_democracy: Evalúa el nivel de democracia en los países vecinos.
-- has_full_suffrage: Indica si hay sufragio universal.
-- electoral_category: Tipo de elecciones (no democráticas, de partido único, multipartidistas no democráticas o democráticas).
-- spatial_electoral: Evalúa la calidad electoral de los países vecinos.
-- has_free_and_fair_election: Indica si las elecciones son libres y justas.
-- has_alternation: Indica si existe alternancia en el poder.
+-   country_name: Nombre del país.
+-   year: Año de observación.
+-   regime_category: Clasificación del sistema de gobierno (democracia parlamentaria, autocracia civil, dictadura militar, monarquía, etc.).
+-   is_monarchy: Indica si el país es una monarquía.
+-   is_democracy: Indica si el país es una democracia.
+-   is_presidential: Indica si el sistema es presidencialista.
+-   is_colony: Identifica si el país sigue siendo una colonia.
+-   is_communist: Indica si el país sigue un régimen comunista.
+-   spatial_democracy: Evalúa el nivel de democracia en los países vecinos.
+-   has_full_suffrage: Indica si hay sufragio universal.
+-   electoral_category: Tipo de elecciones (no democráticas, de partido único, multipartidistas no democráticas o democráticas).
+-   spatial_electoral: Evalúa la calidad electoral de los países vecinos.
+-   has_free_and_fair_election: Indica si las elecciones son libres y justas.
+-   has_alternation: Indica si existe alternancia en el poder.
 
 Ambos datasets complementarán la base de datos de felicidad al agregar información sobre libertades civiles, derechos políticos y calidad democrática. Esto nos permitirá realizar un análisis más profundo y responder preguntas sobre la relación entre política, democracia y bienestar subjetivo en distintos países.
 
-AHORA, TENEMOS QUE TOMAR UNA DECISIÓN: TRABAJAR CON LA UNIÓN DE ESTOS 3 DATASETS, AUNQUE SUPONGA REDUCIR EL PERÍODO DE FECHAS EN VEZ DE 2015 A 2024 DE 2015 A 2020, O NO TRABAJAR CON EL DATASET DE DEMOCRACY PARA SEGUIR TRABAJANDO DE 2015 A 2024.
-```{r include=FALSE, warning=FALSE}
+```{r include=FALSE, warning=FALSE, message=FALSE}
 library(dplyr)
 library(stringr)
 library(sf)
@@ -402,117 +412,157 @@ df_sin_democracia_pmm <- df_sin_democracia_pmm %>%
     ),
   ) %>%
   filter(!country %in% c("State of Palestine"))
+# Eliminar territorios
+df_sin_democracia_sin_na <- df_sin_democracia_sin_na %>%
+  filter(tolower(country_or_territory) == "c") %>%  # Solo países
+
+  # Eliminar la variable 'country_or_territory'
+  select(-country_or_territory)
 ```
+
+```{r echo=FALSE}
+# Variables políticas que queremos analizar
+variables_politicas <- c("regime_category", "is_monarchy", "is_democracy", 
+                         "is_presidential", "is_colony", "is_communist", 
+                         "has_full_suffrage", "electoral_category", 
+                         "has_free_and_fair_election", "has_alternation")
+
+# Verificar cambios a lo largo del tiempo
+cambios_variables <- df_completo %>%
+  select(country, year, all_of(variables_politicas)) %>%
+  group_by(country) %>%
+  summarise(across(all_of(variables_politicas), ~ n_distinct(.x, na.rm = TRUE))) %>%
+  pivot_longer(-country, names_to = "variable", values_to = "distinct_values") %>%
+  filter(distinct_values > 1)
+
+# Mostrar los países y variables que cambian a lo largo del tiempo
+print(cambios_variables)
+```
+
+Una de las preguntas más interesantes al trabajar con datos longitudinales sobre países es si sus características políticas se mantienen estables o si sufren cambios significativos a lo largo de los años. Aunque la mayoría de los países presentan estabilidad en estas variables durante el período 2015-2020, hemos identificado cambios en una serie de países que han experimentado transformaciones en su tipo de régimen, forma de gobierno o estatus democrático. A continuación, exploramos gráficamente cómo han evolucionado estos cambios en el tiempo.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+paises_con_cambios <- c("Angola", "Bolivia", "Burkina Faso", "Burundi", "China", "Comoros",
+                        "Congo (Kinshasa)", "Egypt", "Honduras", "Hungary", "Iraq", "Kenya",
+                        "Laos", "Liberia", "Madagascar", "Myanmar", "Nicaragua", "Turkey",
+                        "Venezuela", "Yemen", "Zimbabwe")
+
+# Variables categóricas que han cambiado
+variables_categoricas <- c("regime_category", "is_democracy", "is_presidential",
+                           "electoral_category", "has_free_and_fair_election", "has_alternation")
+
+# Transformar las variables a carácter para evitar conflictos en pivot_longer
+df_cambios <- df_completo %>%
+  filter(country %in% paises_con_cambios) %>%
+  mutate(across(all_of(variables_categoricas), as.character)) %>%
+  select(country, year, all_of(variables_categoricas)) %>%
+  pivot_longer(cols = -c(country, year), names_to = "variable", values_to = "valor")
+
+# Gráfico
+ggplot(df_cambios, aes(x = year, y = valor, group = country, color = country)) +
+  geom_line(linewidth = 0.8) +
+  facet_wrap(~ variable, scales = "free_y") +
+  theme_minimal() +
+  labs(title = "Evolución de variables políticas en países con cambios",
+       x = "Año", y = "Valor", color = "País") +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+El gráfico muestra de forma clara y visual la evolución temporal de varias variables políticas clave en los países que han experimentado cambios entre 2015 y 2020. 
+
+Si observamos los cambios en el tipo de elecciones, podemos ver que Venezuela presentó hasta 3 categorías distintas: pasó de elecciones democráticas a elecciones no democráticas multi-partido y luego a no tener elecciones directamente, reflejando el colapso progresivo del sistema electoral bajo el régimen de Maduro. Otros países como Honduras o Comoras alternan entre elecciones democráticas y elecciones no democráticas multi-partido, reflejando cuestionamientos sobre la transparencia y legitimidad de sus procesos electorales y evidenciando las dificultades para establecer un sistema electoral pluralista. En el caso de Honduras a partir de 2018, lo que coincide con la reelección altamente cuestionada de Juan Orlando Hernández, rodeada de denuncias de fraude y represión; mientras que Comoras en 2019, tras una serie de reformas constitucionales que favorecieron la consolidación del poder del presidente Azali Assoumani.
+
+En cuanto a los cambios en la alternancia en el poder, vemos cómo en Nicaragua y Venezuela esta variable refleja la falta de alternancia, mostrando un patrón de concentración del poder ya que en años anteriores había alternancia, pero se pierde conforme los gobiernos se consolidan en el poder.
+
+Si observamos los cambios en la existencia de elecciones libres y justas, vemos que Angola y Liberia reflejan mejoras en sus procesos electorales con la celebración de elecciones que fueron más competitivas y abiertas que en años anteriores, pero hay otros casos como Bolivia, que presenta un cambio negativo en 2019, año marcado por acusaciones de fraude electoral que desembocaron en la crisis política. Otro ejemplo que se puede destacar es Turquía, que deja de tener elecciones libres y justas en los últimos años, en línea con el creciente autoritarismo del presidente Erdoğan.
+
+Observando la condición de democracia, vemos que Nicaragua dejó de ser considerada una democracia a partir de 2017, cuando se intensificó el control autoritario de Daniel Ortega sobre las instituciones y se reprimieron masivamente las protestas. Hungría también dejó de ser considerada democracia a partir de 2019, en consonancia con el cambio de régimen antes mencionado. Otro cambio lo observamos en Bolivia, que fue considerada democracia durante gran parte del período, pero dejó de serlo temporalmente tras la crisis política y la salida de Evo Morales en 2019.
+
+Si observamos la forma de gobierno presidencial, vemos que el único Estado que cambia es China: aunque siempre fue una dictadura de partido único, el dataset refleja un cambio en esta variable posiblemente por una reinterpretación metodológica, ya que a partir de 2019 es considerada presidencial.
+
+Por último, si observamos los cambios en el tipo de régimen, vemos como Hungría pasó de ser una democracia parlamentaria a una dictadura civil, lo cual refleja el creciente autoritarismo del gobierno de Viktor Orbán y el deterioro de la separación de poderes y la libertad de prensa. Sin embargo, hay casos como Liberia que sucede todo lo contrario: en los primeros años del periodo considerado, Liberia fue clasificada como una dictadura civil, reflejo del mandato de Ellen Johnson Sirleaf, que, aunque existía cierta estructura institucional, no se garantizaban plenamente principios básicos de la democracia como elecciones libres o alternancia real de poder. Sin embargo, a partir de 2018, Liberia pasa a ser clasificada como una democracia presidencial,cambio que coincide con la llegada al poder del exfutbolista George Weah, quien fue elegido democráticamente en un proceso que representó la primera transición pacífica de poder entre dos presidentes electos en el país desde 1944. Esta transición marcó un punto de inflexión político, reflejando una mejora significativa en las instituciones democráticas del país.
+
+Este gráfico refuerza la idea de que varios países han experimentado retrocesos democráticos significativos, especialmente en torno a elecciones libres, alternancia y la clasificación del régimen. Además, evidencia que estos cambios no son simultáneos: mientras algunos países cambian en 2016, otros lo hacen en 2018 o 2020, lo cual permite contextualizar los cambios políticos con eventos históricos concretos en cada nación. Este tipo de análisis temporal no solo es útil para identificar patrones políticos, sino también para cruzar estos cambios con la percepción de felicidad de la población y evaluar si existe alguna asociación relevante entre ambas dimensiones.
+
+Dado que uno de los objetivos principales de este análisis es estudiar la evolución de la felicidad y sus determinantes a lo largo del tiempo, necesitamos trabajar con una base de datos que tenga cobertura completa para el periodo 2015–2024. En este sentido, hemos optado por utilizar la base de datos formada por los datasets "World Happiness" y "Freedom in the World", excluyendo la base de datos de "Democracy Data".
+
+Esta decisión se debe a que la base de datos de democracia únicamente contiene información hasta el año 2020, lo cual limitaría drásticamente el análisis longitudinal si trabajásemos únicamente con ella. Por lo tanto, para poder aplicar técnicas de medidas repetidas, donde analizamos cómo varían las observaciones de un mismo país a lo largo de varios años, necesitamos una base con continuidad temporal. 
+
+No obstante, la base de "Democracy Data" no se descarta completamente. Se utilizará como complemento para proporcionar una fotografía institucional y política de los países, especialmente útil para interpretar fenómenos relevantes detectados durante el análisis longitudinal. Esta fotografía será especialmente relevante en los años en los que se observe una caída o subida abrupta en la felicidad, y nos permitirá contextualizar esos movimientos a través del tipo de régimen, la existencia de elecciones libres o la alternancia en el poder, entre otros factores.
 
 Ahora que ya tenemos preparado el dataset, es momento de empezar a ver la evolución de la variable objetivo a lo largo del tiempo. Para ello, podemos hacer uso de mapas que nos ayudan a interpretar la información.
 
-```{r include=FALSE, warning=FALSE}
-webshot::install_phantomjs()
-guardar_mapa <- function(df, titulo, filename) {
-  world_map <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
-  world_map <- world_map %>%
-    left_join(df, by = c("name" = "country"))
-  
-  mapa <- plot_ly(world_map, 
-                  type = "choropleth",
-                  locations = ~iso_a3,
-                  z = ~happiness_score,
-                  text = ~name,
-                  colorscale = "Blues") %>%
-    layout(title = titulo)
-  
-  saveWidget(mapa, "temp.html", selfcontained = TRUE)
-  webshot("temp.html", filename)
-  
-  cat(paste0("![](", filename, ")\n"))
-}
+```{r mapamundi, include=FALSE, warning=FALSE}
+library(plotly)
+library(dplyr)
+library(sf)
+library(rnaturalearth)
 
-# Aplicar la función a cada dataset
-guardar_mapa(df_completo_sin_na, "Mapa de Felicidad por País (Completo sin NA)", "output_map_1.png")
-guardar_mapa(df_sin_democracia_sin_na, "Mapa de Felicidad por País (Sin democracia sin NA)", "output_map_2.png")
-guardar_mapa(df_completo_pmm, "Mapa de Felicidad por País (Completo PMM)", "output_map_3.png")
-guardar_mapa(df_sin_democracia_pmm, "Mapa de Felicidad por País (Sin democracia PMM)", "output_map_4.png")
+world_map <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf") %>%
+  left_join(df_sin_democracia_sin_na, by = c("name" = "country"))
+
+mapa_felicidad <- plot_ly(world_map, 
+                          type = "choropleth",
+                          locations = ~iso_a3,
+                          z = ~happiness_score,
+                          text = ~name,
+                          colorscale = "Viridis") %>%
+  layout(title = "Mapa de Felicidad por País (Sin democracia, sin NA)")
+
+if (knitr::is_latex_output()) {
+  # Solo si quieres exportar a PDF y tienes phantomjs funcionando
+  try({
+    htmlwidgets::saveWidget(mapa_felicidad, "temp_map.html", selfcontained = TRUE)
+    webshot2::webshot("temp_map.html", "mapa_felicidad_sin_democracia.png", vwidth = 1200, vheight = 800)
+    cat("![](mapa_felicidad_sin_democracia.png)")
+  }, silent = TRUE)
+} else {
+  mapa_felicidad
+}
 ```
 
 Por otro lado, también podemos utilizar gráficos de violines. En este caso, podemos ver cómo la puntuación de la felicidad varía en función de la región.
 
 ```{r include=FALSE, warning=FALSE}
-p <- ggplot(df_completo_sin_na, aes(x = regional_indicator, y = happiness_score, fill = regional_indicator)) +
-  geom_violin(alpha = 0.7) + 
-  theme_minimal() + 
-  labs(title = "Distribución de Felicidad por Región", x = "Región", y = "Happiness Score") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-if (knitr::is_latex_output()) {
-  ggsave("violines_felicidad.png", p)
-  cat("![](violines_felicidad.png)")
-} else {
-  ggplotly(p)
-}
+# Filtrar por los años solicitados
+df_violin <- df_sin_democracia_sin_na %>% 
+  filter(year %in% c(2015, 2020, 2024))
 
-p <- ggplot(df_sin_democracia_sin_na, aes(x = regional_indicator, y = happiness_score, fill = regional_indicator)) +
-  geom_violin(alpha = 0.7) + 
-  theme_minimal() + 
-  labs(title = "Distribución de Felicidad por Región", x = "Región", y = "Happiness Score") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-if (knitr::is_latex_output()) {
-  ggsave("violines_felicidad.png", p)
-  cat("![](violines_felicidad.png)")
-} else {
-  ggplotly(p)
-}
+# Crear gráfico con facetas por año y mediana
+p <- ggplot(df_violin, aes(x = regional_indicator, y = happiness_score, fill = regional_indicator)) +
+  geom_violin(alpha = 0.6, trim = FALSE) +  # trim=FALSE muestra mejor las colas
+  stat_summary(fun = median, geom = "point", color = "black", shape = 18, size = 2) +  # Mediana
+  theme_minimal() +
+  facet_wrap(~ year, ncol = 1) +
+  labs(
+    title = "Distribución de Felicidad por Región (2015, 2020, 2024)",
+    x = "Región",
+    y = "Happiness Score"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none"
+  )
 
-p <- ggplot(df_completo_pmm, aes(x = regional_indicator, y = happiness_score, fill = regional_indicator)) +
-  geom_violin(alpha = 0.7) + 
-  theme_minimal() + 
-  labs(title = "Distribución de Felicidad por Región", x = "Región", y = "Happiness Score") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# Mostrar interactivo si es HTML, guardar imagen si es PDF
 if (knitr::is_latex_output()) {
-  ggsave("violines_felicidad.png", p)
-  cat("![](violines_felicidad.png)")
+  ggsave("violines_felicidad_por_anio.png", p, width = 10, height = 12)
+  cat("![](violines_felicidad_por_anio.png)")
 } else {
   ggplotly(p)
 }
-
-p <- ggplot(df_sin_democracia_pmm, aes(x = regional_indicator, y = happiness_score, fill = regional_indicator)) +
-  geom_violin(alpha = 0.7) + 
-  theme_minimal() + 
-  labs(title = "Distribución de Felicidad por Región", x = "Región", y = "Happiness Score") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-if (knitr::is_latex_output()) {
-  ggsave("violines_felicidad.png", p)
-  cat("![](violines_felicidad.png)")
-} else {
-  ggplotly(p)
-}
-
-p <- ggplot(df_sin_democracia_pmm, aes(x = region, y = happiness_score, fill = region)) +
-  geom_violin(alpha = 0.7) + 
-  theme_minimal() + 
-  labs(title = "Distribución de Felicidad por Región", x = "Región", y = "Happiness Score") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-if (knitr::is_latex_output()) {
-  ggsave("violines_felicidad.png", p)
-  cat("![](violines_felicidad.png)")
-} else {
-  ggplotly(p)
-}
-# Se ve bastante mejor por region que por regional_indicator
 ```
+
+Si nos fijamos en la mediana, que se muestra con un rombo negro en cada violín, vemos que hay regiones como Europa Occidental o Norte América y Australia que mantienen medianas altas y estables a lo largo del tiempo, mientras que el Sur de Asia y África Sub-Sahariana tienen medianas bajas, aunque relativamente estables.
+
+En estos gráficos también se puede observar cierta bimodalidad, ya que algunas regiones, como Latino América y el Caribe o el Oriente Medio y África del Norte muestran dos modos (zonas más anchas del violín), lo que sugiere heterogeneidad interna: algunos países con altos niveles de felicidad conviven con otros con puntuaciones mucho más bajas. Asia del Sur presenta una distribución muy desigual en 2024, con un notable ensanchamiento en la parte inferior del gráfico, reflejando una baja felicidad en ciertos países (como Afganistán).
+
+En general, la forma de las distribuciones se mantiene similar entre 2015 y 2024 en muchas regiones, pero algunas muestran mayor dispersión, sobre todo en el continente asiático, ya que Oriente Medio y Asia del Sur sufren una caída considerable en la felicidad. Regiones como Europa Occidental y Norte América y Australia presentan distribuciones compactas y felicidad más alta y estable, lo que refleja mayor consistencia en el bienestar subjetivo de sus poblaciones.
 
 Otra de las variables que nos puede ayudar a interpretar la información es la percepción de la corrupción según las diferentes regiones.
 
 ```{r echo=FALSE, warning=FALSE}
-p <- ggplot(df_completo_sin_na, aes(x = regional_indicator, y = perceptions_of_corruption, fill = regional_indicator)) +
-  geom_violin(alpha = 0.7) + 
-  theme_minimal() + 
-  labs(title = "Distribución de la Percepción de Corrupción por Región", x = "Región", y = "Percepción de Corrupción") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-if (knitr::is_latex_output()) {
-  ggsave("violines_felicidad.png", p)
-  cat("![](violines_felicidad.png)")
-} else {
-  ggplotly(p)
-}
 p <- ggplot(df_sin_democracia_sin_na, aes(x = regional_indicator, y = perceptions_of_corruption, fill = regional_indicator)) +
   geom_violin(alpha = 0.7) + 
   theme_minimal() + 
@@ -524,29 +574,53 @@ if (knitr::is_latex_output()) {
 } else {
   ggplotly(p)
 }
-p <- ggplot(df_completo_pmm, aes(x = regional_indicator, y = perceptions_of_corruption, fill = regional_indicator)) +
-  geom_violin(alpha = 0.7) + 
-  theme_minimal() + 
-  labs(title = "Distribución de la Percepción de Corrupción por Región", x = "Región", y = "Percepción de Corrupción") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-if (knitr::is_latex_output()) {
-  ggsave("violines_felicidad.png", p)
-  cat("![](violines_felicidad.png)")
-} else {
-  ggplotly(p)
-}
-p <- ggplot(df_sin_democracia_pmm, aes(x = regional_indicator, y = perceptions_of_corruption, fill = regional_indicator)) +
-  geom_violin(alpha = 0.7) + 
-  theme_minimal() + 
-  labs(title = "Distribución de la Percepción de Corrupción por Región", x = "Región", y = "Percepción de Corrupción") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-if (knitr::is_latex_output()) {
-  ggsave("violines_felicidad.png", p)
-  cat("![](violines_felicidad.png)")
-} else {
-  ggplotly(p)
-}
 ```
+
+Con el objetivo de comprender cómo ha cambiado la situación global en términos de bienestar subjetivo y factores asociados, analizamos a continuación la evolución promedio anual de las principales variables del informe de felicidad. Esta visualización nos permitirá detectar tendencias crecientes o decrecientes y posibles impactos globales, como crisis políticas, sanitarias o económicas.
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(patchwork)
+
+# Seleccionamos las variables numéricas de interés
+vars_evol <- df_sin_democracia_sin_na %>%
+  group_by(year) %>%
+  summarise(
+    happiness_score = mean(happiness_score, na.rm = TRUE),
+    gdp_per_capita = mean(gdp_per_capita, na.rm = TRUE),
+    social_support = mean(social_support, na.rm = TRUE),
+    healthy_life_expectancy = mean(healthy_life_expectancy, na.rm = TRUE),
+    freedom_to_make_life_choices = mean(freedom_to_make_life_choices, na.rm = TRUE),
+    generosity = mean(generosity, na.rm = TRUE),
+    perceptions_of_corruption = mean(perceptions_of_corruption, na.rm = TRUE)
+  ) %>%
+  pivot_longer(cols = -year, names_to = "variable", values_to = "media")
+
+# Gráfico
+ggplot(vars_evol, aes(x = year, y = media, color = variable)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  facet_wrap(~variable, scales = "free_y") +
+  theme_minimal() +
+  labs(title = "Evolución anual del promedio de variables de interés",
+       x = "Año", y = "Media") +
+  theme(legend.position = "none")
+```
+
+El gráfico de la libertad para tomar decisiones destaca por su crecimiento constante, especialmente desde 2018. Este incremento podría reflejar mayores libertades percibidas por los ciudadanos en sus vidas personales, aunque también puede estar influido por cambios en algunos países concretos.
+
+La evolución del PIB per cápita presenta un pico atípico en 2016, probablemente derivado de algún valor extremo en la base de datos. A partir de ahí, la evolución es más estable, aunque con ligeros repuntes a partir de 2021, posiblemente debido a la recuperación económica tras la crisis sanitaria.
+
+La generosidad presenta un crecimiento sostenido desde 2016, con especial aceleración en los últimos tres años. Este repunte podría estar relacionado con respuestas solidarias durante la pandemia o con un cambio en los valores sociales.
+
+La felicidad percibida muestra una tendencia creciente desde 2017 hasta alcanzar su punto máximo en 2022, seguido de un leve descenso en 2024. Esto sugiere una cierta recuperación post-pandemia, aunque sin volver a los niveles anteriores a 2017.
+
+La esperanza de vida muestra una tendencia claramente ascendente, aunque con ciertos altibajos. El incremento sostenido sugiere mejoras en salud pública y condiciones de vida, aunque no es posible descartar la influencia de datos específicos de algunos países.
+
+La percepción de corrupción presenta un patrón mucho más errático, con oscilaciones abruptas entre años. Esto refleja fuertes diferencias entre países o inestabilidades políticas concretas, y muestra que la percepción de corrupción no sigue una tendencia clara a nivel global.
+
+El apoyo social se mantiene relativamente estable en el tiempo, con una caída puntual en 2018. A pesar de ligeras oscilaciones, no se detectan cambios estructurales fuertes, lo que podría indicar una percepción constante del apoyo social entre los ciudadanos.
 
 Otra de las características que tenemos que analizar en esta base de datos es la existencia de valores atípicos que puedan afectar a nuestro análisis.
 
