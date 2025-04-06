@@ -6,7 +6,7 @@ editor_options:
 
 # Modelos mixtos
 
-En este capítulo, exploraremos los **Modelos Lineales Mixtos (LLM)** y los **Modelos Lineales Generalizados (GLM)**, dos enfoques estadísticos fundamentales para el análisis de datos longitudinales. Veremos cómo los LLM permiten modelar la variabilidad entre individuos mediante la inclusión de efectos aleatorios y fijos, lo que facilita el estudio de la correlación entre observaciones repetidas. Luego, introduciremos los GLM, que extienden la regresión lineal para manejar variables respuesta que no siguen una distribución normal, utilizando funciones de enlace y la familia exponencial. A lo largo del capítulo, revisaremos sus formulaciones matemáticas, sus hipótesis clave y cómo validarlas en la práctica.
+En este capítulo, exploraremos los **Modelos Lineales Mixtos (LMM)** y los **Modelos Lineales Generalizados (GLM)**, dos enfoques estadísticos fundamentales para el análisis de datos longitudinales. Veremos cómo los LMM permiten modelar la variabilidad entre individuos mediante la inclusión de efectos aleatorios y fijos, lo que facilita el estudio de la correlación entre observaciones repetidas. Luego, introduciremos los GLM, que extienden la regresión lineal para manejar variables respuesta que no siguen una distribución normal, utilizando funciones de enlace y la familia exponencial. A lo largo del capítulo, revisaremos sus formulaciones matemáticas, sus hipótesis clave y cómo validarlas en la práctica.
 
 Para ilustrar estos modelos, comenzaremos con un ejemplo aplicado al conjunto de datos Orthodont del paquete nlme, donde analizaremos la evolución de la distancia entre los dientes (distance) en función de la edad (age) en diferentes sujetos. Compararemos tres enfoques distintos:
 
@@ -31,8 +31,8 @@ A continuación, ajustaremos y visualizaremos los distintos modelos.
 ### Modelo con efectos fijos
 
 El primer modelo que consideramos es una regresión lineal simple, en la que asumimos que la distancia interdental (distance) varía en función de la edad (age), pero asumimos que todas las observaciones son independientes e ignoramos la estructura jerárquica del estudio (mediciones repetidas por individuo). La ecuación del modelo es: $$
-distance_i = \beta_0 + \beta_1 age_i + \epsilon_i
-$$
+distance_i = \beta_0 + \beta_1 age_i + \epsilon_i$$
+Aquí, $distance_i$ es la distancia interdental de la observación $i$, $\beta_0$ es la intersección común a todos los sujetos, $\beta_1$ es la pendiente (cómo cambia la distancia con la edad), y $\epsilon_i$ es el error aleatorio.
 
 ```{r include=FALSE, warning=FALSE}
 # Cargar paquetes
@@ -64,8 +64,8 @@ Este modelo considera únicamente la edad (age) como predictor de la distancia (
 ### Modelo con efectos aleatorios
 
 Ahora ajustamos un modelo con efectos aleatorios, en el que permitimos que cada niño tenga su propio intercepto aleatorio ($u_i$), capturando la variabilidad entre individuos. La ecuación del modelo es: $$
-distance_{ij} = \beta_0 + u_i +\beta_1 age_{ij} + \epsilon_{ij}
-$$
+distance_{ij} = \beta_0 + u_i +\beta_1 age_{ij} + \epsilon_{ij}$$
+Ahora $distance_{ij}$ es la distancia para el individuo $i$ en la observación $j$. $u_i$ representa el efecto aleatorio de cada sujeto (intersección específica), $\beta_1$ es la pendiente común, y $\epsilon_{ij}$ es el error.
 
 ```{r include=FALSE, warning=FALSE}
 # Cargar paquetes
@@ -104,9 +104,9 @@ Este modelo permite que cada niño tenga su propio intercepto aleatorio, modelan
 
 ### Modelo mixto
 
-Finalmente, ajustamos un **Modelo Lineal Mixto (LLM)** en el que consideramos tanto efectos fijos como aleatorios. Permitimos que cada niño tenga su propio intercepto ($u_i$) y pendiente ($v_i$) aleatorios, permitiendo que la relación entre edad y distancia interdental varíe entre individuos. La ecuación del modelo es: $$
-distance_{ij} = \beta_0 + u_i + (\beta_1 + v_i) age_{ij} + \epsilon_{ij}
-$$
+Finalmente, ajustamos un **Modelo Lineal Mixto (LMM)** en el que consideramos tanto efectos fijos como aleatorios. Permitimos que cada niño tenga su propio intercepto ($u_i$) y pendiente ($v_i$) aleatorios, permitiendo que la relación entre edad y distancia interdental varíe entre individuos. La ecuación del modelo es: $$
+distance_{ij} = \beta_0 + u_i + (\beta_1 + v_i) age_{ij} + \epsilon_{ij}$$
+Aquí $u_i$ es la intersección específica de cada sujeto, y $v_i$ permite que la pendiente también varíe por individuo.
 
 ```{r include=FALSE, warning=FALSE}
 # Cargar paquetes
@@ -141,13 +141,13 @@ ggplot(Orthodont, aes(x = age, y = distance, group = Subject, color = Subject)) 
 
 Ahora no solo permitimos una intersección aleatoria, sino que también permitimos que la pendiente (efecto de la edad) varíe entre sujetos; es decir, en este modelo cada sujeto puede tener una tasa de crecimiento diferente en la distancia dental a lo largo del tiempo. Observando el modelo, vemos como ahora hemos reducido la varianza residual a **`r round(var_residual_completo, 3)`**, y ahora contamos con una varianza del intercepto por sujeto de **`r round(var_intercept_completo, 3)`** y una variación de la pendiente entre sujetos de **`r round(var_pendiente_completo, 3)`**; obteniendo una mejora significativa. Este tipo de modelos es más realista cuando hay variabilidad individual en la evolución de la variable respuesta.
 
-Este modelo es más flexible, ya que permite que tanto la intersección como la pendiente de la relación entre edad y distancia varíen entre individuos.
+Este modelo es más flexible, ya que permite que tanto la intersección como la pendiente de la relación entre edad y distancia varíen entre individuos. Este último modelo generaliza la idea que vimos en el capítulo anterior, donde ajustábamos una regresión por individuo (Figura 4). En aquel caso, teníamos una pendiente e intercepto diferentes por persona, pero ajustados de forma separada. Los modelos mixtos permiten hacer esto mismo, pero de forma conjunta y eficiente, combinando la información de todos los individuos para obtener estimaciones más robustas, sin necesidad de ajustar un modelo por separado para cada uno.
 
-Si comparamos los 3 modelos, podemos observar que el modelo con solo **efectos fijos** asume una única relación entre edad y distancia interdental, ignorando la variabilidad entre individuos. El modelo con solo **efectos aleatorios** permite que cada sujeto tenga su propio intercepto, pero mantiene una pendiente común para todos. El **modelo mixto (LLM)** es el más completo, permitiendo que tanto la intersección como la pendiente varíen entre individuos. Esto demuestra la importancia de los Modelos Lineales Mixtos en el análisis de datos longitudinales, ya que incorporan tanto la variabilidad individual como la estructura jerárquica de los datos.
+Si comparamos los 3 modelos, podemos observar que el modelo con solo **efectos fijos** asume una única relación entre edad y distancia interdental, ignorando la variabilidad entre individuos. El modelo con solo **efectos aleatorios** permite que cada sujeto tenga su propio intercepto, pero mantiene una pendiente común para todos. El **modelo mixto (LMM)** es el más completo, permitiendo que tanto la intersección como la pendiente varíen entre individuos. Esto demuestra la importancia de los Modelos Lineales Mixtos en el análisis de datos longitudinales, ya que incorporan tanto la variabilidad individual como la estructura jerárquica de los datos.
 
-## Modelos Lineales Mixtos (LLM)
+## Modelos Lineales Mixtos (LMM)
 
-Son métodos y modelos estadísticos que sirven para analizar datos longitudinales cuando la variable respuesta sigue una distribución normal. Uno de sus aspectos más característicos lo indica Francisco Hernández-Barrera en su libro *Modelos mixtos con R* [@modelos_mixtos], ya que se asume que existe una relación entre el vector de observaciones y las covariables. Se considera la técnica más eficaz cuando se trabaja con distribuciones normales en este campo ya que permite introducir efectos aleatorios y concretar la estructura de las correlaciones de los residuos del mismo sujeto; además de que puede emplearse con datos faltantes. Estos modelos nos permiten modelar la correlación entre observaciones dentro de una misma unidad e incluir covariables tanto a nivel individual como grupal. Los LLM permiten realizar una estimación precisa de la incertidumbre, respetando la dependencia entre observaciones. Por otro lado, su capacidad de generalización a estructuras de datos complejas es otro de los motivos por los cuales se recomienda su uso con datos longitudinales. Otra de sus ventajas es su flexibilidad para incluir efectos específicos por individuo o grupo; algo que veremos más adelante.
+Son métodos y modelos estadísticos que sirven para analizar datos longitudinales cuando la variable respuesta sigue una distribución normal. Uno de sus aspectos más característicos lo indica Francisco Hernández-Barrera en su libro *Modelos mixtos con R* [@modelos_mixtos], ya que se asume que existe una relación entre el vector de observaciones y las covariables. Se considera la técnica más eficaz cuando se trabaja con distribuciones normales en este campo ya que permite introducir efectos aleatorios y concretar la estructura de las correlaciones de los residuos del mismo sujeto; además de que puede emplearse con datos faltantes. Estos modelos nos permiten modelar la correlación entre observaciones dentro de una misma unidad e incluir covariables tanto a nivel individual como grupal. Los LMM permiten realizar una estimación precisa de la incertidumbre, respetando la dependencia entre observaciones. Por otro lado, su capacidad de generalización a estructuras de datos complejas es otro de los motivos por los cuales se recomienda su uso con datos longitudinales. Otra de sus ventajas es su flexibilidad para incluir efectos específicos por individuo o grupo; algo que veremos más adelante.
 
 La ecuación para este tipo de modelos, en los que $y_{ij}$ representa el momento $j$-ésimo del individuo $i$: $$
 y_{ij} = \beta_{0i} + \sum_{k=1}^{K} \beta_{ki}x_{ijk} + e_{ij} 
@@ -163,9 +163,11 @@ Los **efectos aleatorios** se representan mediante el vector formado por la cons
 \vec{\beta}_i = (\beta_{0i}, \beta_{1i}, \ldots, \beta_{Ki})^t \sim N(\vec{\beta}, \Omega)
 $$ Cabe destacar que los errores de un individuo, al no tener todos el mismo número de observaciones, son **independientes** de los efectos aleatorios.
 
-Para ajustar un modelo lineal mixto, se tienen que disponer los datos de forma vertical. Una de las ventajas del LLM es su flexibilidad ya que no sólo permite especificar efectos aleatorios para evaluar la **variabilidad** de algunas variables entre los individuos, sino que también permite evaluar la **correlación** entre distintos datos longitudinales del mismo individuo. La constante y los coeficientes aleatorios tienen **homocedasticidad**, ya que la esperanza y la matriz de covarianzas es la misma para todos los individuos. Una de las características de los LLM es que introducen el concepto de **efectos fijos**, los cuales son la esperanza de los efectos aleatorios. Según Julian Faraway en *Extending the Linear Model with R: Generalized Linear, Mixed Effects and Nonparametric Regression Models* [@faraway], un efecto fijo es una constante desconocida que intentaremos estimar a partir de los datos, mientras que los efectos aleatorios son variables aleatorias. De hecho, cuando un coeficiente no es aleatorio, se puede asumir que sigue una distribución normal con varianza cero; denominándolo fijo. En estos modelos, el número de efectos aleatorios es limitado, ya que no pueden superar en ningún caso el número de medidas que tenemos por individuo. Estos efectos inducen una **correlación** entre datos para el mismo individuo, pero dependiendo de su estructura la correlación sólo se puede obtener a partir de la correlación entre residuos; ya que si consideramos los coeficientes de variables **cambiantes** en el tiempo como aleatorios la correlación es distinta según los tiempos de las medidas, mientras que si consideramos los coeficientes de variables **constantes** en el tiempo inducimos **heterocedasticidad** entre individuos.
+Para ajustar un modelo lineal mixto, se tienen que disponer los datos de forma vertical. Una de las ventajas del LMM es su flexibilidad ya que no sólo permite especificar efectos aleatorios para evaluar la **variabilidad** de algunas variables entre los individuos, sino que también permite evaluar la **correlación** entre distintos datos longitudinales del mismo individuo. La constante y los coeficientes aleatorios tienen **homocedasticidad**, ya que la esperanza y la matriz de covarianzas es la misma para todos los individuos. Una de las características de los LMM es que introducen el concepto de **efectos fijos**, los cuales son la esperanza de los efectos aleatorios. Según Julian Faraway en *Extending the Linear Model with R: Generalized Linear, Mixed Effects and Nonparametric Regression Models* [@faraway], un efecto fijo es una constante desconocida que intentaremos estimar a partir de los datos, mientras que los efectos aleatorios son variables aleatorias. De hecho, cuando un coeficiente no es aleatorio, se puede asumir que sigue una distribución normal con varianza cero; denominándolo fijo. En estos modelos, el número de efectos aleatorios es limitado, ya que no pueden superar en ningún caso el número de medidas que tenemos por individuo. Estos efectos inducen una **correlación** entre datos para el mismo individuo, pero dependiendo de su estructura la correlación sólo se puede obtener a partir de la correlación entre residuos; ya que si consideramos los coeficientes de variables **cambiantes** en el tiempo como aleatorios la correlación es distinta según los tiempos de las medidas, mientras que si consideramos los coeficientes de variables **constantes** en el tiempo inducimos **heterocedasticidad** entre individuos.
 
-A la hora de trabajar con Modelos Lineales Mixtos, se puede trabajar de diferentes formas. Podemos establecer un modelo con la constante aleatoria y varios coeficientes fijos en el tiempo, en cuyo caso, si asumimos que los errores son independientes, tendríamos una correlación **constante** entre las variables del mismo individuo que no depende de la distancia entre las medidas; lo que se denomina como coeficiente de correlación intraclase (ICC). Otra forma de definir estos modelos podría ser con la constante y los coeficientes aleatorios, donde, asumiendo independencia entre residuos, la correlación entre observaciones pasa a depender tanto del tiempo como de la distancia entre ellas. Sin embargo, pese a ser las dos buenas opciones, es preferible trabajar de otra forma para LLM.
+Una vez formulado el modelo, necesitamos estimar los parámetros, contando con los dos principales métodos de estimación en modelos mixtos. El primero es el método de Máxima verosimilitud (ML), que utiliza la función de verosimilitud completa del modelo. Estima tanto los efectos fijos como las varianzas de los efectos aleatorios. Es útil para comparar modelos con diferentes efectos fijos. El otro método es el de máxima verosimilitud restringida (REML), que estima solo las varianzas de los efectos aleatorios, ajustando los grados de libertad para evitar el sesgo en la estimación de la varianza. Es el método preferido para comparar modelos con la misma estructura de efectos fijos pero distinta estructura de efectos aleatorios.
+
+A la hora de trabajar con Modelos Lineales Mixtos, se puede trabajar de diferentes formas. Podemos establecer un modelo con la constante aleatoria y varios coeficientes fijos en el tiempo, en cuyo caso, si asumimos que los errores son independientes, tendríamos una correlación **constante** entre las variables del mismo individuo que no depende de la distancia entre las medidas; lo que se denomina como coeficiente de correlación intraclase (ICC). Otra forma de definir estos modelos podría ser con la constante y los coeficientes aleatorios, donde, asumiendo independencia entre residuos, la correlación entre observaciones pasa a depender tanto del tiempo como de la distancia entre ellas. Sin embargo, pese a ser las dos buenas opciones, es preferible trabajar de otra forma para LMM.
 
 Para empezar, no asumiremos independencia de los residuos; sino que trabajaremos con un modelo más general en el que contemos con el mayor número posible de efectos aleatorios correlacionados y fijos. A continuación, procederemos a simplificar el modelo a través de la significación de **efectos aleatorios**: $$
 \begin{cases} 
@@ -241,3 +243,72 @@ $$ Por lo tanto, demostramos que la distribución normal también pertenece a la
 En concreto, para los casos en los que la respuesta no es normal, la ecuación del modelo es la siguiente: $$
 g\left(E(y_{ij} \mid x_{ijk}, \beta_{0i}, \dots, \beta_{Ki})\right) = \beta_{0i} + \sum_{k=1}^{K} \beta_{ki}x_{ijk}
 $$ Donde g es la función enlace y, pese a que puede parecerse mucho a la función para modelos LMM, tienen algunas diferencias, como que en el primer miembro tenemos el enlace del valor esperado en vez de la variable respuesta, y en el segundo miembro no se cuenta con los errores; por lo que no existe una matriz de correlaciones de los residuos. De esta forma, ya hemos **generalizado** nuestro modelo para manejar variables respuesta que no siguen una distribución normal. A través de esta generalización, somos capaces de escribir la función de masa o densidad de probabilidad de distintas distribuciones para poder modelar el enlace canónico como función lineal de las variables predictoras.
+
+## Modelos Lineales Generalizados Mixtos (GLMM)
+
+Cuando trabajamos con datos longitudinales cuya variable respuesta no sigue una distribución normal, los Modelos Lineales Mixtos (LMM) dejan de ser apropiados. En estos casos, extendemos los modelos hacia los Modelos Lineales Generalizados Mixtos (GLMM), los cuales combinan la flexibilidad de los GLM con la estructura de efectos aleatorios de los LMM. Un GLMM permite modelar: variables respuesta que pertenecen a la familia exponencial (binomial, Poisson, Gamma...), y la correlación entre observaciones repetidas para el mismo individuo, mediante efectos aleatorios.
+
+La ecuación general de un GLMM es:
+$$
+g\left(\mathbb{E}(y_{ij} \mid b_i)\right) = \beta_0 + \sum_{k=1}^{K} \beta_k x_{ijk} + Z_{ij}b_i
+$$
+Donde:
+
+- $y_{ij}$ es la respuesta del individuo $i$ en la ocasión $j$.
+
+- $x_{ijk}$ es el valor de la variable explicativa $k$ para ese individuo en ese momento.
+
+- $\beta_{0i}$ es el intercepto aleatorio.
+
+- $\beta_{ki}$ puede incluir efectos fijos o aleatorios.
+
+- $g(\cdot)$ es la función de enlace, que conecta el valor esperado con la combinación lineal de predictores.
+
+Dependiendo de la naturaleza de $y_{ij}$, usaremos distintos enlaces. Para datos binarios: enlace logit y distribución binomial; para datos de conteo: enlace log y distribución de Poisson; y para tiempos o proporciones: enlaces adaptados como log-log, logit, etc. Si la variable respuesta es binaria (por ejemplo, éxito/fracaso), se usa un **modelo logístico mixto**:
+
+$$
+\text{logit}(p_{ij}) = \beta_0 + \beta_1 x_{ij} + b_i
+$$
+
+Donde:
+
+- $\text{logit}(p) = \log\left(\frac{p}{1 - p}\right)$
+- $p_{ij} = \mathbb{P}(y_{ij} = 1 \mid b_i)$
+- $b_i \sim \mathcal{N}(0, \sigma^2_b)$ es un efecto aleatorio por sujeto.
+
+Esto permite modelar probabilidades condicionales considerando la variabilidad entre individuos.
+
+### Ejemplo práctico
+
+Supongamos que queremos modelar si un estudiante aprueba un examen (`aprobado = 0/1`) en función de las horas de estudio (`horas`) y si el estudiante forma parte de un grupo diferente (`grupo`). Como los estudiantes tienen múltiples exámenes, añadimos un efecto aleatorio por `estudiante`.
+
+```{r echo=FALSE, warning=FALSE}
+library(lme4)
+
+# Simulación de datos ejemplo
+set.seed(123)
+n_estudiantes <- 100
+n_examenes <- 5
+df_glmm <- expand.grid(
+  estudiante = factor(1:n_estudiantes),
+  examen = 1:n_examenes
+)
+df_glmm$horas <- runif(nrow(df_glmm), 0, 10)
+df_glmm$grupo <- sample(c("A", "B"), nrow(df_glmm), replace = TRUE)
+
+# Probabilidad de aprobar en función de horas y grupo, más efecto aleatorio por estudiante
+df_glmm$prob <- plogis(-1 + 0.4 * df_glmm$horas + ifelse(df_glmm$grupo == "B", 0.5, 0) + rnorm(n_estudiantes)[df_glmm$estudiante])
+df_glmm$aprobado <- rbinom(nrow(df_glmm), 1, df_glmm$prob)
+
+# Ajuste del modelo GLMM
+modelo_glmm <- glmer(aprobado ~ horas + grupo + (1 | estudiante), 
+                     data = df_glmm, family = binomial)
+
+summary(modelo_glmm)
+```
+
+En este modelo GLMM (glmer) estamos modelando la probabilidad de aprobar un examen en función de dos variables explicativas: horas (número de horas de estudio) y grupo (grupo educativo (A o B), con A como categoría de referencia). Además, incluimos un efecto aleatorio de intercepto por estudiante, lo cual es adecuado porque cada estudiante tiene múltiples observaciones (exámenes), y esperamos que haya variabilidad entre ellos.
+
+El intercepto aleatorio por estudiante tiene una desviación estándar de 0.9473, lo que indica que hay una variación importante en la propensión a aprobar entre estudiantes, incluso tras controlar por las horas de estudio y el grupo; lo que justifica el uso de un GLMM en lugar de un GLM clásico. Este modelo demuestra cómo un GLMM puede capturar variabilidad individual (entre estudiantes) y a la vez evaluar el efecto de factores fijos. El uso del modelo mixto es crucial: si ignoramos el efecto aleatorio por estudiante, estaríamos asumiendo que todos los estudiantes tienen la misma propensión a aprobar, lo cual claramente no es el caso según la varianza estimada.
+
+Los GLMM tienen múltiples ventajas respecto a otros modelos, ya que permiten ajustar modelos a variables respuesta no continuas, incorporan variabilidad entre individuos mediante efectos aleatorios, se adaptan bien a datos longitudinales y jerárquicos, y permiten hacer inferencia poblacional y considerar la dependencia temporal. Por tanto, los GLMM constituyen una herramienta esencial para el análisis de datos longitudinales cuando la respuesta no es normal, ya que preservan la estructura de dependencia de los datos sin violar los supuestos del modelo.

@@ -420,7 +420,7 @@ df_sin_democracia_sin_na <- df_sin_democracia_sin_na %>%
   select(-country_or_territory)
 ```
 
-```{r echo=FALSE}
+```{r include=FALSE, message=FALSE, warning=FALSE}
 # Variables políticas que queremos analizar
 variables_politicas <- c("regime_category", "is_monarchy", "is_democracy", 
                          "is_presidential", "is_colony", "is_communist", 
@@ -448,7 +448,7 @@ paises_con_cambios <- c("Angola", "Bolivia", "Burkina Faso", "Burundi", "China",
                         "Venezuela", "Yemen", "Zimbabwe")
 
 # Variables categóricas que han cambiado
-variables_categoricas <- c("regime_category", "is_democracy", "is_presidential",
+variables_categoricas <- c("regime_category", "is_democracy",
                            "electoral_category", "has_free_and_fair_election", "has_alternation")
 
 # Transformar las variables a carácter para evitar conflictos en pivot_longer
@@ -469,7 +469,49 @@ ggplot(df_cambios, aes(x = year, y = valor, group = country, color = country)) +
         axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-El gráfico muestra de forma clara y visual la evolución temporal de varias variables políticas clave en los países que han experimentado cambios entre 2015 y 2020. 
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# Subconjunto con países que han tenido al menos un cambio
+paises_cambio <- c("Angola", "Bolivia", "Burkina Faso", "Burundi", "China", "Comoros",
+                   "Congo (Kinshasa)", "Egypt", "Honduras", "Hungary", "Iraq", "Kenya",
+                   "Laos", "Liberia", "Madagascar", "Myanmar", "Nicaragua", "Turkey",
+                   "Venezuela", "Yemen", "Zimbabwe")
+
+# Variables categóricas de interés
+vars_politicas <- c("regime_category", "is_democracy", "electoral_category",
+                    "has_free_and_fair_election", "has_alternation", "is_presidential")
+
+# Crear df con 1 si hay más de un valor distinto en el tiempo
+cambios_pais <- df_completo %>%
+  filter(country %in% paises_cambio) %>%
+  select(country, year, all_of(vars_politicas)) %>%
+  mutate(across(all_of(vars_politicas), as.character)) %>%
+  pivot_longer(cols = -c(country, year), names_to = "variable", values_to = "valor") %>%
+  distinct() %>%
+  group_by(country, variable) %>%
+  summarise(cambios = n_distinct(valor), .groups = "drop") %>%
+  mutate(cambio = ifelse(cambios > 1, 1, 0)) %>%
+  select(-cambios)
+
+# Gráfico tipo heatmap
+ggplot(cambios_pais, aes(x = variable, y = country, fill = factor(cambio))) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("0" = "white", "1" = "#440154"), labels = c("Sin cambio", "Con cambio")) +
+  theme_minimal() +
+  labs(title = "Cambios en variables políticas por país (2015-2020)",
+       x = "Variable política",
+       y = "País",
+       fill = "Cambio") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+El gráfico muestra de forma clara y visual la evolución temporal de varias variables políticas clave en los países que han experimentado cambios entre 2015 y 2020.
 
 Si observamos los cambios en el tipo de elecciones, podemos ver que Venezuela presentó hasta 3 categorías distintas: pasó de elecciones democráticas a elecciones no democráticas multi-partido y luego a no tener elecciones directamente, reflejando el colapso progresivo del sistema electoral bajo el régimen de Maduro. Otros países como Honduras o Comoras alternan entre elecciones democráticas y elecciones no democráticas multi-partido, reflejando cuestionamientos sobre la transparencia y legitimidad de sus procesos electorales y evidenciando las dificultades para establecer un sistema electoral pluralista. En el caso de Honduras a partir de 2018, lo que coincide con la reelección altamente cuestionada de Juan Orlando Hernández, rodeada de denuncias de fraude y represión; mientras que Comoras en 2019, tras una serie de reformas constitucionales que favorecieron la consolidación del poder del presidente Azali Assoumani.
 
@@ -479,60 +521,117 @@ Si observamos los cambios en la existencia de elecciones libres y justas, vemos 
 
 Observando la condición de democracia, vemos que Nicaragua dejó de ser considerada una democracia a partir de 2017, cuando se intensificó el control autoritario de Daniel Ortega sobre las instituciones y se reprimieron masivamente las protestas. Hungría también dejó de ser considerada democracia a partir de 2019, en consonancia con el cambio de régimen antes mencionado. Otro cambio lo observamos en Bolivia, que fue considerada democracia durante gran parte del período, pero dejó de serlo temporalmente tras la crisis política y la salida de Evo Morales en 2019.
 
-Si observamos la forma de gobierno presidencial, vemos que el único Estado que cambia es China: aunque siempre fue una dictadura de partido único, el dataset refleja un cambio en esta variable posiblemente por una reinterpretación metodológica, ya que a partir de 2019 es considerada presidencial.
+Si observamos la forma de gobierno presidencial, vemos que el único Estado que cambia es China: aunque siempre fue una dictadura de partido único, el dataset refleja un cambio en esta variable posiblemente por una reinterpretación metodológica, ya que a partir de 2019 es considerada presidencial. Es destacable que esta variable apenas presenta cambios (salvo China), lo cual sugiere que la forma de gobierno en términos institucionales es más estable que otras dimensiones como la calidad electoral o la democracia sustantiva. Esto puede ayudar a entender que muchos procesos de regresión democrática no implican reformas estructurales del sistema político, sino más bien una transformación interna de las reglas del juego bajo el mismo marco institucional.
 
-Por último, si observamos los cambios en el tipo de régimen, vemos como Hungría pasó de ser una democracia parlamentaria a una dictadura civil, lo cual refleja el creciente autoritarismo del gobierno de Viktor Orbán y el deterioro de la separación de poderes y la libertad de prensa. Sin embargo, hay casos como Liberia que sucede todo lo contrario: en los primeros años del periodo considerado, Liberia fue clasificada como una dictadura civil, reflejo del mandato de Ellen Johnson Sirleaf, que, aunque existía cierta estructura institucional, no se garantizaban plenamente principios básicos de la democracia como elecciones libres o alternancia real de poder. Sin embargo, a partir de 2018, Liberia pasa a ser clasificada como una democracia presidencial,cambio que coincide con la llegada al poder del exfutbolista George Weah, quien fue elegido democráticamente en un proceso que representó la primera transición pacífica de poder entre dos presidentes electos en el país desde 1944. Esta transición marcó un punto de inflexión político, reflejando una mejora significativa en las instituciones democráticas del país.
+Por último, si observamos los cambios en el tipo de régimen, vemos como Hungría pasó de ser una democracia parlamentaria a una dictadura civil, lo cual refleja el creciente autoritarismo del gobierno de Viktor Orbán y el deterioro de la separación de poderes y la libertad de prensa. Sin embargo, hay casos como Liberia que sucede todo lo contrario: en los primeros años del periodo considerado, Liberia fue clasificada como una dictadura civil, reflejo del mandato de Ellen Johnson Sirleaf, que, aunque existía cierta estructura institucional, no se garantizaban plenamente principios básicos de la democracia como elecciones libres o alternancia real de poder. Sin embargo, a partir de 2018, Liberia pasa a ser clasificada como una democracia presidencial,cambio que coincide con la llegada al poder del exfutbolista George Weah, quien fue elegido democráticamente en un proceso que representó la primera transición pacífica de poder entre dos presidentes electos en el país desde 1944. Esta transición marcó un punto de inflexión político, reflejando una mejora significativa en las instituciones democráticas del país. En Burundi, el cambio en el tipo de régimen refleja el deterioro institucional que siguió a la decisión de Pierre Nkurunziza de presentarse a un tercer mandato en 2015, desatando una grave crisis política. El país pasa a ser clasificado como dictadura civil, reflejando la suspensión de libertades y el cierre del espacio cívico. Este cambio es particularmente relevante porque anticipa un patrón que luego se repite en otros países: el uso del poder electoral como instrumento de legitimación de autoritarismo. Otro caso a destacar es Zimbabwe, ya que es interesante porque, aunque solo presenta un cambio en regime_category, este se produce tras la caída de Robert Mugabe en 2017, una transición que fue vista por algunos sectores como una oportunidad para abrir un nuevo ciclo democrático. Sin embargo, el hecho de que no haya cambios en otras variables como is_democracy o has_free_and_fair_election refleja que el cambio de liderazgo no implicó necesariamente una mejora sustantiva en la calidad del régimen.
+
+Además de los ejemplos más visibles, hay otros países que presentan cambios más sutiles pero igualmente significativos. Por ejemplo, Madagascar muestra una alteración en la variable has_alternation, indicando un momento de alternancia que podría asociarse con las elecciones de 2018, cuando Andry Rajoelina volvió al poder tras haberlo ocupado anteriormente como presidente de transición. Este cambio sugiere un contexto político volátil en el que las alternancias no siempre reflejan procesos plenamente democráticos, sino que pueden estar vinculadas a luchas internas o acuerdos de élites.
+
+Otro caso particular es Comoras, que presenta múltiples cambios en variables como el tipo de elecciones, la democracia y el tipo de régimen. Esto refleja un proceso de consolidación autoritaria que ha sido documentado por organismos internacionales tras la reforma constitucional de 2018 y las elecciones de 2019, en las que se concentró el poder presidencial y se limitó la oposición. Comoras es un ejemplo claro de regresión democrática multidimensional, donde no solo se pierde calidad electoral, sino que se transforman también las estructuras institucionales.
+
+En Kenya, se observan cambios tanto en is_democracy como en electoral_category y regime_category, lo cual es coherente con un contexto de avances y retrocesos en la calidad democrática. A pesar de tener elecciones relativamente regulares, las denuncias de fraude, violencia post-electoral y polarización han afectado la credibilidad del sistema. El dataset parece capturar bien esa inestabilidad institucional, mostrando a Kenya como un país en constante disputa entre aperturas democráticas y tendencias autoritarias.
 
 Este gráfico refuerza la idea de que varios países han experimentado retrocesos democráticos significativos, especialmente en torno a elecciones libres, alternancia y la clasificación del régimen. Además, evidencia que estos cambios no son simultáneos: mientras algunos países cambian en 2016, otros lo hacen en 2018 o 2020, lo cual permite contextualizar los cambios políticos con eventos históricos concretos en cada nación. Este tipo de análisis temporal no solo es útil para identificar patrones políticos, sino también para cruzar estos cambios con la percepción de felicidad de la población y evaluar si existe alguna asociación relevante entre ambas dimensiones.
 
 Dado que uno de los objetivos principales de este análisis es estudiar la evolución de la felicidad y sus determinantes a lo largo del tiempo, necesitamos trabajar con una base de datos que tenga cobertura completa para el periodo 2015–2024. En este sentido, hemos optado por utilizar la base de datos formada por los datasets "World Happiness" y "Freedom in the World", excluyendo la base de datos de "Democracy Data".
 
-Esta decisión se debe a que la base de datos de democracia únicamente contiene información hasta el año 2020, lo cual limitaría drásticamente el análisis longitudinal si trabajásemos únicamente con ella. Por lo tanto, para poder aplicar técnicas de medidas repetidas, donde analizamos cómo varían las observaciones de un mismo país a lo largo de varios años, necesitamos una base con continuidad temporal. 
+Esta decisión se debe a que la base de datos de democracia únicamente contiene información hasta el año 2020, lo cual limitaría drásticamente el análisis longitudinal si trabajásemos únicamente con ella. Por lo tanto, para poder aplicar técnicas de medidas repetidas, donde analizamos cómo varían las observaciones de un mismo país a lo largo de varios años, necesitamos una base con continuidad temporal.
 
 No obstante, la base de "Democracy Data" no se descarta completamente. Se utilizará como complemento para proporcionar una fotografía institucional y política de los países, especialmente útil para interpretar fenómenos relevantes detectados durante el análisis longitudinal. Esta fotografía será especialmente relevante en los años en los que se observe una caída o subida abrupta en la felicidad, y nos permitirá contextualizar esos movimientos a través del tipo de régimen, la existencia de elecciones libres o la alternancia en el poder, entre otros factores.
 
 Ahora que ya tenemos preparado el dataset, es momento de empezar a ver la evolución de la variable objetivo a lo largo del tiempo. Para ello, podemos hacer uso de mapas que nos ayudan a interpretar la información.
 
-```{r mapamundi, include=FALSE, warning=FALSE}
+```{r mapamundi, echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
 library(plotly)
 library(dplyr)
 library(sf)
 library(rnaturalearth)
+library(ggplot2)
 
+# Normalizar nombre de países si es necesario
+df_sin_democracia_sin_na <- df_sin_democracia_sin_na %>%
+  mutate(country = case_when(
+    country == "United States" ~ "United States of America",
+    country == "Russia" ~ "Russian Federation",
+    country == "Iran" ~ "Iran (Islamic Republic of)",
+    TRUE ~ country
+  ))
+
+# Mapa base + unión
 world_map <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf") %>%
-  left_join(df_sin_democracia_sin_na, by = c("name" = "country"))
+  left_join(filter(df_sin_democracia_sin_na, year == 2020), by = c("name" = "country"))
 
-mapa_felicidad <- plot_ly(world_map, 
-                          type = "choropleth",
-                          locations = ~iso_a3,
-                          z = ~happiness_score,
-                          text = ~name,
-                          colorscale = "Viridis") %>%
-  layout(title = "Mapa de Felicidad por País (Sin democracia, sin NA)")
+# Simplificar geometría (más rápido para plotly)
+world_map_s <- st_simplify(world_map, dTolerance = 500)
 
+# Mapa para PDF (ggplot)
 if (knitr::is_latex_output()) {
-  # Solo si quieres exportar a PDF y tienes phantomjs funcionando
-  try({
-    htmlwidgets::saveWidget(mapa_felicidad, "temp_map.html", selfcontained = TRUE)
-    webshot2::webshot("temp_map.html", "mapa_felicidad_sin_democracia.png", vwidth = 1200, vheight = 800)
-    cat("![](mapa_felicidad_sin_democracia.png)")
-  }, silent = TRUE)
+  mapa_felicidad_gg <- ggplot(world_map_s) +
+    geom_sf(aes(fill = happiness_score)) +
+    scale_fill_viridis_c(name = "Happiness Score") +
+    theme_void() +
+    labs(title = "Mapa de Felicidad por País (Sin democracia, 2020)")
+
+  ggsave("mapa_felicidad_2020.png", mapa_felicidad_gg, width = 10, height = 6, dpi = 300)
+  cat("![](mapa_felicidad_2020.png)")
 } else {
-  mapa_felicidad
+  # Mapa interactivo para HTML
+  fig <- plot_geo(world_map_s) %>%
+    add_trace(
+      z = ~happiness_score,
+      color = ~happiness_score,
+      colorscale = "Viridis",
+      text = ~name,
+      locations = ~iso_a3,
+      marker = list(line = list(color = toRGB("grey"), width = 0.5))
+    ) %>%
+    colorbar(title = "Happiness Score") %>%
+    layout(
+      title = "Mapa de Felicidad por País (Sin democracia, 2020)",
+      geo = list(
+        showframe = FALSE,
+        showcoastlines = FALSE,
+        projection = list(type = "Mercator")
+      )
+    )
+  fig
 }
 ```
 
+El mapa de felicidad por país en 2020 muestra una clara heterogeneidad geográfica en la percepción del bienestar, capturada a través del Happiness Score. Se observan regiones del norte global, como Europa Occidental, América del Norte y Oceanía, con los niveles más altos de felicidad (colores amarillos y verde claro), mientras que regiones del sur global, especialmente África Subsahariana y algunas partes de Asia como Afganistán o India, presentan valores notablemente más bajos (colores azul oscuro o morado).
+
+Países como Finlandia, Noruega y Nueva Zelanda destacan con las puntuaciones más altas, reflejando contextos estables y altos niveles de desarrollo económico y social. En contraste, países como Zimbabwe, Sudán del Sur o Afganistán presentan los niveles más bajos, lo cual es coherente con contextos de conflicto, pobreza o inestabilidad política.
+
+Este mapa no solo permite identificar diferencias entre regiones, sino también subrayar patrones estructurales: América Latina, por ejemplo, muestra un nivel medio de felicidad, con cierta variabilidad entre países. Es especialmente útil para detectar casos anómalos, como países con puntuaciones bajas en regiones generalmente altas o viceversa.
+
+En conjunto, el gráfico evidencia de forma visual el impacto que pueden tener factores estructurales como el desarrollo, la gobernanza o la estabilidad en la percepción subjetiva del bienestar de los ciudadanos a nivel global.
+
 Por otro lado, también podemos utilizar gráficos de violines. En este caso, podemos ver cómo la puntuación de la felicidad varía en función de la región.
 
-```{r include=FALSE, warning=FALSE}
-# Filtrar por los años solicitados
-df_violin <- df_sin_democracia_sin_na %>% 
-  filter(year %in% c(2015, 2020, 2024))
+```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
+# Orden geográfico manual (puedes ajustarlo si tienes una lógica diferente)
+orden_regiones <- c(
+  "Western Europe",
+  "Central and Eastern Europe",
+  "Commonwealth of Independent States",
+  "Middle East and North Africa",
+  "Sub-Saharan Africa",
+  "South Asia",
+  "Southeast Asia",
+  "East Asia",
+  "Latin America and Caribbean",
+  "North America and ANZ"
+)
+
+# Filtrar y reordenar niveles de las regiones
+df_violin <- df_sin_democracia_sin_na %>%
+  filter(year %in% c(2015, 2020, 2024)) %>%
+  mutate(regional_indicator = factor(regional_indicator, levels = orden_regiones))
 
 # Crear gráfico con facetas por año y mediana
 p <- ggplot(df_violin, aes(x = regional_indicator, y = happiness_score, fill = regional_indicator)) +
-  geom_violin(alpha = 0.6, trim = FALSE) +  # trim=FALSE muestra mejor las colas
-  stat_summary(fun = median, geom = "point", color = "black", shape = 18, size = 2) +  # Mediana
+  geom_violin(alpha = 0.6, trim = FALSE) +
+  stat_summary(fun = median, geom = "point", color = "black", shape = 18, size = 2) +
   theme_minimal() +
   facet_wrap(~ year, ncol = 1) +
   labs(
@@ -562,73 +661,132 @@ En general, la forma de las distribuciones se mantiene similar entre 2015 y 2024
 
 Otra de las variables que nos puede ayudar a interpretar la información es la percepción de la corrupción según las diferentes regiones.
 
-```{r echo=FALSE, warning=FALSE}
-p <- ggplot(df_sin_democracia_sin_na, aes(x = regional_indicator, y = perceptions_of_corruption, fill = regional_indicator)) +
-  geom_violin(alpha = 0.7) + 
-  theme_minimal() + 
-  labs(title = "Distribución de la Percepción de Corrupción por Región", x = "Región", y = "Percepción de Corrupción") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
+# Orden geográfico de las regiones
+orden_regiones <- c(
+  "Western Europe",
+  "Central and Eastern Europe",
+  "Commonwealth of Independent States",
+  "Middle East and North Africa",
+  "Sub-Saharan Africa",
+  "South Asia",
+  "Southeast Asia",
+  "East Asia",
+  "Latin America and Caribbean",
+  "North America and ANZ"
+)
+
+# Filtrar solo los años deseados y aplicar orden
+df_corrupcion <- df_sin_democracia_sin_na %>% 
+  filter(year %in% c(2015, 2020, 2024)) %>%
+  mutate(regional_indicator = factor(regional_indicator, levels = orden_regiones))
+
+# Gráfico con violines por región y año
+p <- ggplot(df_corrupcion, aes(x = regional_indicator, y = perceptions_of_corruption, fill = regional_indicator)) +
+  geom_violin(alpha = 0.6, trim = FALSE) +
+  stat_summary(fun = median, geom = "point", color = "black", shape = 18, size = 2) +
+  theme_minimal() +
+  facet_wrap(~ year, ncol = 1) +
+  labs(
+    title = "Distribución de la Percepción de Corrupción por Región (2015, 2020, 2024)",
+    x = "Región",
+    y = "Percepción de Corrupción"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none"
+  )
+
+# Mostrar según el tipo de output
 if (knitr::is_latex_output()) {
-  ggsave("violines_felicidad.png", p)
-  cat("![](violines_felicidad.png)")
+  ggsave("violines_corrupcion_por_anio.png", p, width = 10, height = 12)
+  cat("![](violines_corrupcion_por_anio.png)")
 } else {
   ggplotly(p)
 }
 ```
 
+El gráfico de violines permite observar la evolución de la percepción de corrupción en las distintas regiones a lo largo del tiempo, mostrando tanto la mediana como la distribución completa de los datos. Lo más destacable es la aparición de una clara bimodalidad en algunas regiones a partir de 2020 y especialmente en 2024, lo que sugiere una divergencia creciente entre países dentro de la misma región.
+
+Europa Occidental mantiene una distribución relativamente estable a lo largo del tiempo, con una percepción de corrupción baja en general (valores altos), aunque en 2024 aparece una mayor dispersión que en 2015 y 2020. Sin embargo, en Europa Central y Oriental se observa un patrón inverso. En 2015 y 2020, la percepción es bastante alta (valores cercanos a 1), pero en 2024 se evidencia una caída brusca en la percepción positiva (valores muy bajos), lo que indica un empeoramiento de la percepción ciudadana sobre la corrupción en algunos países, como puede ser el caso de Hungría o Polonia.
+
+Commonwealth of Independent States muestra una bimodalidad clara en 2024, mientras que en 2015 y 2020 predominaba un grupo más homogéneo. Esto sugiere que algunos países han experimentado mejoras o retrocesos significativos, diferenciándose del resto. América Latina y el Caribe también muestra un cambio claro: de una percepción moderadamente positiva en 2015 a una distribución más polarizada en 2020 y 2024, reflejando posiblemente tensiones políticas y escándalos de corrupción en países como Venezuela, Nicaragua o Bolivia.
+
+En Asia del Este se observa una distribución muy compacta en 2015 y 2020, pero con una clara ruptura en 2024, lo que podría estar relacionado con dinámicas opuestas en países como China (control político férreo) frente a otros con gobiernos más abiertos. Por el contrario, regiones como Asia del Sur y África Sub-Sahariana muestran distribuciones bajas y más estables, aunque con una ligera mejora hacia 2024 en la percepción media.
+
+Este análisis permite detectar no solo la evolución de la percepción media, sino también la heterogeneidad creciente dentro de regiones, y puede servir de base para cruzar estos patrones con los cambios políticos identificados previamente, evaluando si el deterioro institucional y la concentración del poder están efectivamente correlacionados con una mayor percepción de corrupción entre la ciudadanía.
+
 Con el objetivo de comprender cómo ha cambiado la situación global en términos de bienestar subjetivo y factores asociados, analizamos a continuación la evolución promedio anual de las principales variables del informe de felicidad. Esta visualización nos permitirá detectar tendencias crecientes o decrecientes y posibles impactos globales, como crisis políticas, sanitarias o económicas.
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-library(patchwork)
 
-# Seleccionamos las variables numéricas de interés
-vars_evol <- df_sin_democracia_sin_na %>%
+# Variables numéricas de interés
+vars_interes <- c("happiness_score", "gdp_per_capita", "social_support", 
+                  "healthy_life_expectancy", "freedom_to_make_life_choices", 
+                  "generosity", "perceptions_of_corruption")
+
+# Media global
+media_global <- df_sin_democracia_sin_na %>%
   group_by(year) %>%
-  summarise(
-    happiness_score = mean(happiness_score, na.rm = TRUE),
-    gdp_per_capita = mean(gdp_per_capita, na.rm = TRUE),
-    social_support = mean(social_support, na.rm = TRUE),
-    healthy_life_expectancy = mean(healthy_life_expectancy, na.rm = TRUE),
-    freedom_to_make_life_choices = mean(freedom_to_make_life_choices, na.rm = TRUE),
-    generosity = mean(generosity, na.rm = TRUE),
-    perceptions_of_corruption = mean(perceptions_of_corruption, na.rm = TRUE)
-  ) %>%
-  pivot_longer(cols = -year, names_to = "variable", values_to = "media")
+  summarise(across(all_of(vars_interes), mean, na.rm = TRUE)) %>%
+  mutate(country = "Media Global") %>%
+  pivot_longer(cols = -c(year, country), names_to = "variable", values_to = "media")
+
+# Datos de los países a comparar
+paises <- c("Venezuela", "Turkey", "Hungary")
+paises_data <- df_sin_democracia_sin_na %>%
+  filter(country %in% paises) %>%
+  select(year, country, all_of(vars_interes)) %>%
+  pivot_longer(cols = -c(year, country), names_to = "variable", values_to = "media")
+
+# Combinar todo
+data_comparada <- bind_rows(media_global, paises_data)
 
 # Gráfico
-ggplot(vars_evol, aes(x = year, y = media, color = variable)) +
+ggplot(data_comparada, aes(x = year, y = media, color = country)) +
   geom_line(size = 1) +
   geom_point(size = 2) +
   facet_wrap(~variable, scales = "free_y") +
+  scale_color_manual(
+    values = c(
+      "Media Global" = "gray70",
+      "Venezuela" = "firebrick",
+      "Turkey" = "royalblue",
+      "Hungary" = "darkgreen"
+    )
+  ) +
+  scale_x_continuous(breaks = sort(unique(data_comparada$year))) +
   theme_minimal() +
-  labs(title = "Evolución anual del promedio de variables de interés",
-       x = "Año", y = "Media") +
-  theme(legend.position = "none")
+  labs(
+    title = "Comparación: Media Global vs Venezuela, Turquía y Hungría (2015–2024)",
+    x = "Año", y = "Valor medio", color = "País"
+  ) +
+  theme(strip.text = element_text(face = "bold"))
+
 ```
 
-El gráfico de la libertad para tomar decisiones destaca por su crecimiento constante, especialmente desde 2018. Este incremento podría reflejar mayores libertades percibidas por los ciudadanos en sus vidas personales, aunque también puede estar influido por cambios en algunos países concretos.
+La evolución anual del promedio de variables de interés refleja tendencias globales relevantes, pero su comparación con países concretos permite matizar dichas dinámicas y comprender mejor cómo contextos políticos específicos afectan al bienestar percibido por la población.
 
-La evolución del PIB per cápita presenta un pico atípico en 2016, probablemente derivado de algún valor extremo en la base de datos. A partir de ahí, la evolución es más estable, aunque con ligeros repuntes a partir de 2021, posiblemente debido a la recuperación económica tras la crisis sanitaria.
+En primer lugar, Venezuela se desmarca de forma clara en varias variables. El PIB per cápita presenta una caída drástica desde 2017, situándose muy por debajo de la media global a partir de 2018, lo que refleja la aguda crisis económica que atraviesa el país. Esta caída va acompañada de un descenso en la libertad para tomar decisiones y en la felicidad percibida, lo que sugiere un deterioro generalizado del bienestar. Sin embargo, resulta llamativo el aumento pronunciado en la generosidad a partir de 2021, superando incluso a la media global. Este fenómeno podría estar vinculado a la solidaridad comunitaria surgida ante la crisis prolongada, así como a cambios metodológicos en la forma en la que se capta esta variable en contextos de alta inestabilidad.
 
-La generosidad presenta un crecimiento sostenido desde 2016, con especial aceleración en los últimos tres años. Este repunte podría estar relacionado con respuestas solidarias durante la pandemia o con un cambio en los valores sociales.
+Por otro lado, Turquía muestra una tendencia decreciente en la libertad para tomar decisiones, especialmente desde 2018, coincidiendo con el fortalecimiento del poder ejecutivo bajo el liderazgo de Recep Tayyip Erdoğan. A pesar de mantener un PIB per cápita relativamente estable y una esperanza de vida en línea con la media global, la percepción de corrupción se mantiene sistemáticamente alta, lo cual refuerza la idea de un deterioro institucional progresivo. La felicidad percibida en Turquía permanece por debajo de la media, lo que puede reflejar un desencanto social persistente.
 
-La felicidad percibida muestra una tendencia creciente desde 2017 hasta alcanzar su punto máximo en 2022, seguido de un leve descenso en 2024. Esto sugiere una cierta recuperación post-pandemia, aunque sin volver a los niveles anteriores a 2017.
+En el caso de Hungría, se observa una situación más ambivalente. Por un lado, variables como la esperanza de vida, el apoyo social y la felicidad percibida se mantienen por encima de la media global, lo que sugiere una cierta estabilidad material y comunitaria. No obstante, la libertad para tomar decisiones experimenta un estancamiento, y la percepción de corrupción es elevada, lo cual coincide con el proceso de retroceso democrático documentado en el país desde mediados de la década de 2010. Este contraste pone de manifiesto cómo un país puede mantener ciertos niveles de bienestar mientras erosiona sus instituciones democráticas.
 
-La esperanza de vida muestra una tendencia claramente ascendente, aunque con ciertos altibajos. El incremento sostenido sugiere mejoras en salud pública y condiciones de vida, aunque no es posible descartar la influencia de datos específicos de algunos países.
+Este análisis complementa el estudio previo de la evolución global. Ya habíamos observado que, en conjunto, variables como la libertad para tomar decisiones y la generosidad presentan una evolución creciente, posiblemente impulsada por procesos de recuperación post-pandemia o cambios culturales. También destacaba un pico atípico en el PIB per cápita en 2016, probablemente debido a valores extremos, y una tendencia general de aumento en la felicidad percibida hasta 2022, seguida de un leve descenso. Por el contrario, la percepción de corrupción es más errática, con oscilaciones abruptas entre años, lo que refleja fuertes diferencias entre países.
 
-La percepción de corrupción presenta un patrón mucho más errático, con oscilaciones abruptas entre años. Esto refleja fuertes diferencias entre países o inestabilidades políticas concretas, y muestra que la percepción de corrupción no sigue una tendencia clara a nivel global.
-
-El apoyo social se mantiene relativamente estable en el tiempo, con una caída puntual en 2018. A pesar de ligeras oscilaciones, no se detectan cambios estructurales fuertes, lo que podría indicar una percepción constante del apoyo social entre los ciudadanos.
+La comparación entre países permite, por tanto, observar cómo procesos políticos específicos (autoritarismo, crisis económica, reformas institucionales) se reflejan en los indicadores de bienestar. Venezuela, Turquía y Hungría muestran trayectorias divergentes respecto a la media global, lo cual subraya la necesidad de un análisis desagregado para captar la complejidad del bienestar en contextos políticamente inestables o en transformación.
 
 Otra de las características que tenemos que analizar en esta base de datos es la existencia de valores atípicos que puedan afectar a nuestro análisis.
 
-```{r echo=FALSE, warning=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
 p <- ggplot(df_original, aes(x = factor(year), y = happiness_score)) +
   geom_boxplot() +
   theme_minimal() +
-  labs(title = "Distribución de Felicidad por Año", x = "Año", y = "Happiness Score")
+  labs(title = "Distribución de Felicidad por Año", x = "Año", y = "Happiness Score") 
 if (knitr::is_latex_output()) {
   ggsave("violines_felicidad.png", p)
   cat("![](violines_felicidad.png)")
@@ -644,11 +802,13 @@ df_afganistan <- df_sin_democracia_pmm %>% filter(country == "Afghanistan")
 ggplot(df_afganistan, aes(x = year, y = happiness_score)) +
   geom_line() +
   geom_point() +
-  labs(title = "Evolución del Happiness Score en Afganistán", x = "Año", y = "Happiness Score")
+  labs(title = "Evolución del Happiness Score en Afganistán", x = "Año", y = "Happiness Score") +
+  scale_x_continuous(breaks = unique(df_afganistan$year))
 df_region <- df_sin_democracia_pmm %>% filter(regional_indicator == "South Asia")
 ggplot(df_region, aes(x = year, y = happiness_score, color = country, group = country)) +
   geom_line() +
-  labs(title = "Evolución del Happiness Score en Asia del Sur", x = "Año", y = "Happiness Score")
+  labs(title = "Evolución del Happiness Score en Asia del Sur", x = "Año", y = "Happiness Score") +
+  scale_x_continuous(breaks = unique(df_afganistan$year))
 ```
 
 Afganistán sufre una gran caída de la felicidad a partir de 2017 y si lo comparamos con países de su región es el que menos puntuación tiene por bastante diferencia. Esto puede haberse dado por diversos factores, como el constante estado de guerra y conflicto en el que se ha encontrado el país, la presencia de los talibanes y otros grupos armados que han aumentado la violencia y el temor en la población, la enorme tasa de pobreza... Vamos a comparar la evolución de Afganistán con sus países vecinos para ver realmente qué puede estar afectando a tal bajada de la felicidad.
@@ -656,19 +816,24 @@ Afganistán sufre una gran caída de la felicidad a partir de 2017 y si lo compa
 ```{r echo=FALSE, warning=FALSE}
 ggplot(df_region, aes(x = year, y = gdp_per_capita, color = country, group = country)) +
   geom_line() +
-  labs(title = "Evolución del PIB en Asia del Sur", x = "Año", y = "PIB")
+  labs(title = "Evolución del PIB en Asia del Sur", x = "Año", y = "PIB") +
+  scale_x_continuous(breaks = unique(df_afganistan$year))
 ggplot(df_region, aes(x = year, y = social_support, color = country, group = country)) +
   geom_line() +
-  labs(title = "Evolución del apoyo social en Asia del Sur", x = "Año", y = "Apoyo social")
+  labs(title = "Evolución del apoyo social en Asia del Sur", x = "Año", y = "Apoyo social") +
+  scale_x_continuous(breaks = unique(df_afganistan$year))
 ggplot(df_region, aes(x = year, y = freedom_to_make_life_choices, color = country, group = country)) +
   geom_line() +
-  labs(title = "Evolución de la libertad en la toma de decisiones de los ciudadanos en Asia del Sur", x = "Año", y = "Libertad en la toma de decisiones de los ciudadanos")
+  labs(title = "Evolución de la libertad en la toma de decisiones de los ciudadanos en Asia del Sur", x = "Año", y = "Libertad en la toma de decisiones de los ciudadanos") +
+  scale_x_continuous(breaks = unique(df_afganistan$year))
 ggplot(df_region, aes(x = year, y = political_rights, color = country, group = country)) +
   geom_line() +
-  labs(title = "Evolución de la privación de derechos políticos en Asia del Sur", x = "Año", y = "Privación de derechos políticos")
+  labs(title = "Evolución de la privación de derechos políticos en Asia del Sur", x = "Año", y = "Privación de derechos políticos") +
+  scale_x_continuous(breaks = unique(df_afganistan$year))
 ggplot(df_region, aes(x = year, y = civil_liberties, color = country, group = country)) +
   geom_line() +
-  labs(title = "Evolución de la privación de libertades civiles en Asia del Sur", x = "Año", y = "Privación de libertades civiles")
+  labs(title = "Evolución de la privación de libertades civiles en Asia del Sur", x = "Año", y = "Privación de libertades civiles") +
+  scale_x_continuous(breaks = unique(df_afganistan$year))
 ```
 
 Afganistán es el país con PIB más bajo, pero tampoco hay mucha diferencia con el resto; evolucionando acorde con sus países vecinos. Si nos fijamos en el apoyo social, aunque sigue la tendencia de sus vecinos, vemos cómo en el caso de Afganistán el apoyo social baja estrepitosamente hasta el punto de decir que es nulo a partir de 2021; justo cuando los talibanes toman el poder, lo cual ha podido afectar negativamente a la felicidad de los ciudadanos. Afganistán es, con gran diferencia, el país de Asia del Sur donde los ciudadanos tienen menos libertad para tomar decisiones; privándoles de una libertad que afecta de manera directa al descontento de los ciudadanos. Si nos fijamos en el resto de gráficas, vemos cómo Afganistán es el país donde más se ha privado de sus derechos políticos y donde menor libertad civil hay en todo Asia del Sur; lo cual explica por qué Afganistán tiene una puntuación de la felicidad tan baja en comparación con el resto del mundo.
