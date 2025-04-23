@@ -441,34 +441,120 @@ print(cambios_variables)
 
 Una de las preguntas más interesantes al trabajar con datos longitudinales sobre países es si sus características políticas se mantienen estables o si sufren cambios significativos a lo largo de los años. Aunque la mayoría de los países presentan estabilidad en estas variables durante el período 2015-2020, hemos identificado cambios en una serie de países que han experimentado transformaciones en su tipo de régimen, forma de gobierno o estatus democrático. A continuación, exploramos gráficamente cómo han evolucionado estos cambios en el tiempo.
 
-```{r echo=FALSE, warning=FALSE, message=FALSE}
-paises_con_cambios <- c("Angola", "Bolivia", "Burkina Faso", "Burundi", "China", "Comoros",
-                        "Congo (Kinshasa)", "Egypt", "Honduras", "Hungary", "Iraq", "Kenya",
-                        "Laos", "Liberia", "Madagascar", "Myanmar", "Nicaragua", "Turkey",
-                        "Venezuela", "Yemen", "Zimbabwe")
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=12, fig.height=8}
+# Definir las variables binarias si no están previamente definidas
+variables_binarias <- c("has_alternation", "has_free_and_fair_election", "is_democracy")
 
-# Variables categóricas que han cambiado
-variables_categoricas <- c("regime_category", "is_democracy",
-                           "electoral_category", "has_free_and_fair_election", "has_alternation")
+# Definir los países de interés
+paises_con_cambios <- c("Comoros", "Congo (Kinshasa)", "Madagascar", "Nicaragua", "Turkey", "Venezuela",
+                        "Angola", "Bolivia", "Liberia", "Honduras", "Hungary", "Kenya")
 
-# Transformar las variables a carácter para evitar conflictos en pivot_longer
-df_cambios <- df_completo %>%
+# Opcional: destacar un subconjunto de países para visualizar
+paises_destacados <- paises_con_cambios
+
+# Preparar los datos
+df_binarias_segmentos <- df_completo %>%
   filter(country %in% paises_con_cambios) %>%
-  mutate(across(all_of(variables_categoricas), as.character)) %>%
-  select(country, year, all_of(variables_categoricas)) %>%
-  pivot_longer(cols = -c(country, year), names_to = "variable", values_to = "valor")
+  mutate(across(all_of(variables_binarias), as.character)) %>%
+  select(country, year, all_of(variables_binarias)) %>%
+  pivot_longer(cols = -c(country, year), names_to = "variable", values_to = "valor") %>%
+  group_by(country, variable) %>%
+  arrange(year, .by_group = TRUE) %>%
+  mutate(
+    valor_num = ifelse(valor %in% c("TRUE", "yes"), 1, 0),
+    year_next = lead(year),
+    valor_next = lead(valor),
+    valor_next_num = ifelse(valor_next %in% c("TRUE", "yes"), 1, 0),
+    tipo_cambio = case_when(
+      is.na(valor_next) ~ NA_character_,
+      valor_num == valor_next_num ~ "sin cambio",
+      valor_num == 0 & valor_next_num == 1 ~ "avance",
+      valor_num == 1 & valor_next_num == 0 ~ "retroceso"
+    )
+  ) %>%
+  filter(!is.na(tipo_cambio)) %>%
+  ungroup()
 
-# Gráfico
-ggplot(df_cambios, aes(x = year, y = valor, group = country, color = country)) +
-  geom_line(linewidth = 0.8) +
-  facet_wrap(~ variable, scales = "free_y") +
+# Filtrado para países destacados
+df_binarias_filtrado <- df_binarias_segmentos %>%
+  filter(country %in% paises_destacados)
+
+# Gráfico final
+ggplot(df_binarias_filtrado, aes(x = year, xend = year_next,
+                                 y = valor_num, yend = valor_next_num,
+                                 color = tipo_cambio)) +
+  geom_segment(linewidth = 1) +
+  facet_grid(country ~ variable) +
+  scale_color_manual(values = c("avance" = "forestgreen",
+                                "retroceso" = "firebrick",
+                                "sin cambio" = "gray70")) +
+  scale_y_continuous(breaks = c(0, 1), labels = c("FALSE", "TRUE")) +
   theme_minimal() +
-  labs(title = "Evolución de variables políticas en países con cambios",
-       x = "Año", y = "Valor", color = "País") +
+  labs(title = "Evolución de variables políticas binarias por país (cambio de color según tipo)",
+       x = "Año", y = "Valor", color = "Tipo de cambio") +
   theme(legend.position = "bottom",
-        axis.text.x = element_text(angle = 45, hjust = 1))
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        strip.text.y = element_text(angle = 0))
+
+
 ```
 
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=12, fig.height=8}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+# Lista base de países con posibles cambios
+paises_cambio <- c("Bolivia", "Burkina Faso", "Burundi", "Comoros",
+                   "Egypt", "Honduras", "Hungary", "Iraq", "Kenya",
+                   "Laos", "Liberia", "Myanmar", "Nicaragua", "Turkey",
+                   "Venezuela", "Yemen", "Zimbabwe")
+
+# Preparamos los datos
+df_categoricas <- df_completo %>%
+  filter(country %in% paises_cambio) %>%
+  select(country, year, regime_category, electoral_category) %>%
+  mutate(across(c(regime_category, electoral_category), as.character)) %>%
+  pivot_longer(cols = c(regime_category, electoral_category),
+               names_to = "variable", values_to = "valor")
+
+# 1. Gráfico para regime_category (quitamos Egipto)
+df_regime <- df_categoricas %>%
+  filter(variable == "regime_category", country != "Egypt")
+
+ggplot(df_regime, aes(x = year, y = valor, group = country, color = valor)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  facet_wrap(~ country, scales = "free_y") +
+  theme_minimal() +
+  labs(title = "Evolución de regime_category por país",
+       x = "Año", y = "Categoría de régimen", color = "Valor") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(size = 9),
+    legend.position = "bottom"
+  )
+
+# 2. Gráfico para electoral_category (quitamos los países indicados)
+excluir_electoral <- c("Burkina Faso", "Burundi", "Hungary", "Iraq", "Laos", "Myanmar", "Yemen", "Zimbabwe")
+
+df_electoral <- df_categoricas %>%
+  filter(variable == "electoral_category", !country %in% excluir_electoral)
+
+ggplot(df_electoral, aes(x = year, y = valor, group = country, color = valor)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  facet_wrap(~ country, scales = "free_y") +
+  theme_minimal() +
+  labs(title = "Evolución de electoral_category por país",
+       x = "Año", y = "Categoría electoral", color = "Valor") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(size = 9),
+    legend.position = "bottom"
+  )
+
+```
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
 library(dplyr)
@@ -476,14 +562,14 @@ library(tidyr)
 library(ggplot2)
 
 # Subconjunto con países que han tenido al menos un cambio
-paises_cambio <- c("Angola", "Bolivia", "Burkina Faso", "Burundi", "China", "Comoros",
+paises_cambio <- c("Angola", "Bolivia", "Burkina Faso", "Burundi", "Comoros",
                    "Congo (Kinshasa)", "Egypt", "Honduras", "Hungary", "Iraq", "Kenya",
                    "Laos", "Liberia", "Madagascar", "Myanmar", "Nicaragua", "Turkey",
                    "Venezuela", "Yemen", "Zimbabwe")
 
 # Variables categóricas de interés
 vars_politicas <- c("regime_category", "is_democracy", "electoral_category",
-                    "has_free_and_fair_election", "has_alternation", "is_presidential")
+                    "has_free_and_fair_election", "has_alternation")
 
 # Crear df con 1 si hay más de un valor distinto en el tiempo
 cambios_pais <- df_completo %>%
@@ -541,61 +627,25 @@ No obstante, la base de "Democracy Data" no se descarta completamente. Se utiliz
 
 Ahora que ya tenemos preparado el dataset, es momento de empezar a ver la evolución de la variable objetivo a lo largo del tiempo. Para ello, podemos hacer uso de mapas que nos ayudan a interpretar la información.
 
-```{r mapamundi, echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
-library(plotly)
-library(dplyr)
+```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
 library(sf)
 library(rnaturalearth)
-library(ggplot2)
 
-# Normalizar nombre de países si es necesario
-df_sin_democracia_sin_na <- df_sin_democracia_sin_na %>%
-  mutate(country = case_when(
-    country == "United States" ~ "United States of America",
-    country == "Russia" ~ "Russian Federation",
-    country == "Iran" ~ "Iran (Islamic Republic of)",
-    TRUE ~ country
-  ))
-
-# Mapa base + unión
-world_map <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf") %>%
+# Obtener mapa base y unir con datos de felicidad
+world_map <- ne_countries(scale = "medium", returnclass = "sf") %>%
   left_join(filter(df_sin_democracia_sin_na, year == 2020), by = c("name" = "country"))
+# Configuración del mapa
+l <- list(color = toRGB("grey"), width = 0.5)
+g <- list(showframe = FALSE, showcoastlines = FALSE, projection = list(type = 'Mercator'))
+# Usar iso_a3 como códigos de país
+fig2 <- plot_geo(world_map) %>%
+  add_trace(z = ~happiness_score, color = ~happiness_score, colorscale = "Viridis",
+            text = ~name, locations = ~iso_a3, marker = list(line = l)) %>%
+  colorbar(title = "Happiness Score") %>%
+  layout(title = 'Mapa de Felicidad por País (rnaturalearth + plotly)', geo = g)
 
-# Simplificar geometría (más rápido para plotly)
-world_map_s <- st_simplify(world_map, dTolerance = 500)
+fig2
 
-# Mapa para PDF (ggplot)
-if (knitr::is_latex_output()) {
-  mapa_felicidad_gg <- ggplot(world_map_s) +
-    geom_sf(aes(fill = happiness_score)) +
-    scale_fill_viridis_c(name = "Happiness Score") +
-    theme_void() +
-    labs(title = "Mapa de Felicidad por País (Sin democracia, 2020)")
-
-  ggsave("mapa_felicidad_2020.png", mapa_felicidad_gg, width = 10, height = 6, dpi = 300)
-  cat("![](mapa_felicidad_2020.png)")
-} else {
-  # Mapa interactivo para HTML
-  fig <- plot_geo(world_map_s) %>%
-    add_trace(
-      z = ~happiness_score,
-      color = ~happiness_score,
-      colorscale = "Viridis",
-      text = ~name,
-      locations = ~iso_a3,
-      marker = list(line = list(color = toRGB("grey"), width = 0.5))
-    ) %>%
-    colorbar(title = "Happiness Score") %>%
-    layout(
-      title = "Mapa de Felicidad por País (Sin democracia, 2020)",
-      geo = list(
-        showframe = FALSE,
-        showcoastlines = FALSE,
-        projection = list(type = "Mercator")
-      )
-    )
-  fig
-}
 ```
 
 El mapa de felicidad por país en 2020 muestra una clara heterogeneidad geográfica en la percepción del bienestar, capturada a través del Happiness Score. Se observan regiones del norte global, como Europa Occidental, América del Norte y Oceanía, con los niveles más altos de felicidad (colores amarillos y verde claro), mientras que regiones del sur global, especialmente África Subsahariana y algunas partes de Asia como Afganistán o India, presentan valores notablemente más bajos (colores azul oscuro o morado).
@@ -718,15 +768,15 @@ Este análisis permite detectar no solo la evolución de la percepción media, s
 
 Con el objetivo de comprender cómo ha cambiado la situación global en términos de bienestar subjetivo y factores asociados, analizamos a continuación la evolución promedio anual de las principales variables del informe de felicidad. Esta visualización nos permitirá detectar tendencias crecientes o decrecientes y posibles impactos globales, como crisis políticas, sanitarias o económicas.
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
+```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis', fig.width=12, fig.height=8}
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 
 # Variables numéricas de interés
-vars_interes <- c("happiness_score", "gdp_per_capita", "social_support", 
+vars_interes <- c("gdp_per_capita", "social_support", 
                   "healthy_life_expectancy", "freedom_to_make_life_choices", 
-                  "generosity", "perceptions_of_corruption")
+                  "generosity", "perceptions_of_corruption", "happiness_score")
 
 # Media global
 media_global <- df_sin_democracia_sin_na %>%
@@ -779,6 +829,53 @@ En el caso de Hungría, se observa una situación más ambivalente. Por un lado,
 Este análisis complementa el estudio previo de la evolución global. Ya habíamos observado que, en conjunto, variables como la libertad para tomar decisiones y la generosidad presentan una evolución creciente, posiblemente impulsada por procesos de recuperación post-pandemia o cambios culturales. También destacaba un pico atípico en el PIB per cápita en 2016, probablemente debido a valores extremos, y una tendencia general de aumento en la felicidad percibida hasta 2022, seguida de un leve descenso. Por el contrario, la percepción de corrupción es más errática, con oscilaciones abruptas entre años, lo que refleja fuertes diferencias entre países.
 
 La comparación entre países permite, por tanto, observar cómo procesos políticos específicos (autoritarismo, crisis económica, reformas institucionales) se reflejan en los indicadores de bienestar. Venezuela, Turquía y Hungría muestran trayectorias divergentes respecto a la media global, lo cual subraya la necesidad de un análisis desagregado para captar la complejidad del bienestar en contextos políticamente inestables o en transformación.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
+library(dplyr)
+library(ggplot2)
+library(viridis)
+
+# Calcular la media global por año
+media_anual <- df_sin_democracia_sin_na %>%
+  group_by(year) %>%
+  summarise(media_happiness = mean(happiness_score, na.rm = TRUE))
+
+# Unir la media con el dataframe original
+df_plot <- df_sin_democracia_sin_na %>%
+  filter(!is.na(happiness_score)) %>%
+  left_join(media_anual, by = "year")
+
+# Gráfico con facet por año y línea de la media global
+ggplot(df_plot, aes(x = reorder(country, -happiness_score), y = happiness_score, fill = happiness_score)) +
+  geom_col(show.legend = FALSE) +
+  geom_hline(aes(yintercept = media_happiness), color = "red", linetype = "dashed", linewidth = 0.8) +
+  facet_wrap(~ year, scales = "free_x") +
+  scale_fill_viridis_c() +
+  labs(
+    title = "Happiness Score por País (con media global por año)",
+    subtitle = "Línea roja discontinua = media global del año",
+    x = "País", y = "Happiness Score"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    strip.text = element_text(face = "bold")
+  )
+
+```
+
+El gráfico presentado muestra la evolución del Happiness Score por país entre los años 2015 y 2024, representando cada año en un panel independiente y añadiendo como referencia una línea roja discontinua que indica la media global de felicidad de ese año. Esta visualización permite realizar un análisis comparativo tanto entre países como a lo largo del tiempo, aportando una perspectiva clara sobre la distribución del bienestar subjetivo a escala mundial.
+
+Lo primero que llama la atención es la notable estabilidad de la media global a lo largo del periodo observado. La línea roja, que representa dicho promedio, se mantiene en un intervalo relativamente estrecho —aproximadamente entre 5.3 y 5.5 puntos—, lo que sugiere que, a nivel agregado, la percepción de felicidad mundial no ha sufrido cambios drásticos. Sin embargo, esta estabilidad global oculta dinámicas internas más complejas.
+
+A medida que avanzan los años, especialmente a partir de 2020, se observa un aumento progresivo en la cantidad de países que se sitúan por debajo de la media global. Esta tendencia podría estar vinculada al impacto de la pandemia de COVID-19 y sus secuelas económicas, sanitarias y sociales, que afectaron de manera desigual a distintas regiones. Asimismo, podría reflejar procesos de deterioro democrático o inestabilidad política en determinados contextos, tal y como se ha explorado en análisis previos sobre variables institucionales.
+
+El gráfico también pone de manifiesto la persistencia de fuertes desigualdades en la distribución del bienestar subjetivo. Mientras que un pequeño grupo de países —posiblemente naciones del norte de Europa como Finlandia, Dinamarca o Islandia— se mantiene de forma consistente en la parte superior del ranking con puntuaciones muy por encima de la media, la gran mayoría de países se concentra en la franja media o baja. Esta asimetría en la distribución revela que, si bien algunos países gozan de altos niveles de satisfacción vital sostenidos en el tiempo, muchos otros enfrentan barreras estructurales que dificultan mejorar su puntuación de felicidad.
+
+Un fenómeno adicional que merece atención es el ligero descenso en los valores máximos del Happiness Score en los últimos años. En 2023 y 2024, incluso los países mejor posicionados parecen haber perdido algo de ventaja con respecto a años anteriores. Esta caída podría interpretarse como un efecto retardado de los acontecimientos globales recientes, o como una normalización tras niveles particularmente elevados en años previos.
+
+En conjunto, el gráfico no solo reafirma que la media global se mantiene estable, sino que también evidencia un ensanchamiento de la brecha entre países y una posible tendencia al estancamiento o deterioro en la felicidad percibida a nivel nacional. La comparación interanual permite detectar trayectorias divergentes y resalta la necesidad de seguir analizando qué factores explican el desempeño diferencial de los países. Esta visualización resulta, por tanto, un complemento clave para comprender la evolución del bienestar en un contexto global marcado por desafíos económicos, políticos y sociales.
 
 Otra de las características que tenemos que analizar en esta base de datos es la existencia de valores atípicos que puedan afectar a nuestro análisis.
 

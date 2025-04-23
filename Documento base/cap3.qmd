@@ -34,7 +34,7 @@ El primer modelo que consideramos es una regresión lineal simple, en la que asu
 distance_i = \beta_0 + \beta_1 age_i + \epsilon_i$$
 Aquí, $distance_i$ es la distancia interdental de la observación $i$, $\beta_0$ es la intersección común a todos los sujetos, $\beta_1$ es la pendiente (cómo cambia la distancia con la edad), y $\epsilon_i$ es el error aleatorio.
 
-```{r include=FALSE, warning=FALSE}
+```{r include=FALSE, warning=FALSE, message=FALSE}
 # Cargar paquetes
 library(nlme)
 library(lme4)
@@ -49,7 +49,7 @@ modelo_fijo <- lm(distance ~ age, data = Orthodont)
 r2 <- summary(modelo_fijo)$r.squared
 ```
 
-```{r echo=FALSE, warning=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 library(ggplot2)
 ggplot(Orthodont, aes(x = age, y = distance)) +
   geom_point(alpha = 0.5) +
@@ -67,7 +67,7 @@ Ahora ajustamos un modelo con efectos aleatorios, en el que permitimos que cada 
 distance_{ij} = \beta_0 + u_i +\beta_1 age_{ij} + \epsilon_{ij}$$
 Ahora $distance_{ij}$ es la distancia para el individuo $i$ en la observación $j$. $u_i$ representa el efecto aleatorio de cada sujeto (intersección específica), $\beta_1$ es la pendiente común, y $\epsilon_{ij}$ es el error.
 
-```{r include=FALSE, warning=FALSE}
+```{r include=FALSE, warning=FALSE, message=FALSE}
 # Cargar paquetes
 library(nlme)
 library(lme4)
@@ -88,13 +88,17 @@ var_residual <- attr(VarCorr(modelo_aleatorio), "sc")^2
 
 ```
 
-```{r echo=FALSE, warning=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 library(ggplot2)
+# Gráfico mejorado para modelo con efectos aleatorios
 ggplot(Orthodont, aes(x = age, y = distance, group = Subject, color = Subject)) +
-  geom_line() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "Modelo con efectos aleatorios",
-       x = "Edad", y = "Distancia interdental", color = "Individuo")
+  geom_line(linetype = "dashed") +  # Línea discontinua para observaciones
+  geom_abline(intercept = fixef(modelo_aleatorio)[1] + ranef(modelo_aleatorio)$Subject[,1],
+              slope = fixef(modelo_aleatorio)[2],
+              color = "black", alpha = 0.2) +  # Una línea por sujeto
+  labs(title = "Modelo con efectos aleatorios (intercepto)", x = "Edad", y = "Distancia interdental") +
+  theme_minimal()
+
 
 ```
 
@@ -108,7 +112,7 @@ Finalmente, ajustamos un **Modelo Lineal Mixto (LMM)** en el que consideramos ta
 distance_{ij} = \beta_0 + u_i + (\beta_1 + v_i) age_{ij} + \epsilon_{ij}$$
 Aquí $u_i$ es la intersección específica de cada sujeto, y $v_i$ permite que la pendiente también varíe por individuo.
 
-```{r include=FALSE, warning=FALSE}
+```{r include=FALSE, warning=FALSE, message=FALSE}
 # Cargar paquetes
 library(nlme)
 library(lme4)
@@ -129,13 +133,19 @@ var_pendiente_completo <- as.numeric(VarCorr(modelo_mixto)$Subject["age", "age"]
 var_residual_completo <- attr(VarCorr(modelo_mixto), "sc")^2
 ```
 
-```{r echo=FALSE, warning=FALSE}
-library(ggplot2)
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+# Obtener coeficientes por individuo
+coefs <- coef(modelo_mixto)$Subject
+
+# Gráfico mejorado para modelo mixto
 ggplot(Orthodont, aes(x = age, y = distance, group = Subject, color = Subject)) +
-  geom_line() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "Modelo con efectos aleatorios",
-       x = "Edad", y = "Distancia interdental", color = "Individuo")
+  geom_line(linetype = "dashed") +  # Línea discontinua para observaciones
+  geom_abline(data = coefs, aes(intercept = `(Intercept)`, slope = age), 
+              color = "black", size = 0.6, alpha = 0.4) +
+  labs(title = "Modelo mixto (intercepto y pendiente aleatoria)", 
+       x = "Edad", y = "Distancia interdental") +
+  theme_minimal()
+
 
 ```
 
@@ -282,7 +292,7 @@ Esto permite modelar probabilidades condicionales considerando la variabilidad e
 
 Supongamos que queremos modelar si un estudiante aprueba un examen (`aprobado = 0/1`) en función de las horas de estudio (`horas`) y si el estudiante forma parte de un grupo diferente (`grupo`). Como los estudiantes tienen múltiples exámenes, añadimos un efecto aleatorio por `estudiante`.
 
-```{r echo=FALSE, warning=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 library(lme4)
 
 # Simulación de datos ejemplo
