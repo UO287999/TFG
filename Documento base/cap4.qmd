@@ -78,28 +78,47 @@ outliers::grubbs.test(df_original$freedom_to_make_life_choices)
 outliers::grubbs.test(df_original$generosity)
 outliers::grubbs.test(df_original$perceptions_of_corruption)
 # Como el p-valor es > alpha en todos los test, no tenemos outliers
+df_original <- df_original %>%
+  rename(
+    gdp = gdp_per_capita,
+    support = social_support,
+    life_exp = healthy_life_expectancy,
+    freedom = freedom_to_make_life_choices,
+    generosity = generosity,
+    corruption = perceptions_of_corruption
+  )
 ```
 
 ```{r echo=FALSE, warning=FALSE}
-# Seleccionamos solo las variables numéricas de interés
+# Reestructurar para ggplot
 df_box <- df_original %>%
-  select(happiness_score, gdp_per_capita, social_support, 
-         healthy_life_expectancy, freedom_to_make_life_choices, 
-         generosity, perceptions_of_corruption)
+  select(happiness_score, gdp, support, life_exp, freedom, generosity, corruption)
 
-# Reestructuramos a formato largo para ggplot
 df_box_long <- df_box %>%
   pivot_longer(cols = everything(), names_to = "variable", values_to = "valor")
 
-# Gráfico unificado de boxplots
-ggplot(df_box_long, aes(x = variable, y = valor, fill = variable)) +
+# Separar en dos subconjuntos según el rango
+df_box_01 <- df_box_long %>% filter(variable %in% c("support", "freedom", "generosity", "corruption"))
+df_box_rest <- df_box_long %>% filter(variable %in% c("happiness_score", "gdp", "life_exp"))
+
+# Gráfico para variables entre 0 y 1
+ggplot(df_box_01, aes(x = variable, y = valor, fill = variable)) +
   geom_boxplot(alpha = 0.7) +
-  labs(title = "Distribución de variables cuantitativas",
-       x = "Variable",
-       y = "Valor") +
+  labs(title = "Distribución de variables entre 0 y 1",
+       x = "Variable", y = "Valor") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "none")
+
+# Gráfico para el resto
+ggplot(df_box_rest, aes(x = variable, y = valor, fill = variable)) +
+  geom_boxplot(alpha = 0.7) +
+  labs(title = "Distribución del resto de variables cuantitativas",
+       x = "Variable", y = "Valor") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+
 ```
 
 Podemos ver como en la base de datos no hay valores faltantes, y a través de este análisis, vemos como tampoco hay valores atípicos. No obstante, para complementar nuestro análisis de la base de datos World Happiness, hemos considerado integrar información de dos fuentes externas que aportan indicadores políticos y de libertades civiles en los países. Estas bases de datos nos permitirán explorar hasta qué punto la democracia, los derechos políticos y las libertades influyen en la percepción de felicidad de las sociedades.
@@ -289,6 +308,18 @@ democracy_final <- democracy_data %>%
     spatial_electoral, 
     has_free_and_fair_election, 
     has_alternation
+  ) %>%
+  rename(
+    monarchy = is_monarchy,
+    democracy = is_democracy,
+    presidential = is_presidential,
+    colony = is_colony,
+    communist = is_communist,
+    sp_democracy = spatial_democracy,
+    suffrage = has_full_suffrage,
+    sp_electoral = spatial_electoral,
+    fair_election = has_free_and_fair_election,
+    alternation = has_alternation
   )
 democracy_final <- democracy_final %>%
   filter(year >= 2015 & year <= 2024)
@@ -393,7 +424,7 @@ df_completo_pmm <- df_completo_pmm %>%
       country == "Gambia" ~ "Sub-Saharan Africa",
       TRUE ~ regional_indicator
     ),
-    is_colony = ifelse(country == "Libya", FALSE, is_colony)
+    colony = ifelse(country == "Libya", FALSE, colony)
   ) %>%
   filter(!country %in% c("North Cyprus", "Kosovo", "Somaliland", "State of Palestine"))
 
@@ -422,10 +453,10 @@ df_sin_democracia_sin_na <- df_sin_democracia_sin_na %>%
 
 ```{r include=FALSE, message=FALSE, warning=FALSE}
 # Variables políticas que queremos analizar
-variables_politicas <- c("regime_category", "is_monarchy", "is_democracy", 
-                         "is_presidential", "is_colony", "is_communist", 
-                         "has_full_suffrage", "electoral_category", 
-                         "has_free_and_fair_election", "has_alternation")
+variables_politicas <- c("regime_category", "monarchy", "democracy", 
+                         "presidential", "colony", "communist", 
+                         "suffrage", "electoral_category", 
+                         "fair_election", "alternation")
 
 # Verificar cambios a lo largo del tiempo
 cambios_variables <- df_completo %>%
@@ -443,7 +474,7 @@ Una de las preguntas más interesantes al trabajar con datos longitudinales sobr
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=12, fig.height=8}
 # Definir las variables binarias si no están previamente definidas
-variables_binarias <- c("has_alternation", "has_free_and_fair_election", "is_democracy")
+variables_binarias <- c("alternation", "fair_election", "democracy")
 
 # Definir los países de interés
 paises_con_cambios <- c("Comoros", "Congo (Kinshasa)", "Madagascar", "Nicaragua", "Turkey", "Venezuela",
@@ -568,8 +599,8 @@ paises_cambio <- c("Angola", "Bolivia", "Burkina Faso", "Burundi", "Comoros",
                    "Venezuela", "Yemen", "Zimbabwe")
 
 # Variables categóricas de interés
-vars_politicas <- c("regime_category", "is_democracy", "electoral_category",
-                    "has_free_and_fair_election", "has_alternation")
+vars_politicas <- c("regime_category", "democracy", "electoral_category",
+                    "fair_election", "alternation")
 
 # Crear df con 1 si hay más de un valor distinto en el tiempo
 cambios_pais <- df_completo %>%
@@ -628,23 +659,48 @@ No obstante, la base de "Democracy Data" no se descarta completamente. Se utiliz
 Ahora que ya tenemos preparado el dataset, es momento de empezar a ver la evolución de la variable objetivo a lo largo del tiempo. Para ello, podemos hacer uso de mapas que nos ayudan a interpretar la información.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
-library(sf)
-library(rnaturalearth)
+library(plotly)
+library(dplyr)
+library(readr)
 
-# Obtener mapa base y unir con datos de felicidad
-world_map <- ne_countries(scale = "medium", returnclass = "sf") %>%
-  left_join(filter(df_sin_democracia_sin_na, year == 2020), by = c("name" = "country"))
-# Configuración del mapa
+# Dataset de Plotly con códigos ISO
+df_base <- read.csv('https://raw.githubusercontent.com/plotly/datasets/master/2014_world_gdp_with_codes.csv')
+
+# Leer el CSV local de felicidad
+df_felicidad <- df_sin_democracia_sin_na
+
+# Unir datasets por nombre de país
+df_mapa1 <- df_base %>%
+  left_join(filter(df_felicidad, year == 2020), by = c("COUNTRY" = "country")) %>%
+  filter(!is.na(happiness_score))  # Evitar NA en mapa
+
 l <- list(color = toRGB("grey"), width = 0.5)
 g <- list(showframe = FALSE, showcoastlines = FALSE, projection = list(type = 'Mercator'))
-# Usar iso_a3 como códigos de país
-fig2 <- plot_geo(world_map) %>%
-  add_trace(z = ~happiness_score, color = ~happiness_score, colorscale = "Viridis",
-            text = ~name, locations = ~iso_a3, marker = list(line = l)) %>%
-  colorbar(title = "Happiness Score") %>%
-  layout(title = 'Mapa de Felicidad por País (rnaturalearth + plotly)', geo = g)
 
-fig2
+fig1 <- plot_geo(df_mapa1) %>%
+  add_trace(
+    z = ~happiness_score, color = ~happiness_score, colorscale = "Viridis",
+    text = ~COUNTRY, locations = ~CODE, marker = list(line = l)
+  ) %>%
+  colorbar(title = "Happiness Score") %>%
+  layout(title = 'Países con datos de felicidad (2020)', geo = g)
+
+fig1
+if (knitr::is_latex_output()) {
+  # Guardar HTML y exportar como imagen
+  html_file <- "mapa_interactivo.html"
+  png_file <- "mapa_interactivo.png"
+  saveWidget(fig1, file = html_file, selfcontained = TRUE)
+  webshot2::webshot(html_file, file = png_file, vwidth = 1200, vheight = 800)
+  
+  # Insertar imagen con LaTeX puro para evitar errores
+  cat('\\begin{center}\n')
+  cat('\\includegraphics[width=0.9\\linewidth]{mapa_interactivo.png}\n')
+  cat('\\end{center}\n')
+} else {
+  fig1
+}
+
 
 ```
 
@@ -732,7 +788,7 @@ df_corrupcion <- df_sin_democracia_sin_na %>%
   mutate(regional_indicator = factor(regional_indicator, levels = orden_regiones))
 
 # Gráfico con violines por región y año
-p <- ggplot(df_corrupcion, aes(x = regional_indicator, y = perceptions_of_corruption, fill = regional_indicator)) +
+p <- ggplot(df_corrupcion, aes(x = regional_indicator, y = corruption, fill = regional_indicator)) +
   geom_violin(alpha = 0.6, trim = FALSE) +
   stat_summary(fun = median, geom = "point", color = "black", shape = 18, size = 2) +
   theme_minimal() +
@@ -774,9 +830,9 @@ library(tidyr)
 library(ggplot2)
 
 # Variables numéricas de interés
-vars_interes <- c("gdp_per_capita", "social_support", 
-                  "healthy_life_expectancy", "freedom_to_make_life_choices", 
-                  "generosity", "perceptions_of_corruption", "happiness_score")
+vars_interes <- c("gdp", "support", 
+                  "life_exp", "freedom", 
+                  "generosity", "corruption", "happiness_score")
 
 # Media global
 media_global <- df_sin_democracia_sin_na %>%
@@ -835,26 +891,34 @@ library(dplyr)
 library(ggplot2)
 library(viridis)
 
-# Calcular la media global por año
+# 1. Calcular la media global por país (en todo el periodo)
+orden_paises <- df_sin_democracia_sin_na %>%
+  group_by(country) %>%
+  summarise(media_pais = mean(happiness_score, na.rm = TRUE)) %>%
+  arrange(desc(media_pais)) %>%
+  pull(country)
+
+# 2. Calcular media global por año
 media_anual <- df_sin_democracia_sin_na %>%
   group_by(year) %>%
   summarise(media_happiness = mean(happiness_score, na.rm = TRUE))
 
-# Unir la media con el dataframe original
+# 3. Preparar dataset con orden fijo
 df_plot <- df_sin_democracia_sin_na %>%
   filter(!is.na(happiness_score)) %>%
-  left_join(media_anual, by = "year")
+  left_join(media_anual, by = "year") %>%
+  mutate(country = factor(country, levels = orden_paises))
 
-# Gráfico con facet por año y línea de la media global
-ggplot(df_plot, aes(x = reorder(country, -happiness_score), y = happiness_score, fill = happiness_score)) +
+# 4. Gráfico con orden constante y media global por año
+ggplot(df_plot, aes(x = country, y = happiness_score, fill = happiness_score)) +
   geom_col(show.legend = FALSE) +
   geom_hline(aes(yintercept = media_happiness), color = "red", linetype = "dashed", linewidth = 0.8) +
   facet_wrap(~ year, scales = "free_x") +
   scale_fill_viridis_c() +
   labs(
-    title = "Happiness Score por País (con media global por año)",
+    title = "Happiness Score por País (orden constante + media global por año)",
     subtitle = "Línea roja discontinua = media global del año",
-    x = "País", y = "Happiness Score"
+    x = "País (ordenado por media global)", y = "Happiness Score"
   ) +
   theme_minimal() +
   theme(
@@ -862,6 +926,7 @@ ggplot(df_plot, aes(x = reorder(country, -happiness_score), y = happiness_score,
     axis.ticks.x = element_blank(),
     strip.text = element_text(face = "bold")
   )
+
 
 ```
 
@@ -876,6 +941,83 @@ El gráfico también pone de manifiesto la persistencia de fuertes desigualdades
 Un fenómeno adicional que merece atención es el ligero descenso en los valores máximos del Happiness Score en los últimos años. En 2023 y 2024, incluso los países mejor posicionados parecen haber perdido algo de ventaja con respecto a años anteriores. Esta caída podría interpretarse como un efecto retardado de los acontecimientos globales recientes, o como una normalización tras niveles particularmente elevados en años previos.
 
 En conjunto, el gráfico no solo reafirma que la media global se mantiene estable, sino que también evidencia un ensanchamiento de la brecha entre países y una posible tendencia al estancamiento o deterioro en la felicidad percibida a nivel nacional. La comparación interanual permite detectar trayectorias divergentes y resalta la necesidad de seguir analizando qué factores explican el desempeño diferencial de los países. Esta visualización resulta, por tanto, un complemento clave para comprender la evolución del bienestar en un contexto global marcado por desafíos económicos, políticos y sociales.
+
+Tras analizar la evolución global de la felicidad a nivel de país, resulta interesante centrar la atención en contextos geográficos más acotados que, por su cercanía cultural, económica o política, puedan mostrar dinámicas particulares. En este sentido, se ha seleccionado un grupo de países europeos próximos a España —Portugal, Francia, Italia, Andorra, Suiza, Alemania y Reino Unido— para realizar un análisis comparativo más detallado de la evolución del bienestar subjetivo entre 2015 y 2024.
+
+El objetivo de este bloque es doble: por un lado, examinar la trayectoria específica de España en cuanto a su Happiness Score a lo largo del tiempo; y por otro, contextualizar dicha evolución en relación con sus países vecinos. Además, se analizarán variables complementarias como el PIB per cápita, el apoyo social, la libertad en la toma de decisiones, y las puntuaciones de derechos políticos y libertades civiles, con el fin de identificar posibles factores explicativos de las tendencias observadas.
+
+Este enfoque regional no solo permite evaluar si España sigue dinámicas similares o divergentes respecto a su entorno inmediato, sino que también contribuye a detectar patrones de bienestar y resiliencia en Europa Occidental. Dado el contexto de crisis sucesivas —económica, sanitaria y geopolítica— en el periodo analizado, comparar la evolución de estos países cercanos ofrece una perspectiva enriquecedora sobre el impacto de factores estructurales e institucionales en la percepción de felicidad de la ciudadanía.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
+# Lista de países europeos cercanos a España
+paises_cercanos <- c("Spain", "Portugal", "France", "Italy", "Andorra", "Switzerland", "Germany", "United Kingdom")
+
+# Datos de estos países
+df_cercanos <- df_sin_democracia_sin_na %>% 
+  filter(country %in% paises_cercanos)
+
+# Evolución del Happiness Score en España
+df_espana <- df_cercanos %>% filter(country == "Spain")
+
+ggplot(df_espana, aes(x = year, y = happiness_score)) +
+  geom_line(color = "blue") +
+  geom_point(color = "blue") +
+  labs(title = "Evolución del Happiness Score en España", x = "Año", y = "Happiness Score") +
+  scale_x_continuous(breaks = unique(df_espana$year)) +
+  theme_minimal()
+# Evolución del Happiness Score en países cercanos
+ggplot(df_cercanos, aes(x = year, y = happiness_score, color = country, group = country)) +
+  geom_line(linewidth = 1) +
+  labs(title = "Evolución del Happiness Score en Países Cercanos a España", 
+       x = "Año", y = "Happiness Score") +
+  scale_x_continuous(breaks = unique(df_espana$year)) +
+  theme_minimal()
+
+
+```
+
+En el primer gráfico, centrado exclusivamente en España, se observa una evolución relativamente estable del índice de felicidad, con pequeñas oscilaciones en torno a valores ligeramente superiores a 6.3. No obstante, destaca una caída en 2018 (mínimo del periodo), seguida de una recuperación progresiva que culmina en un pico en 2021, justo tras el primer año completo de pandemia. Este máximo puede parecer contraintuitivo, pero podría explicarse por un efecto de resiliencia colectiva o por cambios en la percepción subjetiva del bienestar ante la crisis sanitaria. Tras 2021, sin embargo, el índice inicia un leve descenso que se prolonga hasta 2024, lo que podría reflejar un efecto retardado de las consecuencias económicas, sociales y emocionales de la pandemia.
+
+El segundo gráfico contextualiza estos datos al mostrar la evolución del Happiness Score en países próximos a España: Francia, Portugal, Italia, Alemania, Reino Unido y Suiza. Una primera observación relevante es que España se sitúa de forma constante en un rango medio-bajo dentro de este grupo, por encima únicamente de Portugal (hasta 2020) y, ocasionalmente, de Italia. Países como Suiza, Alemania y Reino Unido exhiben sistemáticamente puntuaciones más altas, lo cual podría estar vinculado a mayores niveles de riqueza, estabilidad institucional o servicios sociales más desarrollados.
+
+En términos de trayectoria, destaca el descenso claro en los últimos años (especialmente a partir de 2022) en la mayoría de países analizados, incluyendo aquellos con niveles históricamente altos de felicidad como Suiza o Alemania. Este patrón sugiere la presencia de factores estructurales o globales (crisis energética, inflación, tensiones geopolíticas) que estarían afectando incluso a los países tradicionalmente más satisfechos. En contraste, países como Portugal e Italia muestran una tendencia más estable o incluso creciente hasta 2022, posiblemente como resultado de procesos de recuperación o mejora relativa en relación con sus propias trayectorias históricas.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
+# Evolución del PIB (GDP per capita)
+ggplot(df_cercanos, aes(x = year, y = gdp, color = country, group = country)) +
+  geom_line(linewidth = 1) +
+  labs(title = "Evolución del PIB per cápita en Países Cercanos a España", 
+       x = "Año", y = "PIB per cápita") +
+  scale_x_continuous(breaks = unique(df_espana$year)) +
+  theme_minimal()
+
+# Evolución del apoyo social
+ggplot(df_cercanos, aes(x = year, y = support, color = country, group = country)) +
+  geom_line(linewidth = 1) +
+  labs(title = "Evolución del Apoyo Social en Países Cercanos a España", 
+       x = "Año", y = "Apoyo Social") +
+  scale_x_continuous(breaks = unique(df_espana$year)) +
+  theme_minimal()
+
+# Evolución de la libertad en la toma de decisiones
+ggplot(df_cercanos, aes(x = year, y = freedom, color = country, group = country)) +
+  geom_line(linewidth = 1) +
+  labs(title = "Evolución de la Libertad para Tomar Decisiones en Países Cercanos a España", 
+       x = "Año", y = "Libertad para Tomar Decisiones") +
+  scale_x_continuous(breaks = unique(df_espana$year)) +
+  theme_minimal()
+
+```
+
+Los gráficos presentados permiten analizar la evolución de distintas dimensiones del bienestar y la calidad de vida en un conjunto de países europeos cercanos a España entre 2015 y 2024. En conjunto, nos ofrecen una perspectiva comparativa regional que ayuda a contextualizar el caso español en relación con sus vecinos.
+
+En el primer gráfico, que muestra la evolución del PIB per cápita, se observa una fuerte caída generalizada en 2017, seguida por una recuperación progresiva desde 2018. Esta evolución puede estar relacionada con una recodificación de datos o un cambio metodológico en ese año, pero también con impactos económicos de alcance regional. En cualquier caso, destaca que Suiza mantiene sistemáticamente el mayor PIB per cápita, situándose por encima del resto del grupo. Le siguen Alemania y Reino Unido, con valores elevados y estables. España se encuentra en la parte baja del grupo, junto a Portugal e Italia, aunque todos ellos muestran una tendencia ascendente en los últimos años, lo que refleja una recuperación económica moderada.
+
+En el segundo gráfico, relativo al apoyo social, se aprecia un comportamiento mucho más volátil. En 2018 hay una caída muy pronunciada en todos los países, especialmente en España, Italia y Portugal, lo cual podría reflejar una crisis de confianza institucional o una percepción negativa del entorno social. Sin embargo, en 2019 se produce un repunte, seguido de cierta estabilización con una tendencia ligeramente descendente en algunos países. Suiza y Reino Unido destacan por mantener niveles consistentemente altos de apoyo social, mientras que España mejora en los últimos años tras el fuerte descenso.
+
+El tercer gráfico muestra la evolución de la libertad para tomar decisiones, una dimensión vinculada a la percepción de autonomía personal. Aquí destaca el caso de Suiza, que parte de valores cercanos a 1 y los mantiene prácticamente inalterados. Alemania y Reino Unido también se sitúan en la parte superior, mientras que España parte de un nivel más bajo en 2015 y experimenta una caída hasta 2019, seguida de una recuperación constante a partir de ese momento. Por el contrario, Italia muestra una evolución ascendente sostenida, superando incluso a España en los últimos años. Esta variable presenta un patrón de mejora generalizada en la región, lo que puede reflejar avances en la percepción de libertad individual y gobernanza democrática.
+
+En conjunto, estos gráficos permiten extraer varias conclusiones. En primer lugar, España tiende a situarse en posiciones intermedias o bajas dentro del grupo de comparación, aunque muestra señales de mejora especialmente en PIB y libertad individual. En segundo lugar, países como Suiza y Alemania destacan sistemáticamente por sus buenos resultados, lo que puede atribuirse a sus estructuras institucionales consolidadas y niveles de desarrollo económico. Finalmente, el análisis temporal revela momentos de tensión o crisis (como 2017–2018) seguidos de cierta recuperación, lo que sugiere una resiliencia estructural en la región. Esta comparativa refuerza la utilidad del análisis multinacional para entender mejor los factores que condicionan la evolución del bienestar en contextos políticamente estables pero económicamente diversos.
 
 Otra de las características que tenemos que analizar en esta base de datos es la existencia de valores atípicos que puedan afectar a nuestro análisis.
 
@@ -895,13 +1037,13 @@ if (knitr::is_latex_output()) {
 De 2015 a 2020 no vemos valores atípicos, pero en 2021 vemos un valor atípico de 2.52, en 2022 de 2.40, en 2023 de 1.86 y en 2024 de 1.72. Todos estos valores atípicos corresponden con Afganistán. Vamos a entrar en más detalle para ver cuál es la evolución de dicho país.
 
 ```{r echo=FALSE, warning=FALSE}
-df_afganistan <- df_sin_democracia_pmm %>% filter(country == "Afghanistan")
+df_afganistan <- df_sin_democracia_sin_na %>% filter(country == "Afghanistan")
 ggplot(df_afganistan, aes(x = year, y = happiness_score)) +
   geom_line() +
   geom_point() +
   labs(title = "Evolución del Happiness Score en Afganistán", x = "Año", y = "Happiness Score") +
   scale_x_continuous(breaks = unique(df_afganistan$year))
-df_region <- df_sin_democracia_pmm %>% filter(regional_indicator == "South Asia")
+df_region <- df_sin_democracia_sin_na %>% filter(regional_indicator == "South Asia")
 ggplot(df_region, aes(x = year, y = happiness_score, color = country, group = country)) +
   geom_line() +
   labs(title = "Evolución del Happiness Score en Asia del Sur", x = "Año", y = "Happiness Score") +
@@ -911,15 +1053,15 @@ ggplot(df_region, aes(x = year, y = happiness_score, color = country, group = co
 Afganistán sufre una gran caída de la felicidad a partir de 2017 y si lo comparamos con países de su región es el que menos puntuación tiene por bastante diferencia. Esto puede haberse dado por diversos factores, como el constante estado de guerra y conflicto en el que se ha encontrado el país, la presencia de los talibanes y otros grupos armados que han aumentado la violencia y el temor en la población, la enorme tasa de pobreza... Vamos a comparar la evolución de Afganistán con sus países vecinos para ver realmente qué puede estar afectando a tal bajada de la felicidad.
 
 ```{r echo=FALSE, warning=FALSE}
-ggplot(df_region, aes(x = year, y = gdp_per_capita, color = country, group = country)) +
+ggplot(df_region, aes(x = year, y = gdp, color = country, group = country)) +
   geom_line() +
   labs(title = "Evolución del PIB en Asia del Sur", x = "Año", y = "PIB") +
   scale_x_continuous(breaks = unique(df_afganistan$year))
-ggplot(df_region, aes(x = year, y = social_support, color = country, group = country)) +
+ggplot(df_region, aes(x = year, y = support, color = country, group = country)) +
   geom_line() +
   labs(title = "Evolución del apoyo social en Asia del Sur", x = "Año", y = "Apoyo social") +
   scale_x_continuous(breaks = unique(df_afganistan$year))
-ggplot(df_region, aes(x = year, y = freedom_to_make_life_choices, color = country, group = country)) +
+ggplot(df_region, aes(x = year, y = freedom, color = country, group = country)) +
   geom_line() +
   labs(title = "Evolución de la libertad en la toma de decisiones de los ciudadanos en Asia del Sur", x = "Año", y = "Libertad en la toma de decisiones de los ciudadanos") +
   scale_x_continuous(breaks = unique(df_afganistan$year))
@@ -951,8 +1093,8 @@ library(car)
 plot(df_original) # Hay muchas variables categóricas de las cuales nos desharemos
 df_filtrado <- df_original %>%
   filter(year == 2024) %>%
-  select(happiness_score, gdp_per_capita, social_support, healthy_life_expectancy, 
-         freedom_to_make_life_choices, generosity, perceptions_of_corruption)
+  select(happiness_score, gdp, support, life_exp, 
+         freedom, generosity, corruption)
 plot(df_filtrado)
 apply(df_filtrado, 2, shapiro.test) #el 2 es para aplicar por columnas
 # Vemos como no hay normalidad en ninguna, pero como la muestra es grande podemos utilizar Pearson
@@ -967,7 +1109,7 @@ ggpairs(df_filtrado, upper=list(continuous="cor", corMethod ="pearson"))
 # Lo más probable es que generosity no sea un buen predictor de la felicidad
 
 # Estimación de los parámetros ----
-fit <- lm(happiness_score~gdp_per_capita+social_support+healthy_life_expectancy+freedom_to_make_life_choices+generosity+perceptions_of_corruption, data=df_filtrado)
+fit <- lm(happiness_score~gdp+support+life_exp+freedom+generosity+corruption, data=df_filtrado)
 fit
 # Hay algún parámetro parecido a 0; por lo que tenemos que ver si nos sobra algún parámetro.
 
@@ -985,7 +1127,7 @@ step(fit, k=2)
 step(fit, k=log(nrow(df_filtrado)))
 # Empiezo con el modelo saturado, va probando a sacar de una en una las variables. Nos interesa que el AIC sea lo más pequeño posible.
 # El modelo final sería la felicidad en función del apoyo social, la esperanza de vida, el libre albedrío y la percepción de corrupción
-fit <- lm(happiness_score~social_support+healthy_life_expectancy+freedom_to_make_life_choices+perceptions_of_corruption, data=df_filtrado)
+fit <- lm(happiness_score~support+life_exp+freedom+corruption, data=df_filtrado)
 fit.f <- step(fit, trace=0)
 # Por defecto est? eligiendo el mejor modelo por AIC, aunque en este caso AIC y BIC devuelven el mismo modelo
 
