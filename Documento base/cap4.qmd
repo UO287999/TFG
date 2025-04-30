@@ -685,7 +685,6 @@ fig1 <- plot_geo(df_mapa1) %>%
   colorbar(title = "Happiness Score") %>%
   layout(title = 'Países con datos de felicidad (2020)', geo = g)
 
-fig1
 if (knitr::is_latex_output()) {
   # Guardar HTML y exportar como imagen
   html_file <- "mapa_interactivo.html"
@@ -948,7 +947,7 @@ El objetivo de este bloque es doble: por un lado, examinar la trayectoria espec�
 
 Este enfoque regional no solo permite evaluar si España sigue dinámicas similares o divergentes respecto a su entorno inmediato, sino que también contribuye a detectar patrones de bienestar y resiliencia en Europa Occidental. Dado el contexto de crisis sucesivas —económica, sanitaria y geopolítica— en el periodo analizado, comparar la evolución de estos países cercanos ofrece una perspectiva enriquecedora sobre el impacto de factores estructurales e institucionales en la percepción de felicidad de la ciudadanía.
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 # Lista de países europeos cercanos a España
 paises_cercanos <- c("Spain", "Portugal", "France", "Italy", "Andorra", "Switzerland", "Germany", "United Kingdom")
 
@@ -972,8 +971,6 @@ ggplot(df_cercanos, aes(x = year, y = happiness_score, color = country, group = 
        x = "Año", y = "Happiness Score") +
   scale_x_continuous(breaks = unique(df_espana$year)) +
   theme_minimal()
-
-
 ```
 
 En el primer gráfico, centrado exclusivamente en España, se observa una evolución relativamente estable del índice de felicidad, con pequeñas oscilaciones en torno a valores ligeramente superiores a 6.3. No obstante, destaca una caída en 2018 (mínimo del periodo), seguida de una recuperación progresiva que culmina en un pico en 2021, justo tras el primer año completo de pandemia. Este máximo puede parecer contraintuitivo, pero podría explicarse por un efecto de resiliencia colectiva o por cambios en la percepción subjetiva del bienestar ante la crisis sanitaria. Tras 2021, sin embargo, el índice inicia un leve descenso que se prolonga hasta 2024, lo que podría reflejar un efecto retardado de las consecuencias económicas, sociales y emocionales de la pandemia.
@@ -982,7 +979,7 @@ El segundo gráfico contextualiza estos datos al mostrar la evolución del Happi
 
 En términos de trayectoria, destaca el descenso claro en los últimos años (especialmente a partir de 2022) en la mayoría de países analizados, incluyendo aquellos con niveles históricamente altos de felicidad como Suiza o Alemania. Este patrón sugiere la presencia de factores estructurales o globales (crisis energética, inflación, tensiones geopolíticas) que estarían afectando incluso a los países tradicionalmente más satisfechos. En contraste, países como Portugal e Italia muestran una tendencia más estable o incluso creciente hasta 2022, posiblemente como resultado de procesos de recuperación o mejora relativa en relación con sus propias trayectorias históricas.
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 # Evolución del PIB (GDP per capita)
 ggplot(df_cercanos, aes(x = year, y = gdp, color = country, group = country)) +
   geom_line(linewidth = 1) +
