@@ -5,127 +5,332 @@ library(plotly)
 library(lme4)
 library(MuMIn)
 library(dplyr)
-
-# Dataset
-# Asumimos que df_sin_democracia_sin_na ya está cargado como "df"
+library(tidyr)
 df <- df_sin_democracia_sin_na
-
-# Variables (según Capítulo 4)
-variables_longitudinales <- c("year", "gdp", "support", "freedom")
-variables_fijas <- c("life_exp", "corruption", "generosity")
+vars_politicas <- c(
+  "has_free_and_fair_election",
+  "regime_category",
+  "is_democracy",
+  "electoral_category",
+  "is_presidential",
+  "has_alternation"
+)
+# Variables permitidas como efectos fijos
+efectos_fijos_posibles <- c(
+  "regional_indicator", "gdp", "support", "life_exp", "freedom", 
+  "generosity", "corruption", "status", "political_rights", "civil_liberties",
+  "has_free_and_fair_election", "regime_category", "is_democracy",
+  "electoral_category", "is_presidential", "has_alternation"
+)
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Modelos de Felicidad",
-                  dropdownMenu(type = "notifications",
-                               notificationItem(text = "Dashboard actualizado", icon = icon("refresh"))
-                  )
-  ),
+  dashboardHeader(title = "Modelos de Felicidad"),
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Visualización", tabName = "visualizacion", icon = icon("chart-line")),
-      menuItem("Modelo", tabName = "modelo", icon = icon("sliders-h"))
+      menuItem("Descriptiva", tabName = "descriptiva", icon = icon("globe")),
+      menuItem("Análisis", tabName = "analisis", icon = icon("chart-line")),
+      menuItem("Información", tabName = "info", icon = icon("info-circle"))
     )
   ),
   dashboardBody(
     tabItems(
-      tabItem(tabName = "visualizacion",
+      tabItem(tabName = "descriptiva",
               fluidRow(
-                box(selectInput("region", "Selecciona región:", choices = unique(df$regional_indicator), selected = "Western Europe", multiple = TRUE), width = 6),
-                box(selectInput("pais", "Selecciona país (opcional):", choices = NULL, multiple = TRUE), width = 6)
+                box(selectizeInput("vars_desc", "Selecciona hasta 2 variables:", 
+                                   choices = names(df)[sapply(df, is.numeric) & names(df) != "year"], 
+                                   multiple = TRUE, selected = "happiness_score", 
+                                   options = list(maxItems = 2)), width = 6),
+                box(selectInput("año_mapa", "Selecciona el año para el mapa:", 
+                                choices = sort(unique(df$year)), selected = max(df$year)), width = 3),
+                box(actionButton("actualizar_graficos", "Actualizar gráficos", icon = icon("refresh")), width = 3)
               ),
               fluidRow(
-                box(plotlyOutput("plot_felicidad"), width = 12)
+                box(selectInput("region_desc", "Selecciona región:", choices = unique(df$regional_indicator), 
+                                selected = "Western Europe", multiple = TRUE), width = 6),
+                box(uiOutput("pais_desc_ui"), width = 6)
+              ),
+              fluidRow(
+                box(plotlyOutput("grafico_evolucion", height = 300), width = 12)
+              ),
+              fluidRow(
+                box(plotlyOutput("grafico_mapa", height = 400), width = 12)
               )
       ),
-      tabItem(tabName = "modelo",
+      
+      # Placeholder para las otras pestañas
+      tabItem(tabName = "analisis",
               fluidRow(
-                box(checkboxGroupInput("var_long", "Variables longitudinales:", choices = variables_longitudinales, selected = "year"), width = 6),
-                box(checkboxGroupInput("var_fijas", "Variables fijas:", choices = variables_fijas), width = 6)
+                box(checkboxGroupInput("efectos_fijos", "Efectos fijos:",
+                                       choices = efectos_fijos_posibles),
+                    width = 6),
+                
+                box(checkboxGroupInput("efectos_aleatorios", "Efectos aleatorios:",
+                                       choices = c("country", "year", "regional_indicator")),
+                    width = 6)
+              ),
+              
+              fluidRow(
+                box(selectInput("region_analisis", "Selecciona región:", 
+                                choices = unique(df$regional_indicator), selected = "Western Europe", multiple = TRUE), width = 6),
+                box(uiOutput("pais_analisis_ui"), width = 6)
               ),
               fluidRow(
-                box(selectInput("modelo_tipo", "Modelo mixto a utilizar:",
-                                choices = c("Intercepto aleatorio" = "intercept", 
-                                            "Intercepto y pendiente aleatoria (year)" = "intercept_slope",
-                                            "Intercepto y efectos aleatorios para todas las variables" = "completo")), width = 6),
-                box(actionButton("ajustar", "Ajustar modelo", icon = icon("play")), width = 6)
+                box(
+                  actionButton("ajustar_modelo", "Ajustar LMM", icon = icon("play")),
+                  actionButton("ajustar_glmm", "Ajustar GLMM", icon = icon("cogs")),
+                  width = 6
+                ),
+                box(infoBoxOutput("aic_analisis"), width = 4),
+                box(infoBoxOutput("r2_analisis"), width = 4)
               ),
               fluidRow(
-                infoBoxOutput("aicBox"),
-                infoBoxOutput("r2Box"),
-                box(verbatimTextOutput("modelo_output"), width = 12)
+                box(verbatimTextOutput("modelo_formula"), width = 12)
+              ),
+              fluidRow(
+                box(verbatimTextOutput("resumen_modelo"), width = 12)
+              ),
+              fluidRow(
+                box(plotlyOutput("grafico_predicciones", height = 400), width = 12)
+              )
+              
+      )
+      ,
+      tabItem(tabName = "info",
+              fluidRow(
+                box(title = "¿Qué hace esta aplicación?", width = 12, status = "primary", solidHeader = TRUE,
+                    p("Esta aplicación interactiva permite explorar y modelizar los determinantes de la felicidad a nivel mundial,
+                utilizando datos longitudinales de múltiples países y años. Ha sido desarrollada como parte de un trabajo de fin de grado
+                sobre el análisis de datos longitudinales en el ámbito biosanitario.")
+                )
+              ),
+              fluidRow(
+                box(title = "Pestaña: Descriptiva", width = 12, status = "info", solidHeader = TRUE,
+                    p("En esta pestaña se pueden visualizar la evolución temporal y espacial de distintas variables (como 'Happiness Score', 'GDP', 'Freedom'...).
+                Puedes seleccionar hasta 2 variables para comparar, un año específico para el mapa y una o varias regiones o países."),
+                    p("Una vez selecciones las opciones deseadas, pulsa 'Actualizar gráficos' para que se genere la visualización.")
+                )
+              ),
+              fluidRow(
+                box(title = "Pestaña: Análisis", width = 12, status = "info", solidHeader = TRUE,
+                    p("Aquí puedes ajustar modelos mixtos personalizados. Escoge las variables que quieras incluir como efectos fijos o aleatorios,
+                y filtra los datos por región o país."),
+                    p("Una vez configurado, pulsa 'Ajustar modelo'. Se mostrará la fórmula del modelo, sus métricas (AIC, R²) y un gráfico con predicciones,
+                incluyendo una estimación para el año 2025.")
+                )
+              ),
+              fluidRow(
+                box(title = "Repositorio del proyecto", width = 12, status = "success", solidHeader = TRUE,
+                    p("El código fuente completo de la aplicación y el análisis se encuentra disponible en el siguiente repositorio de GitHub:"),
+                    tags$a(href = "https://github.com/UO287999/TFG", "Ver repositorio", target = "_blank")
+                )
               )
       )
+      
     )
   )
 )
 
 server <- function(input, output, session) {
+  modelo_tipo <- reactiveVal("lmm")
+  observeEvent(input$ajustar_modelo, {
+    modelo_tipo("lmm")
+  })
+  
+  observeEvent(input$ajustar_glmm, {
+    modelo_tipo("glmm")
+  })
+  
   
   observe({
-    paises <- df %>% filter(regional_indicator %in% input$region) %>% distinct(country) %>% pull(country)
-    updateSelectInput(session, "pais", choices = paises)
+    paises <- df %>% filter(regional_indicator %in% input$region_desc) %>% distinct(country) %>% pull(country)
+    updateSelectInput(session, "pais_desc", choices = paises)
   })
   
-  datos_filtrados <- reactive({
-    df %>% filter(regional_indicator %in% input$region)
+  output$pais_desc_ui <- renderUI({
+    selectInput("pais_desc", "Selecciona país (opcional):", choices = NULL, multiple = TRUE)
   })
   
-  formula_reactiva <- reactive({
-    vars <- c(input$var_long, input$var_fijas)
-    vars_formula <- paste(vars, collapse = " + ")
-    if (input$modelo_tipo == "intercept") {
-      as.formula(paste0("happiness_score ~ ", vars_formula, " + (1 | country)"))
-    } else if (input$modelo_tipo == "intercept_slope") {
-      as.formula(paste0("happiness_score ~ ", vars_formula, " + (1 + year | country)"))
+  output$pais_analisis_ui <- renderUI({
+    selectInput("pais_analisis", "Selecciona país (opcional):", choices = NULL, multiple = TRUE)
+  })
+  
+  observe({
+    paises <- df %>% filter(regional_indicator %in% input$region_analisis) %>% distinct(country) %>% pull(country)
+    updateSelectInput(session, "pais_analisis", choices = paises)
+  })
+  
+  
+  datos_filtrados_desc <- eventReactive(input$actualizar_graficos, {
+    df %>% filter(regional_indicator %in% input$region_desc,
+                  if (!is.null(input$pais_desc) && length(input$pais_desc) > 0) country %in% input$pais_desc else TRUE)
+  })
+  
+  datos_filtrados_analisis <- eventReactive(input$ajustar_modelo, {
+    # Detectar si se han seleccionado variables políticas
+    usa_politicas <- any(input$efectos_fijos %in% vars_politicas)
+    
+    # Seleccionar el dataframe apropiado
+    data_base <- if (usa_politicas) {
+      showNotification("Estás usando variables políticas: el análisis se limita a datos hasta 2020", type = "warning")
+      df_completo_sin_na
     } else {
-      as.formula(paste0("happiness_score ~ ", vars_formula, " + (1 + ", vars_formula, " | country)"))
-    }
-  })
-  
-  modelo_reactivo <- eventReactive(input$ajustar, {
-    lmer(formula_reactiva(), data = datos_filtrados())
-  })
-  
-  output$modelo_output <- renderPrint({
-    req(modelo_reactivo())
-    summary(modelo_reactivo())
-  })
-  
-  output$aicBox <- renderInfoBox({
-    req(modelo_reactivo())
-    infoBox("AIC", round(AIC(modelo_reactivo()), 2), icon = icon("balance-scale"), color = "purple", fill = TRUE)
-  })
-  
-  output$r2Box <- renderInfoBox({
-    req(modelo_reactivo())
-    r2 <- r.squaredGLMM(modelo_reactivo())
-    infoBox("R2 marginal/condicional", paste0(round(r2[1], 2), "/", round(r2[2], 2)), icon = icon("chart-area"), color = "green", fill = TRUE)
-  })
-  
-  output$plot_felicidad <- renderPlotly({
-    datos <- datos_filtrados()
-    if (!is.null(input$pais) && length(input$pais) > 0) {
-      datos <- datos %>% filter(country %in% input$pais)
+      df_sin_democracia_sin_na
     }
     
-    p <- ggplot(datos, aes(x = year, y = happiness_score, color = country, group = country)) +
-      geom_line(size = 1) +
-      labs(title = paste("Felicidad en", paste(input$region, collapse = ", ")),
-           x = "Año", y = "Happiness Score") +
+    # Filtrado por región y país
+    data_base %>%
+      filter(regional_indicator %in% input$region_analisis,
+             if (!is.null(input$pais_analisis) && length(input$pais_analisis) > 0) country %in% input$pais_analisis else TRUE)
+  })
+  
+  
+  output$grafico_evolucion <- renderPlotly({
+    req(input$vars_desc)
+    datos <- datos_filtrados_desc()
+    
+    datos_long <- datos %>% 
+      pivot_longer(cols = all_of(input$vars_desc), names_to = "variable", values_to = "valor")
+    
+    p <- ggplot(datos_long, aes(x = year, y = valor, group = country, color = country)) +
+      geom_line() +
+      facet_wrap(~ variable, scales = "free_y") +
       theme_minimal() +
-      scale_x_continuous(breaks = pretty(datos$year))
-    
-    if (input$ajustar > 0 && !is.null(input$pais) && length(input$pais) >= 1) {
-      modelo <- modelo_reactivo()
-      nueva_data <- datos %>% select(country, year, all_of(c(input$var_long, input$var_fijas)))
-      nueva_data$pred <- predict(modelo, newdata = nueva_data)
-      p <- p + geom_line(data = nueva_data, aes(x = year, y = pred, color = country, group = country),
-                         linetype = "dashed", size = 0.8)
-    }
-    
+      scale_x_continuous(breaks = sort(unique(datos$year))) +
+      labs(x = "Año", y = "Valor", title = "Evolución temporal") +
+      theme(legend.position = "bottom")
     
     ggplotly(p)
   })
+  
+  
+  output$grafico_mapa <- renderPlotly({
+    req(input$vars_desc[1])
+    datos_año <- df %>% filter(year == input$año_mapa)
+    
+    plot_ly(data = datos_año,
+            type = "choropleth",
+            locations = ~country,
+            locationmode = "country names",
+            z = ~get(input$vars_desc[1]),
+            text = ~country,
+            colorscale = "Viridis",
+            colorbar = list(title = input$vars_desc[1])) %>%
+      layout(
+        title = list(text = paste("Mapa mundial de", input$vars_desc[1], "en", input$año_mapa),
+                     x = 0.5),
+        geo = list(showframe = FALSE, showcoastlines = FALSE, projection = list(type = 'natural earth'))
+      )
+    
+  })
+  
+  modelo_formula <- reactive({
+    efectos_fijos <- unique(c("year", input$efectos_fijos))  # year siempre fijo
+    efectos_fijos_txt <- paste(efectos_fijos, collapse = " + ")
+    
+    if (length(input$efectos_aleatorios) == 0) {
+      formula_txt <- paste0("happiness_score ~ ", efectos_fijos_txt, " + (1 | country)")
+    } else {
+      efectos_aleatorios_txt <- paste(input$efectos_aleatorios, collapse = " + ")
+      formula_txt <- paste0("happiness_score ~ ", efectos_fijos_txt, " + (1 + ", efectos_aleatorios_txt, " | country)")
+    }
+    
+    as.formula(formula_txt)
+  })
+  
+  modelo_ajustado <- reactive({
+    req(input$efectos_fijos)
+    datos <- datos_filtrados_analisis()
+    formula <- modelo_formula()
+    
+    tryCatch({
+      if (modelo_tipo() == "lmm") {
+        lmer(formula, data = datos)
+      } else {
+        glmer(formula, data = datos, family = gaussian(link = "identity"))
+      }
+    }, error = function(e) {
+      showNotification("No se pudo ajustar el modelo. Revisa las variables seleccionadas.", type = "error")
+      NULL
+    })
+  })
+  
+  
+  
+  
+  output$modelo_formula <- renderUI({
+    req(modelo_formula())
+    formula_txt <- paste0("$$", deparse(modelo_formula()), "$$")
+    withMathJax(HTML(formula_txt))
+  })
+  
+  output$resumen_modelo <- renderPrint({
+    req(modelo_ajustado())
+    summary(modelo_ajustado())
+  })
+  
+  
+  output$aic_analisis <- renderInfoBox({
+    req(modelo_ajustado())
+    valoraic <- paste0("AIC: ", round(AIC(modelo_ajustado()), 2))
+    infoBox(
+      title = "AIC",
+      value = valoraic,
+      icon = icon("calculator"),
+      color = "purple",
+      fill = FALSE
+    )
+  })
+  
+  output$r2_analisis <- renderInfoBox({
+    req(modelo_ajustado())
+    r2 <- r.squaredGLMM(modelo_ajustado())
+    valor <- paste0("Marginal: ", round(r2[1], 2), " | Condicional: ", round(r2[2], 2))
+    infoBox(
+      title = "R² marginal / condicional",
+      value = valor,
+      icon = icon("chart-area"),
+      color = "green",
+      fill = FALSE
+    )
+  })
+  
+  output$grafico_predicciones <- renderPlotly({
+    req(modelo_ajustado())
+    datos <- datos_filtrados_analisis()
+    
+    # Predecir para años observados
+    datos_pred <- datos %>%
+      select(country, year, all_of(input$efectos_fijos), all_of(input$efectos_aleatorios)) %>%
+      mutate(pred = predict(modelo_ajustado(), newdata = ., allow.new.levels = TRUE))
+    
+    # Generar predicción para 2025 (replicando 2024)
+    datos_2025 <- datos %>%
+      filter(year == max(year)) %>%
+      mutate(year = 2025)
+    datos_2025$pred <- predict(modelo_ajustado(), newdata = datos_2025, allow.new.levels = TRUE)
+    
+    # Unificar datos
+    datos_pred_completo <- bind_rows(
+      datos %>% select(country, year, happiness_score) %>% mutate(tipo = "real"),
+      datos_pred %>% select(country, year, pred) %>% rename(happiness_score = pred) %>% mutate(tipo = "ajustado"),
+      datos_2025 %>% select(country, year, pred) %>% rename(happiness_score = pred) %>% mutate(tipo = "pred_2025")
+    )
+    
+    # Crear gráfico
+    p <- ggplot(datos_pred_completo, aes(x = year, y = happiness_score, color = country, group = country)) +
+      geom_line(data = subset(datos_pred_completo, tipo == "real"), size = 1) +
+      geom_line(data = subset(datos_pred_completo, tipo == "ajustado"), linetype = "dashed", size = 1) +
+      geom_point(data = subset(datos_pred_completo, tipo == "pred_2025"), shape = 17, size = 3) +  # mismo color que país
+      theme_minimal() +
+      labs(x = "Año", y = "Happiness Score",
+           title = "Predicción vs Realidad (incluye 2025)") +
+      scale_x_continuous(breaks = seq(min(datos$year), 2025, by = 1)) +
+      theme(legend.position = "right")
+    
+    ggplotly(p)
+  })
+  
+  
 }
 
 shinyApp(ui, server)

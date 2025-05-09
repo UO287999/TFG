@@ -254,6 +254,28 @@ En concreto, para los casos en los que la respuesta no es normal, la ecuación d
 g\left(E(y_{ij} \mid x_{ijk}, \beta_{0i}, \dots, \beta_{Ki})\right) = \beta_{0i} + \sum_{k=1}^{K} \beta_{ki}x_{ijk}
 $$ Donde g es la función enlace y, pese a que puede parecerse mucho a la función para modelos LMM, tienen algunas diferencias, como que en el primer miembro tenemos el enlace del valor esperado en vez de la variable respuesta, y en el segundo miembro no se cuenta con los errores; por lo que no existe una matriz de correlaciones de los residuos. De esta forma, ya hemos **generalizado** nuestro modelo para manejar variables respuesta que no siguen una distribución normal. A través de esta generalización, somos capaces de escribir la función de masa o densidad de probabilidad de distintas distribuciones para poder modelar el enlace canónico como función lineal de las variables predictoras.
 
+Una vez formulado el modelo GLM, los parámetros se estiman mediante el método de Máxima Verosimilitud (MLE). Para obtener los estimadores, se utiliza un procedimiento iterativo denominado Iteratively Reweighted Least Squares (IRLS), que ajusta los pesos de las observaciones en función de la varianza esperada.
+
+En cuanto a la validación, se analizan medidas como la devianza (comparable a la suma de cuadrados en modelos lineales), el AIC para comparar modelos, y los residuos devianza y Pearson, que permiten detectar valores atípicos o mal ajuste. También es importante evaluar la distribución de la variable respuesta y el ajuste del modelo a través de gráficos de residuos.
+
+### Ejemplo práctico 
+
+Supongamos que queremos modelar el número de llamadas que recibe un centro de emergencias por hora (llamadas), en función del número de operadores de guardia (operadores). Este tipo de datos es típico de una distribución Poisson.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+set.seed(123)
+n <- 100
+operadores <- sample(1:5, n, replace = TRUE)
+lambda <- exp(0.5 + 0.3 * operadores)
+llamadas <- rpois(n, lambda)
+df_poisson <- data.frame(llamadas, operadores)
+
+modelo_poisson <- glm(llamadas ~ operadores, family = poisson, data = df_poisson)
+summary(modelo_poisson)
+```
+
+En este modelo, estamos modelando el logaritmo del número esperado de llamadas como una función lineal del número de operadores. La interpretación de los coeficientes es en términos del logaritmo de la tasa: por cada operador adicional, la tasa de llamadas aumenta multiplicativamente por exp(β).
+
 ## Modelos Lineales Generalizados Mixtos (GLMM)
 
 Cuando trabajamos con datos longitudinales cuya variable respuesta no sigue una distribución normal, los Modelos Lineales Mixtos (LMM) dejan de ser apropiados. En estos casos, extendemos los modelos hacia los Modelos Lineales Generalizados Mixtos (GLMM), los cuales combinan la flexibilidad de los GLM con la estructura de efectos aleatorios de los LMM. Un GLMM permite modelar: variables respuesta que pertenecen a la familia exponencial (binomial, Poisson, Gamma...), y la correlación entre observaciones repetidas para el mismo individuo, mediante efectos aleatorios.
@@ -322,3 +344,7 @@ En este modelo GLMM (glmer) estamos modelando la probabilidad de aprobar un exam
 El intercepto aleatorio por estudiante tiene una desviación estándar de 0.9473, lo que indica que hay una variación importante en la propensión a aprobar entre estudiantes, incluso tras controlar por las horas de estudio y el grupo; lo que justifica el uso de un GLMM en lugar de un GLM clásico. Este modelo demuestra cómo un GLMM puede capturar variabilidad individual (entre estudiantes) y a la vez evaluar el efecto de factores fijos. El uso del modelo mixto es crucial: si ignoramos el efecto aleatorio por estudiante, estaríamos asumiendo que todos los estudiantes tienen la misma propensión a aprobar, lo cual claramente no es el caso según la varianza estimada.
 
 Los GLMM tienen múltiples ventajas respecto a otros modelos, ya que permiten ajustar modelos a variables respuesta no continuas, incorporan variabilidad entre individuos mediante efectos aleatorios, se adaptan bien a datos longitudinales y jerárquicos, y permiten hacer inferencia poblacional y considerar la dependencia temporal. Por tanto, los GLMM constituyen una herramienta esencial para el análisis de datos longitudinales cuando la respuesta no es normal, ya que preservan la estructura de dependencia de los datos sin violar los supuestos del modelo.
+
+La estimación de los parámetros en modelos GLMM es más compleja que en GLM o LMM, debido a que la función de verosimilitud no tiene una forma analítica cerrada. Por ello, se utilizan técnicas de aproximación numérica como: aproximación de Laplace, que integra los efectos aleatorios y aproxima la verosimilitud, cuadratura Gauss-Hermite adaptativa, que mejora la precisión en presencia de muchos efectos aleatorios, o Penalized Quasi-Likelihood (PQL), en versiones simplificadas. Estas aproximaciones permiten realizar inferencia sobre los efectos fijos y estimar la variabilidad entre sujetos.
+
+Además, los GLMM pueden presentar problemas de convergencia, especialmente con estructuras complejas o tamaños muestrales pequeños. Es importante validar el modelo revisando los residuos, la bondad de ajuste (AIC, BIC), y la significación de los efectos aleatorios, por ejemplo, mediante test de razón de verosimilitudes anidados o comparaciones de modelos.
