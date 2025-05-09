@@ -8,20 +8,26 @@ library(dplyr)
 library(tidyr)
 df <- df_sin_democracia_sin_na
 vars_politicas <- c(
-  "has_free_and_fair_election",
-  "regime_category",
-  "is_democracy",
-  "electoral_category",
-  "is_presidential",
-  "has_alternation"
+  "fair_election", "regime_category", "democracy",
+  "electoral_category", "presidential", "alternation"
 )
+
 # Variables permitidas como efectos fijos
 efectos_fijos_posibles <- c(
   "regional_indicator", "gdp", "support", "life_exp", "freedom", 
   "generosity", "corruption", "status", "political_rights", "civil_liberties",
-  "has_free_and_fair_election", "regime_category", "is_democracy",
-  "electoral_category", "is_presidential", "has_alternation"
+  "fair_election", "regime_category", "democracy",
+  "electoral_category", "presidential", "alternation"
 )
+
+# Función auxiliar para verificar variación en variables políticas
+pais_con_variacion <- function(data, vars) {
+  data %>%
+    group_by(country) %>%
+    filter(if_all(all_of(vars), ~ length(unique(.)) > 1)) %>%
+    pull(country) %>%
+    unique()
+}
 
 ui <- dashboardPage(
   dashboardHeader(title = "Modelos de Felicidad"),
@@ -165,11 +171,9 @@ server <- function(input, output, session) {
                   if (!is.null(input$pais_desc) && length(input$pais_desc) > 0) country %in% input$pais_desc else TRUE)
   })
   
-  datos_filtrados_analisis <- eventReactive(input$ajustar_modelo, {
-    # Detectar si se han seleccionado variables políticas
+  datos_filtrados_analisis <- eventReactive(c(input$ajustar_modelo, input$ajustar_glmm), {
     usa_politicas <- any(input$efectos_fijos %in% vars_politicas)
     
-    # Seleccionar el dataframe apropiado
     data_base <- if (usa_politicas) {
       showNotification("Estás usando variables políticas: el análisis se limita a datos hasta 2020", type = "warning")
       df_completo_sin_na
@@ -177,11 +181,27 @@ server <- function(input, output, session) {
       df_sin_democracia_sin_na
     }
     
-    # Filtrado por región y país
-    data_base %>%
+    # Filtrar por región y país
+    data_filtrada <- data_base %>%
       filter(regional_indicator %in% input$region_analisis,
              if (!is.null(input$pais_analisis) && length(input$pais_analisis) > 0) country %in% input$pais_analisis else TRUE)
+    
+    # Si se usan variables políticas, filtrar países con variación en esas variables
+    if (usa_politicas) {
+      vars_usadas <- intersect(input$efectos_fijos, vars_politicas)
+      paises_validos <- pais_con_variacion(data_filtrada, vars_usadas)
+      
+      if (length(paises_validos) == 0) {
+        showNotification("Ningún país seleccionado tiene variación en las variables políticas elegidas. Ajuste cancelado.", type = "error")
+        return(NULL)
+      }
+      
+      data_filtrada <- data_filtrada %>% filter(country %in% paises_validos)
+    }
+    
+    data_filtrada
   })
+  
   
   
   output$grafico_evolucion <- renderPlotly({
@@ -237,24 +257,25 @@ server <- function(input, output, session) {
     as.formula(formula_txt)
   })
   
-  modelo_ajustado <- reactive({
-    req(input$efectos_fijos)
-    datos <- datos_filtrados_analisis()
-    formula <- modelo_formula()
-    
-    tryCatch({
-      if (modelo_tipo() == "lmm") {
-        lmer(formula, data = datos)
-      } else {
-        glmer(formula, data = datos, family = gaussian(link = "identity"))
-      }
-    }, error = function(e) {
-      showNotification("No se pudo ajustar el modelo. Revisa las variables seleccionadas.", type = "error")
-      NULL
-    })
-  })
-  
-  
+  modelo_ajustado <- eventReactive(
+    list(input$ajustar_modelo, input$ajustar_glmm), {
+      req(input$efectos_fijos)
+      
+      datos <- datos_filtrados_analisis()
+      formula <- modelo_formula()
+      
+      tryCatch({
+        if (modelo_tipo() == "lmm") {
+          lmer(formula, data = datos)
+        } else {
+          glmer(formula, data = datos, family = gaussian(link = "identity"))
+        }
+      }, error = function(e) {
+        showNotification("No se pudo ajustar el modelo. Revisa las variables seleccionadas.", type = "error")
+        NULL
+      })
+    }
+  )
   
   
   output$modelo_formula <- renderUI({

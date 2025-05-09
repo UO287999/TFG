@@ -1,4 +1,4 @@
-"ranking","country","regional_indicator","happiness_score","gdp_per_capita","social_support","healthy_life_expectancy","freedom_to_make_life_choices","generosity","perceptions_of_corruption","year","region","status","political_rights","civil_liberties"
+"ranking","country","regional_indicator","happiness_score","gdp","support","life_exp","freedom","generosity","corruption","year","region","status","political_rights","civil_liberties"
 1,"Switzerland","Western Europe",7.587,8.26132,0.9624,73,0.99379,0.37289,0.23941,2015,"Europe","F",1,1
 2,"Iceland","Western Europe",7.561,7.70416,1,73,0.93884,0.54819,0.74371,2015,"Europe","F",1,1
 3,"Denmark","Western Europe",7.527,7.84114,0.9703,70,0.96962,0.42894,0.12382,2015,"Europe","F",1,1
