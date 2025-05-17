@@ -1,0 +1,79 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r include=FALSE, warning=FALSE}
+library(readr)
+library(readxl)
+library(janitor)
+library(mice)
+library(visdat)
+library(outliers)
+library(plotly)
+library(tidyverse)
+library(webshot2)
+library(lmtest)      # Para bptest() y dwtest()
+library(tseries)     # Para jarque.bera.test()
+library(ggfortify)   # Para autoplot() del modelo
+
+```
+
+# Aplicación Shiny para la modelización de la felicidad
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(ggplot2)
+knitr::opts_chunk$set(
+  fig.width = 6, 
+  fig.height = 4, 
+  dev = "png",
+  fig.align = "center"
+)
+theme_set(theme_minimal(base_size = 12))
+```
+
+Este capítulo está dedicado exclusivamente a la aplicación interactiva desarrollada con Shiny como parte del Trabajo de Fin de Grado. La app permite explorar, modelizar y validar los determinantes de la felicidad a partir de datos longitudinales. Se ha diseñado como una herramienta accesible tanto para usuarios con formación técnica como para responsables de políticas públicas que deseen entender mejor la evolución del bienestar subjetivo en el mundo.
+
+## Estructura general de la aplicación
+
+La aplicación tiene como finalidad visualizar la evolución temporal y espacial de variables relacionadas con la felicidad, ajustar modelos mixtos lineales (LMM) y generalizados (GLMM) de forma personalizada, validar automáticamente los modelos ajustados mediante tests estadísticos y gráficos, generar predicciones del Happiness Score para el año 2025, y permitir al usuario explorar diferentes combinaciones de variables y configuraciones de modelo. La interfaz de la aplicación está organizada en tres pestañas principales:
+
+### Pestaña "Descriptiva"
+
+En esta sección, el usuario puede seleccionar hasta dos variables numéricas (por ejemplo, happiness_score, gdp, freedom, etc.), elegir una o varias regiones del mundo (por ejemplo, Western Europe, Sub-Saharan Africa…), filtrar por país (opcionalmente), y generar dos tipos de visualización: un gráfico de evolución temporal, en forma de líneas, con facetas por variable, y un mapa mundial tipo choropleth, para representar el valor de una variable en un año concreto.
+
+Esta pestaña permite una exploración visual inicial de los datos y es útil para identificar tendencias y contrastes regionales.
+
+### Pestaña "Análisis"
+
+Es el núcleo funcional de la aplicación, donde se pueden construir y validar modelos estadísticos. Entre las distintas funcionalidades disponibles está la elección de efectos fijos y aleatorios (el usuario puede seleccionar libremente las variables que se incluirán como efectos fijos (por ejemplo, gdp, freedom, regime_category, etc.) y aleatorios (year, regional_indicator), el filtrado de regiones y países para construir el subconjunto de datos con el que se ajustará el modelo, la elección del tipo de modelo: LMM (Modelo lineal mixto) o  GLMM (Modelo generalizado mixto). En este caso, se puede elegir entre dos familias: Gamma(link = "inverse") o Inverse Gaussian (link = "inverse"). También se hace un ajuste del modelo, mostrando la fórmula resultante, el resumen estadístico (summary()) y las métricas de ajuste (AIC, R² marginal y condicional). Esta pestaña incluye una visualización de predicciones, en la que muestra tres líneas para cada país seleccionado: observaciones reales, valores ajustados y predicción para el año 2025. Por último, se realiza una validación del modelo, en la que se muestra la gráfica de residuos vs ajustados y QQ-Plot de residuos, y test de uniformidad, dispersión y outliers. Después se produce un diagnóstico final automático, que indica si el modelo es válido para hacer predicciones y, en caso contrario, especifica en qué falla.
+
+Esta pestaña permite aplicar el conocimiento teórico sobre modelos mixtos en un entorno interactivo y comprensible, facilitando la evaluación de distintas configuraciones de modelo sin necesidad de codificar manualmente.
+
+### Pestaña "Información"
+
+Incluye un resumen del funcionamiento de la app, instrucciones para el uso de cada pestaña, y un enlace al repositorio de GitHub donde se encuentra el código fuente.
+
+## Integración con el análisis longitudinal
+
+La aplicación no se limita a un análisis transversal, sino que está diseñada para trabajar con datos longitudinales reales. Para ello se parte de los datos del World Happiness Report (2015–2024), que han sido enriquecidos con variables políticas fijas extraídas de bases de datos como Freedom in the World y Democracy Data. Las variables políticas, que solo están disponibles para un año (2020), se han propagado a todos los años del período para permitir su uso como variables explicativas fijas. Esto permite ajustar modelos con componentes temporales (efecto year), regionales, y políticos, reflejando la estructura multinivel inherente a este tipo de datos.
+
+## Ventajas y potencial de la herramienta
+
+- Accesibilidad: No se requiere experiencia en R ni en estadística avanzada para usar la app.
+
+- Flexibilidad: Permite construir modelos a medida sin depender de plantillas predefinidas.
+
+- Interactividad: La interfaz dinámica permite ver al instante el impacto de diferentes configuraciones.
+
+- Validación automática: Ofrece diagnósticos objetivos para asegurar que los modelos ajustados son válidos y fiables.
+
+- Predicción contextualizada: Las estimaciones para el año 2025 se realizan solo si el modelo es estadísticamente adecuado.
+
+## Limitaciones y posibles mejoras
+
+Actualmente, no se realiza una selección automática de variables (stepwise, AIC, etc.), lo cual podría incorporarse como una funcionalidad adicional. La app no incluye modelos no lineales ni redes neuronales, que podrían ser explorados en futuros desarrollos. El filtrado por país podría mejorarse permitiendo seleccionar múltiples países para análisis comparativo directo.
+
+## Conclusión
+
+La aplicación Shiny desarrollada constituye una pieza clave del trabajo al traducir los modelos teóricos y análisis estadísticos en una herramienta práctica e interactiva. No solo facilita la interpretación de los resultados, sino que ofrece un entorno potente para explorar hipótesis, validar modelos y generar predicciones. Este desarrollo demuestra el potencial de combinar el análisis estadístico avanzado con herramientas de visualización e interacción para abordar problemas complejos como el estudio de la felicidad global.

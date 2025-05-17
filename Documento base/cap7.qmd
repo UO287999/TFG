@@ -1,0 +1,70 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r include=FALSE, warning=FALSE}
+library(readr)
+library(readxl)
+library(janitor)
+library(mice)
+library(visdat)
+library(outliers)
+library(plotly)
+library(tidyverse)
+library(webshot2)
+library(lmtest)      # Para bptest() y dwtest()
+library(tseries)     # Para jarque.bera.test()
+library(ggfortify)   # Para autoplot() del modelo
+
+```
+
+# Conclusiones y mejoras futuras
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(ggplot2)
+knitr::opts_chunk$set(
+  fig.width = 6, 
+  fig.height = 4, 
+  dev = "png",
+  fig.align = "center"
+)
+theme_set(theme_minimal(base_size = 12))
+```
+
+Este capítulo recopila los principales logros del trabajo, analiza su evolución a lo largo de las diferentes fases, y plantea posibles líneas de mejora o extensión. El objetivo es evaluar el grado de cumplimiento de los objetivos iniciales y valorar críticamente los resultados obtenidos.
+
+## Resumen del trabajo realizado
+A lo largo de este trabajo se ha desarrollado un sistema completo de análisis estadístico aplicado a datos longitudinales sobre felicidad mundial. El trabajo ha seguido una secuencia lógica y progresiva, que puede resumirse en las siguientes etapas:
+
+- Capítulo 2: Se introdujo el concepto de datos longitudinales, señalando sus particularidades y las limitaciones de los enfoques estadísticos clásicos (como la regresión lineal simple o múltiple) cuando se trabaja con medidas repetidas en el tiempo.
+
+- Capítulo 3: Se expusieron en profundidad los modelos adecuados para datos longitudinales: modelos lineales mixtos (LMM) y modelos lineales generalizados mixtos (GLMM). Se analizaron sus fundamentos matemáticos, componentes (efectos fijos y aleatorios), y métodos de estimación.
+
+- Capítulo 4: Se realizó una limpieza, exploración y enriquecimiento de los datos del World Happiness Report, integrando fuentes externas (Freedom House, Democracy Data) para añadir contexto político. Se generaron visualizaciones geográficas y temporales, se detectaron valores atípicos, y se aplicó una regresión múltiple para explorar la relación entre felicidad y factores sociales, económicos y políticos.
+
+- Capítulo 5: Se construyeron modelos mixtos de forma controlada, utilizando estrategias bottom-up y top-down para comparar estructuras de modelo y seleccionar la más adecuada. Se evaluó la influencia de diferentes variables sobre la felicidad en función de la región o el país, y se calculó la capacidad predictiva de los modelos.
+
+- Capítulo 6: Se diseñó y programó una aplicación interactiva en Shiny que permite realizar todo este proceso de forma visual, dinámica y sin necesidad de escribir código. La app permite explorar los datos, ajustar modelos, validarlos automáticamente, y generar predicciones.
+
+## Valoración de la evolución del proyecto
+
+Inicialmente, el proyecto partía de una idea sencilla: modelizar el Happiness Score como función de variables explicativas. Sin embargo, a medida que se profundizó en el análisis y se incorporaron fuentes externas, el trabajo adquirió una dimensión más rica y compleja. Los avances más relevantes respecto a la idea inicial incluyen la integración de datos políticos fijos, permitiendo estudiar la influencia de regímenes, elecciones y libertades sobre la felicidad, la elección de modelos mixtos frente a modelos clásicos, lo que ha permitido capturar la estructura jerárquica y temporal de los datos de forma adecuada, el desarrollo de una interfaz interactiva completa que democratiza el acceso al análisis estadístico y favorece la exploración de hipótesis personalizadas y la incorporación de herramientas de validación automática del modelo, asegurando que las predicciones se basan en modelos estadísticamente sólidos.
+
+En este sentido, el proyecto ha superado las expectativas iniciales, convirtiéndose en una herramienta funcional de análisis longitudinal con capacidad predictiva y valor práctico.
+
+## Contribuciones del trabajo
+
+Las principales aportaciones del trabajo pueden resumirse en la demostración de cómo aplicar modelos mixtos a datos reales longitudinales, abordando retos como la dependencia temporal, la heterogeneidad entre países y la multicolinealidad, el diseño de un flujo completo de análisis: desde la preparación de los datos hasta la validación del modelo final, el desarrollo de una aplicación Shiny robusta, modular y extensible, que automatiza muchas tareas del análisis estadístico y permite exportar resultados y la aplicación práctica al caso de la felicidad mundial, con implicaciones potenciales en políticas públicas, análisis social y planificación estratégica.
+
+## Limitaciones
+
+Pese a los resultados obtenidos, el trabajo también presenta algunas limitaciones, ya que algunas variables políticas utilizadas como fijas (extraídas solo de 2020) podrían haber experimentado cambios no capturados a lo largo de los años. La aplicación no implementa selección automática de variables (por ejemplo, mediante AIC o BIC en un proceso stepwise), por lo que la construcción del modelo requiere criterio experto. El modelo predictivo se limita a una predicción puntual para 2025, sin intervalos de confianza ni análisis de sensibilidad. Los modelos implementados suponen una estructura lineal o lineal generalizada; no se han explorado modelos no lineales, de machine learning o de series temporales multivariantes.
+
+## Posibles mejoras y extensiones futuras
+
+Existen varias líneas de mejora que podrían implementarse en el futuro para ampliar el alcance del trabajo, como la incorporación de intervalos de predicción en las estimaciones de 2025, para reflejar la incertidumbre del modelo, la ampliación de fuentes de datos políticas y sociales a varios años, permitiendo usar dichas variables como longitudinales y no fijas, la implementación de un módulo de selección de variables automatizado dentro de la app, basado en AIC, BIC o validación cruzada, la inclusión de modelos más complejos como árboles de decisión longitudinales, modelos no paramétricos o redes neuronales recurrentes (RNN) para datos secuenciales, la exportación de resultados (tablas, gráficos, modelos ajustados) en formatos PDF o Excel desde la app o la adaptación de la app para su despliegue en la nube (por ejemplo, vía shinyapps.io), permitiendo su acceso público y reutilización educativa o institucional.
+
+## Conclusión final
+
+Este trabajo ha demostrado cómo aplicar técnicas estadísticas avanzadas a problemas reales con impacto social. La combinación de análisis longitudinal, modelización flexible y visualización interactiva ha permitido ofrecer una herramienta potente y versátil. Aunque existen líneas claras de mejora, los resultados actuales constituyen una base sólida y funcional que puede ser ampliada en el futuro para contribuir a la comprensión y predicción del bienestar global.

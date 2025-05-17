@@ -11,17 +11,21 @@ book:
     - cap3.qmd
     - cap4.qmd
     - cap5.qmd
+    - cap6.qmd
+    - cap7.qmd
     - references.qmd
 
 bibliography: references.bib
-
+lang: es
 format:
   html:
+    fig-title: "Figura"
     theme: 
     - cosmo
     # - custom.scss
   pdf:
     documentclass: scrreprt
     toc-title: "Tabla de contenidos"
+    fig-title: "Figura"
 editor: visual
 

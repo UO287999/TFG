@@ -21,6 +21,18 @@ library(ggfortify)   # Para autoplot() del modelo
 
 # Construcción del modelo
 
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(ggplot2)
+knitr::opts_chunk$set(
+  fig.width = 6, 
+  fig.height = 4, 
+  dev = "png",
+  fig.align = "center"
+)
+theme_set(theme_minimal(base_size = 12))
+```
+
+
 En este capítulo desarrollamos el proceso de construcción de un modelo estadístico para explicar y predecir la percepción de felicidad (Happiness Score) a lo largo del tiempo, utilizando los datos longitudinales disponibles para todos los países entre los años 2015 y 2024. Dado que el análisis de este trabajo se centra en la evolución de la felicidad en el tiempo, consideramos esencial aprovechar toda la información disponible, en lugar de limitar el estudio a una única foto fija (por ejemplo, el año 2024).
 
 El objetivo de este capítulo es construir un modelo que sea estadísticamente sólido y al mismo tiempo interpretable en el contexto de los determinantes sociales, económicos y políticos de la felicidad. Para ello, combinaremos herramientas de la estadística clásica (regresión lineal múltiple) con técnicas específicas para datos longitudinales, incluyendo modelos mixtos que permiten tener en cuenta la estructura jerárquica de los datos (países medidos en diferentes años).
@@ -42,7 +54,7 @@ Además, es importante tener en cuenta la dependencia temporal entre observacion
 
 ## Análisis exploratorio y selección inicial de variables
 
-Antes de ajustar cualquier modelo, es fundamental entender la estructura de los datos, detectar posibles problemas (como valores faltantes o outliers), y elegir adecuadamente las variables que se utilizarán como predictores del `happiness_score`.
+Aunque ya se analizó previamente la estructura de los datos, antes de ajustar cualquier modelo es útil revisar de nuevo las características más relevantes desde una perspectiva predictiva, identificando posibles problemas (como valores faltantes o outliers) y seleccionando las variables que podrían actuar como buenos predictores del happiness_score.
 
 ### Estructura del dataset longitudinal
 
@@ -428,6 +440,10 @@ df_sin_democracia_sin_na <- df_sin_democracia_sin_na %>%
 
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
+#| label: fig-variables-informe
+#| echo: false
+#| warning: false
+#| fig-cap: "Evolución temporal de la esperanza de vida"
 library(ggplot2)
 library(dplyr)
 library(tidyr)
@@ -451,6 +467,13 @@ df_temporal %>%
   theme_minimal() +
   scale_x_continuous(breaks = unique(df_temporal$year))
 
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+#| label: fig-variables-informe2
+#| echo: false
+#| warning: false
+#| fig-cap: "Evolución temporal de la percepción de corrupción, libertad, generosidad y apoyo social"
 # GRÁFICO 2: corruption, freedom, generosity y support
 df_temporal %>% 
   filter(variable %in% c("corruption", "freedom", "generosity", "support")) %>%
@@ -461,6 +484,13 @@ df_temporal %>%
   theme_minimal() +
   scale_x_continuous(breaks = unique(df_temporal$year))
 
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+#| label: fig-variables-informe3
+#| echo: false
+#| warning: false
+#| fig-cap: "Evolución temporal del PIB y la felicidad"
 # GRÁFICO 3: gdp y happiness_score
 df_temporal %>% 
   filter(variable %in% c("gdp", "happiness_score")) %>%
@@ -473,13 +503,17 @@ df_temporal %>%
 
 ```
 
-La variable life_exp muestra una tendencia general al alza, con ciertas oscilaciones intermedias que podrían estar asociadas a eventos sanitarios globales como la pandemia de COVID-19. El incremento observado en 2022 es particularmente destacado y podría requerir un análisis más desagregado por región. Las variables sociales presentan comportamientos diferenciados. La percepción de corrupción (corruption) muestra variaciones abruptas que podrían reflejar problemas de medición o eventos políticos clave. La libertad de tomar decisiones (freedom) y el apoyo social (support) se mantienen relativamente estables, mientras que la generosidad (generosity) parece haber aumentado gradualmente en los últimos años. La evolución del PIB (gdp) muestra un aumento importante entre 2020 y 2022, que puede deberse a efectos de recuperación tras la pandemia. Sin embargo, el happiness_score permanece mucho más estable a lo largo del tiempo, lo que sugiere que el crecimiento económico no se traduce automáticamente en un incremento proporcional de la felicidad percibida.
+Observando la @fig-variables-informe, vemos que la esperanza de vida muestra una tendencia general al alza, con ciertas oscilaciones intermedias que podrían estar asociadas a eventos sanitarios globales como la pandemia de COVID-19. El incremento observado en 2022 es particularmente destacado y podría requerir un análisis más desagregado por región. Las variables sociales de la @fig-variables-informe2 presentan comportamientos diferenciados. La percepción de corrupción (`corruption`) muestra variaciones abruptas que podrían reflejar problemas de medición o eventos políticos clave. La libertad de tomar decisiones (`freedom`) y el apoyo social (`support`) se mantienen relativamente estables, mientras que la generosidad (`generosity`) parece haber aumentado gradualmente en los últimos años. La evolución del PIB (`gdp`) en la @fig-variables-informe3 muestra un aumento importante entre 2020 y 2022, que puede deberse a efectos de recuperación tras la pandemia. El `happiness_score` permanece mucho más estable a lo largo del tiempo, lo que sugiere que el crecimiento económico no se traduce automáticamente en un incremento proporcional de la felicidad percibida. Sin embargo, también podría interpretarse como un efecto con retardo, en el que los beneficios del aumento del PIB se reflejan en el bienestar subjetivo con cierto desfase temporal.
 
 ### Matriz de correlaciones
 
 Antes de ajustar ningún modelo, es útil examinar la correlación entre las variables explicativas y la variable objetivo happiness_score. Esto nos permitirá identificar posibles relaciones lineales, evaluar redundancias y tomar decisiones informadas sobre qué variables incluir inicialmente en el modelo.
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
+#| label: fig-matriz
+#| echo: false
+#| warning: false
+#| fig-cap: "Matriz de correlaciones de las variables de nuestra base de datos"
 # Cargar librerías necesarias
 library(corrplot)
 library(GGally)
@@ -500,7 +534,7 @@ corrplot(cor_matrix, method = "color", type = "upper",
 
 ```
 
-Como se puede observar, las correlaciones más fuertes con happiness_score corresponden a:
+Como se puede observar en la @fig-matriz, las correlaciones más fuertes con happiness_score corresponden a:
 
 - support (0.75): el apoyo social es la variable que más se relaciona con la felicidad percibida.
 
@@ -511,6 +545,25 @@ Como se puede observar, las correlaciones más fuertes con happiness_score corre
 En cambio, variables como generosity (0.10) y corruption (0.07) muestran una relación muy débil con la felicidad, lo que hace cuestionable su relevancia explicativa. Las correlaciones entre predictores no son excesivamente altas (ninguna supera 0.8), por lo que, en principio, no se anticipan grandes problemas de multicolinealidad. Aun así, esto se verificará más adelante con el cálculo de los VIF (Variance Inflation Factor).
 
 Este análisis justifica incluir support, life_exp, gdp y freedom en una primera versión del modelo, aunque se explorarán también modelos más parciales para comparar rendimiento y parsimonia.
+
+## Criterios de selección del modelo
+
+Al construir un modelo estadístico, es común que existan múltiples combinaciones posibles de predictores. Para elegir la especificación más adecuada, se utilizan criterios que balancean dos aspectos fundamentales: el ajuste al conjunto de datos (qué tan bien predice el modelo los datos observados), y la complejidad del modelo (cuántos parámetros se incluyen). Dos de los criterios más utilizados para este propósito son el Akaike Information Criterion (AIC) y el Bayesian Information Criterion (BIC).
+
+AIC penaliza la complejidad del modelo y busca minimizar la pérdida de información. Se calcula como:
+Dos de los criterios más utilizados para este propósito son el Akaike Information Criterion (AIC) y el Bayesian Information Criterion (BIC).
+
+AIC penaliza la complejidad del modelo y busca minimizar la pérdida de información. Se calcula como:
+$$
+\text{AIC} = -2 \cdot \log(\hat{L}) + 2k
+$$
+donde $\hat{L}$ es la verosimilitud máxima del modelo y k el número de parámetros.
+
+BIC penaliza más fuertemente los modelos complejos (dependiendo del tamaño de muestra n):
+$$
+\text{BIC} = -2 \cdot \log(\hat{L}) + k \cdot \log(n)
+$$
+Un AIC o BIC más bajo indica un mejor modelo, pero el AIC tiende a seleccionar modelos más complejos (es más permisivo); mientras que el BIC favorece modelos más parsimoniosos (penaliza más la complejidad). Ambos criterios se pueden usar para comparar modelos con los mismos datos y la misma variable respuesta.
 
 ## Modelado clásico
 
@@ -541,7 +594,7 @@ En la selección según AIC, el modelo presenta un AIC final de -1590.3, donde l
 
 ### Estrategia bottom-up (forward selection)
 
-Por otro lado, también puede emplearse una estrategia bottom-up, en la que se comienza con un modelo nulo y se añaden variables una a una en función de su mejora sobre el ajuste del modelo.
+También exploramos una estrategia bottom-up (selección hacia adelante), que parte de un modelo nulo y añade variables una a una en función de la mejora del AIC. Esta estrategia permite comprobar si existe alguna combinación alternativa de predictores que produzca un modelo competitivo o incluso mejor al obtenido por eliminación hacia atrás.
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 # Modelo nulo y completo
@@ -553,7 +606,7 @@ modelo_step_forward <- step(modelo_nulo, scope = list(lower = modelo_nulo, upper
 
 ```
 
-Adicionalmente, se ha probado una estrategia bottom-up (hacia adelante), comenzando desde un modelo reducido, e incorporando variables una a una. El AIC mejora progresivamente, alcanzando finalmente el modelo óptimo añadiendo todas las variables; un modelo diferente al antes mencionado.
+En este caso, el procedimiento fue incorporando progresivamente variables hasta alcanzar el modelo completo, es decir, con todos los predictores. Este resultado contrasta con el modelo obtenido por backward elimination, en el que algunas variables eran descartadas. Esta diferencia refleja que los criterios de selección pueden llevar a soluciones distintas según el punto de partida.
 
 En base a los resultados anteriores, el modelo final que utilizaremos es: happiness_score ~ gdp + life_exp + support + freedom + corruption. Este modelo muestra un equilibrio adecuado entre capacidad predictiva y parsimonia. Como veremos en la siguiente sección, se procederá ahora a evaluar el ajuste del modelo, su interpretación y su validación diagnóstica.
 
@@ -570,6 +623,10 @@ Una vez seleccionado el modelo de regresión múltiple más adecuado según los 
 - Independencia de los errores.
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
+#| label: fig-modelo-clasico
+#| echo: false
+#| warning: false
+#| fig-cap: "Gráficas para la validación del modelo clásico"
 modelo_final <- lm(happiness_score ~ support + life_exp + freedom + gdp + corruption,
                    data = df_sin_democracia_sin_na)
 autoplot(modelo_final, which = 1:4)
@@ -585,7 +642,7 @@ Se aplica el test de Jarque-Bera para evaluar si los residuos del modelo siguen 
 jarque.bera.test(modelo_final$residuals)
 ```
 
-El p-valor obtenido es extremadamente bajo (p-value = 2.195e-10), lo que indica que los residuos no siguen una distribución normal. Esto también se confirma visualmente en el gráfico Q-Q, donde los residuos llega un momento en el que se desvían de la línea teórica.
+El p-valor obtenido es extremadamente bajo (p-value = 2.195e-10), lo que indica que los residuos no siguen una distribución normal. Esto también se confirma visualmente en el gráfico Q-Q de la @fig-modelo-clasico, donde los residuos llega un momento en el que se desvían de la línea teórica.
 
 #### Media cero
 
@@ -595,7 +652,7 @@ Calculamos la media de los residuos para verificar si se aproxima a cero, como r
 mean(modelo_final$residuals)
 ```
 
-Si observamos la gráfica Residuals vs Fitted, podríamos decir que los residuos están uniformemente dispersos alrededor del eje de abscisas, por lo que se cumple la condición de que los residuos tienen media cero.
+Si observamos la gráfica Residuals vs Fitted en la @fig-modelo-clasico, podríamos decir que los residuos están uniformemente dispersos alrededor del eje de abscisas, por lo que se cumple la condición de que los residuos tienen media cero.
 
 #### Homoscedasticidad
 
@@ -606,7 +663,7 @@ bptest(modelo_final, studentize = FALSE)
 
 ```
 
-El gráfico de residuos frente a los valores ajustados también muestra un patrón creciente, indicio visual de heterocedasticidad. El test devuelve un p-valor < 2.2e-16, por lo que rechazamos la hipótesis nula de homocedasticidad. Esto indica que hay heterocedasticidad en los residuos, es decir, su varianza no es constante.
+El gráfico de residuos frente a los valores ajustados de la @fig-modelo-clasico también muestra un patrón creciente, indicio visual de heterocedasticidad. El test devuelve un p-valor < 2.2e-16, por lo que rechazamos la hipótesis nula de homocedasticidad. Esto indica que hay heterocedasticidad en los residuos, es decir, su varianza no es constante.
 
 #### No correlación de los errores
 
@@ -631,9 +688,18 @@ En el análisis clásico mediante regresión lineal múltiple, se asumía que la
 
 Para abordar esta limitación, recurrimos a los modelos lineales mixtos (LMM). Estos modelos permiten combinar efectos fijos, que capturan el efecto promedio de los predictores sobre la variable respuesta en toda la población; y efectos aleatorios, que permiten modelar la variabilidad específica entre países, incorporando interceptos (y potencialmente pendientes) distintos para cada uno. De esta forma podemos capturar la estructura jerárquica de los datos, reconociendo que cada país puede tener un nivel base de felicidad distinto (intercepto propio), mientras que los efectos de las variables predictoras son comunes a todos los países. En nuestro modelo, se consideran efectos fijos aquellas variables explicativas cuyo efecto queremos estimar de forma generalizable para toda la población (en este caso, todos los países y años). Estas variables incluyen gdp, support, freedom, life_exp, corruption y las variables políticas (is_democracy, regime_category, etc.). Se introduce un efecto aleatorio por país (intercepto aleatorio), porque cada país tiene un nivel base distinto de felicidad no explicado por las variables fijas, hay dependencia entre observaciones del mismo país en distintos años, y no nos interesa estimar el efecto específico de cada país, sino tener en cuenta la variabilidad entre ellos. En nuestro caso, el modelo lineal mixto adoptado es el siguiente:
 
-$$
-\text{happiness}_{ij} = \beta_0 + \beta_1 \cdot \text{support}_{ij} + \beta_2 \cdot \text{lifeexp}_{ij} + \beta_3 \cdot \text{freedom}_{ij} + \beta_4 \cdot \text{gdp}_{ij} + \beta_5 \cdot \text{corruption}_{ij} + \beta_6 \cdot \text{generosity}_{ij} + \beta_7 \cdot \text{year}_{ij} + u_{0j} + \varepsilon_{ij}
-$$
+\begin{align*}
+\text{happiness}_{ij} &= \beta_0 
++ \beta_1 \cdot \text{support}_{ij} 
++ \beta_2 \cdot \text{lifeexp}_{ij} 
++ \beta_3 \cdot \text{freedom}_{ij} \\
+&\quad + \beta_4 \cdot \text{gdp}_{ij} 
++ \beta_5 \cdot \text{corruption}_{ij} 
++ \beta_6 \cdot \text{generosity}_{ij} 
++ \beta_7 \cdot \text{year}_{ij} \\
+&\quad + u_{0j} + \varepsilon_{ij}
+\end{align*}
+
 
 donde:
 
@@ -653,7 +719,17 @@ summary(modelo_mixto)
 
 Si nos fijamos en los efectos aleatorios, la desviación estándar del intercepto por país es de 0.7631, lo que refleja una importante variabilidad estructural entre países; mientras que el término residual tiene desviación estándar 0.2992, menor que la del intercepto aleatorio, lo que refuerza la utilidad del modelo mixto. Analizando los efectos fijos, vemos como todas las variables menos corruption y year son significativas; pero las variables más destacadas son support, generosity y freedom ya que son aquellas que, debido al alto valor de sus coeficientes estimados, mayor impacto tienen en el modelo.
 
-Antes de proceder al diagnóstico exhaustivo del modelo propuesto, es importante evaluar si esta especificación es realmente la más adecuada para los datos. Para ello, se comparan múltiples modelos candidatos que varían en los predictores incluidos, y se utiliza un criterio de calidad estadística para seleccionar el mejor. Una de las herramientas más utilizadas para este fin es el criterio de información de Akaike (AIC), que penaliza la complejidad del modelo: un AIC más bajo indica mejor equilibrio entre ajuste y parsimonia. Partiendo del modelo mixto completo previamente planteado, utilizamos el procedimiento que realice una selección automática de predictores que minimice el AIC. Aunque el paquete lmer() utiliza por defecto el método de estimación REML, este método se recomienda cuando el objetivo es estimar los parámetros del modelo final; y no se puede usar para comparar modelos con distintos efectos fijos, ya que el REML estima la varianza teniendo en cuenta las variables fijas incluidas. Por ello, utilizaremos ML, ya que se utiliza cuando quieres comparar modelos que tienen diferentes efectos fijos (es decir, diferentes predictores), y permite comparar modelos usando AIC, BIC o likelihood ratio tests.
+Antes de proceder al diagnóstico exhaustivo del modelo propuesto, es importante evaluar si esta especificación es la más adecuada para los datos. Para ello, se comparan múltiples modelos candidatos que varían en los predictores incluidos, utilizando el criterio de información de Akaike (AIC), previamente descrito. En el caso de modelos mixtos, existe una distinción importante entre dos métodos de estimación:
+
+- REML (Restricted Maximum Likelihood): se recomienda cuando el objetivo es obtener estimaciones precisas de la varianza de los efectos aleatorios, manteniendo fija la estructura de efectos fijos. No se debe usar REML para comparar modelos con diferentes predictores fijos.
+
+- ML (Maximum Likelihood): se utiliza para comparar modelos que difieren en los efectos fijos (como sucede en selección de variables), ya que estima la verosimilitud sin condicionar por los efectos fijos.
+
+Por este motivo, para aplicar procedimientos de selección, reajustamos el modelo mixto utilizando ML, y comparamos los AIC de cada especificación candidata. Para identificar el modelo que mejor equilibra capacidad explicativa y simplicidad, utilizamos la función dredge() del paquete MuMIn. Esta herramienta realiza una búsqueda exhaustiva de modelos posibles a partir de un modelo base, generando todas las combinaciones de predictores (con y sin interacción si se desea), y calcula para cada uno de ellos métricas como el AIC, AICc o BIC. El objetivo es seleccionar el modelo que tenga el menor valor de AICc, lo que indica el mejor compromiso entre ajuste y complejidad.
+
+El funcionamiento de dredge() parte del modelo saturado (especificado con todos los predictores que se desean considerar) y construye automáticamente una tabla con los modelos anidados posibles (es decir, con subconjuntos de predictores), ordenados según el criterio de información elegido. Así, permite explorar sistemáticamente múltiples especificaciones del modelo sin necesidad de construir manualmente cada combinación.
+
+Es importante aclarar que dredge() no soluciona directamente los problemas de incumplimiento de supuestos como la normalidad o la homocedasticidad. Sin embargo, al generar modelos más parsimoniosos y mejor ajustados a los datos, puede contribuir a reducir problemas asociados al sobreajuste, la multicolinealidad o la inclusión de predictores irrelevantes, que a menudo empeoran los diagnósticos. Además, al evaluar múltiples combinaciones, permite identificar modelos que además de tener mejor ajuste según el AIC, muestran un comportamiento más estable en los residuos y una estructura más interpretable. Es decir, no arregla los residuos por sí sola, pero ayuda a elegir modelos más adecuados que podrían presentar mejores propiedades estadísticas.
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 # Cargar librerías necesarias
@@ -691,6 +767,10 @@ Evaluando el modelo, vemos que este resultado refuerza la idea de que la variabi
 Como en cualquier modelo estadístico, es esencial verificar que las suposiciones sobre los residuos se cumplen también en el contexto de modelos mixtos. En particular, se evaluó la normalidad de los residuos, la homocedasticidad (varianza constante de los errores), y la ausencia de patrones sistemáticos entre residuos y valores ajustados. Para ello, se utilizan gráficos diagnósticos similares a los del modelo clásico, pero adaptados a la estructura jerárquica de los datos. 
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
+#| label: fig-modelo-bueno
+#| echo: false
+#| warning: false
+#| fig-cap: "Gráficas para la validación del Modelo Lineal Mixto"
 library(DHARMa)
 library(sjPlot)
 library(glmmTMB)
@@ -745,60 +825,6 @@ En la tabla de efectos fijos, los coeficientes estimados (Estimate) representan 
 
 - year (β = –0.0059): su coeficiente negativo y no significativo (t = –1.69) indica una ligera tendencia decreciente en el índice de felicidad a lo largo del tiempo, aunque sin evidencia estadística suficiente para afirmarlo con firmeza.
 
-### Predicción del Happiness Score para 2025
-
-Usando el modelo mixto ajustado y extrapolando con los valores más recientes disponibles, se pueden obtener predicciones personalizadas por país. Esto permite construir un ranking proyectado de felicidad para 2025.
-
-
-```{r message=FALSE, warning=FALSE, echo=FALSE}
-# Cargar librerías necesarias
-library(lme4)
-library(dplyr)
-
-# Crear una copia de la base de datos para 2025
-datos_2025 <- df_sin_democracia_sin_na
-
-# Sustituimos el valor del año por 2025 en todas las observaciones
-datos_2025$year <- 2025
-
-# Realizamos la predicción utilizando el modelo mixto
-# allow.new.levels = TRUE permite predecir incluso si hay países nuevos o no observados
-datos_2025$happiness_pred_2025 <- predict(modelo_seleccionado, newdata = datos_2025, allow.new.levels = TRUE)
-
-# Agrupar por país y calcular la media de felicidad predicha en 2025 (si hay varias filas por país)
-ranking_2025 <- datos_2025 %>%
-  group_by(country) %>%
-  summarise(happiness_pred_2025 = mean(happiness_pred_2025, na.rm = TRUE)) %>%
-  arrange(desc(happiness_pred_2025)) %>%
-  mutate(rank = row_number())
-
-# Mostrar top 10
-print(head(ranking_2025, 10))
-
-# Mostrar bottom 10
-print(tail(ranking_2025, 10))
-
-ranking_2025 %>% 
-  filter(country == "Spain")
-
-ranking_2024 <- df_sin_democracia_sin_na %>%
-  filter(year == 2024) %>%
-  select(country, happiness_score) %>%
-  arrange(desc(happiness_score)) %>%
-  mutate(rank_2024 = row_number())
-
-ranking_2024 %>%
-  filter(country == "Spain")
-
-
-```
-
-Los países nórdicos continúan liderando el ranking global del Happiness Score estimado para 2025. Se observa que Finlandia encabeza el ranking con una predicción de 7.61 puntos, consolidando su posición como líder mundial en bienestar subjetivo. Le siguen Dinamarca (7.53), Islandia (7.47) y Noruega (7.40), todos muy cerca entre sí, lo que refleja una estabilidad en sus altos niveles de calidad de vida. El top 10 lo completan países con economías desarrolladas y estados de bienestar consolidados como Suiza, Países Bajos, Suecia, Nueva Zelanda, Israel y Australia, todos con puntuaciones superiores a 7.1.
-
-En el extremo opuesto del ranking, los países con los niveles más bajos de felicidad prevista son Afganistán, que ocupa el último puesto (160º) con un valor de 2.85, seguido por República Centroafricana, Burundi y Sudán del Sur. Estas naciones presentan conflictos persistentes, pobreza extrema o inestabilidad política. Todas las puntuaciones están por debajo de 3.7, lo que refleja condiciones estructurales desfavorables que impactan fuertemente en el bienestar subjetivo.
-
-Si nos fijamos en España, obtiene un Happiness Score previsto de 6.35, situándose en la posición 34 de 160. Esta puntuación refleja un nivel de felicidad moderadamente alto, por encima de la media global. Aunque no alcanza los niveles nórdicos, se encuentra en el tercio superior del ranking, lo que implica una posición destacada entre los países con mayor bienestar percibido. Aunque la puntuación de felicidad predicha para España en 2025 es ligeramente menor (6.35 vs. 6.42), la posición en el ranking mejora: sube del puesto 36 al 34. Esto implica que otros países han bajado más que España, permitiendo su ascenso en el ranking a pesar de una leve caída en su puntuación. Es un buen ejemplo de cómo el ranking depende no solo del valor absoluto, sino también del contexto comparativo entre países.
-
 ## Selección del mejor modelo
 
 Aunque el modelo mixto planteado inicialmente presenta un buen ajuste estadístico y explicativo, los diagnósticos revelan que no cumple completamente los supuestos teóricos fundamentales. En particular, se observa una ligera desviación de la normalidad de los residuos y una proporción de outliers ligeramente superior a la esperada por azar. Estas violaciones comprometen su idoneidad para realizar predicciones fiables.
@@ -843,6 +869,10 @@ Evaluando el modelo seleccionado, observamos que solo un 34.4% de la variabilida
 Como en cualquier modelo estadístico, es esencial verificar que las suposiciones sobre los residuos se cumplen también en el contexto de modelos mixtos. En particular, se evaluó la normalidad de los residuos, la homocedasticidad (varianza constante de los errores), y la ausencia de patrones sistemáticos entre residuos y valores ajustados. Para ello, se utilizan gráficos diagnósticos similares a los del modelo clásico, pero adaptados a la estructura jerárquica de los datos. 
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
+#| label: fig-modelo-top
+#| echo: false
+#| warning: false
+#| fig-cap: "Gráficas para la validación del Modelo Lineal Mixto tras haber seleccionado el mejor modelo"
 library(DHARMa)
 library(sjPlot)
 library(glmmTMB)
@@ -875,13 +905,13 @@ Los resultados del diagnóstico indican que el modelo seleccionado cumple adecua
 
 En la tabla de efectos fijos del modelo seleccionado, los coeficientes estimados (Estimate) indican el cambio esperado en la puntuación de felicidad (happiness_score) asociado a un incremento de una unidad en cada una de las variables independientes, manteniendo constantes las demás y considerando la estructura jerárquica del modelo (es decir, permitiendo que tanto el país como el año tengan interceptos aleatorios propios). Esto implica que los efectos aquí interpretados representan promedios poblacionales, corregidos por las variaciones específicas de cada país y de cada año.
 
-- freedom (β = 1.1587): este coeficiente indica que, controlando por el país y el año, un aumento de una unidad en la percepción de libertad está asociado a un incremento de 1.16 puntos en el índice de felicidad. Es el predictor con mayor impacto del modelo y su t-valor elevado (t = 12.05) confirma su fuerte significancia estadística.
+- freedom (β = 1.1587): este coeficiente refleja una fuerte asociación entre la percepción de libertad y el bienestar subjetivo. La escala de freedom en este estudio va de 0 a 1, por lo que un incremento total en esta variable se traduciría, en promedio, en un aumento de 1.16 puntos en la puntuación de felicidad (que suele oscilar entre 3 y 8). Este efecto es sustantivamente muy relevante: sugiere que las sociedades donde las personas se sienten más libres para tomar decisiones sobre su vida tienden a ser considerablemente más felices. Esto refuerza la idea de que las políticas centradas en la autonomía individual y la participación ciudadana pueden tener un impacto directo y significativo en el bienestar general de una población.
 
-- life_exp (β = 0.0208): aunque el efecto es más modesto en magnitud, resulta altamente significativo (t = 6.11), lo que sugiere que un aumento en la esperanza de vida también contribuye de forma positiva al bienestar subjetivo. Concretamente, una mejora de un punto en esta variable se asocia con un aumento de aproximadamente 0.021 puntos en la felicidad media.
+- life_exp (β = 0.0208): aunque este coeficiente es numéricamente menor, hay que tener en cuenta que la variable de esperanza de vida saludable (life_exp) se mide en una escala mucho más amplia (por ejemplo, entre 45 y 75 años). Por tanto, un aumento de 10 años en la esperanza de vida se asocia con un incremento de aproximadamente 0.21 puntos en el índice de felicidad, lo cual no es despreciable. Este resultado indica que vivir más años con buena salud está positivamente relacionado con el bienestar subjetivo, y pone de relieve la importancia de la salud pública como determinante estructural de la felicidad.
 
-- support (β = 1.2237): este es otro de los predictores clave del modelo. El valor estimado sugiere que, manteniendo las demás variables constantes, un incremento en el nivel percibido de apoyo social se traduce en una subida de 1.22 puntos en el índice de felicidad, lo que representa un efecto considerable. Su elevado t-valor (t = 12.34) respalda la solidez de esta relación.
+- support (β = 1.2237): el coeficiente de apoyo social es el mayor del modelo, y también se refiere a una variable que va de 0 a 1. Esto implica que, a igualdad de condiciones, una mejora completa en la percepción de apoyo social puede aumentar en más de 1.22 puntos la puntuación de felicidad. Este resultado muestra que las relaciones interpersonales y el sentimiento de contar con alguien en momentos difíciles son uno de los pilares fundamentales del bienestar humano. De hecho, esta variable supera ligeramente a freedom tanto en magnitud del coeficiente como en significancia estadística (t = 12.34), consolidándose como el predictor más potente del modelo.
 
-En conjunto, estos resultados subrayan el papel central de las percepciones sociales y de las condiciones de vida básicas (libertad, apoyo, salud) en la explicación del bienestar subjetivo, incluso una vez consideradas las diferencias estructurales entre países y las variaciones temporales entre años.
+En conjunto, estos resultados muestran que las condiciones sociales y emocionales, como el apoyo mutuo y la percepción de libertad, junto con la calidad de vida física, medida a través de la esperanza de vida saludable, son los factores que más consistentemente explican las diferencias en felicidad entre países y a lo largo del tiempo. La fuerza y estabilidad de estos efectos, incluso al controlar por las diferencias estructurales entre países y años, sugiere que fomentar entornos sociales cohesionados, garantizar derechos individuales y mejorar la salud puede tener un impacto directo en el bienestar de la población.
 
 ### Predicción del Happiness Score para 2025
 

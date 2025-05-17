@@ -6,11 +6,42 @@ library(lme4)
 library(MuMIn)
 library(dplyr)
 library(tidyr)
-df <- df_sin_democracia_sin_na
+library(readr)
+library(performance)
+library(DHARMa)
+
+
+# Leer los datos base
+df_happiness <- read.csv("../df_sin_democracia_sin_na.csv")
+df_politicas <- read.csv("../df_completo_sin_na.csv")
+
+# Variables políticas que se quieren mantener fijas desde 2020
 vars_politicas <- c(
   "fair_election", "regime_category", "democracy",
   "electoral_category", "presidential", "alternation"
 )
+
+# Extraer valores de 2020 para esas variables
+politicas_2020 <- df_politicas %>%
+  filter(year == 2020) %>%
+  select(country, all_of(vars_politicas))
+
+# Filtrar df_happiness solo para países que tienen datos políticos válidos
+paises_validos <- unique(politicas_2020$country)
+df_happiness_filtrado <- df_happiness %>%
+  filter(country %in% paises_validos)
+
+# Expandir datos políticos de 2020 a todos los años 2015–2024
+años <- 2015:2024
+base_expansion <- expand.grid(country = paises_validos, year = años)
+
+politicas_expandido <- base_expansion %>%
+  left_join(politicas_2020, by = "country")
+
+# Unir ambas fuentes para crear el dataframe completo y limpio
+df <- df_happiness_filtrado %>%
+  left_join(politicas_expandido, by = c("country", "year"))
+write.csv(df, "df_unificado.csv", row.names = FALSE)
 
 # Variables permitidas como efectos fijos
 efectos_fijos_posibles <- c(
@@ -19,15 +50,6 @@ efectos_fijos_posibles <- c(
   "fair_election", "regime_category", "democracy",
   "electoral_category", "presidential", "alternation"
 )
-
-# Función auxiliar para verificar variación en variables políticas
-pais_con_variacion <- function(data, vars) {
-  data %>%
-    group_by(country) %>%
-    filter(if_all(all_of(vars), ~ length(unique(.)) > 1)) %>%
-    pull(country) %>%
-    unique()
-}
 
 ui <- dashboardPage(
   dashboardHeader(title = "Modelos de Felicidad"),
@@ -71,7 +93,7 @@ ui <- dashboardPage(
                     width = 6),
                 
                 box(checkboxGroupInput("efectos_aleatorios", "Efectos aleatorios:",
-                                       choices = c("country", "year", "regional_indicator")),
+                                       choices = c("year", "regional_indicator")),
                     width = 6)
               ),
               
@@ -86,8 +108,15 @@ ui <- dashboardPage(
                   actionButton("ajustar_glmm", "Ajustar GLMM", icon = icon("cogs")),
                   width = 6
                 ),
-                box(infoBoxOutput("aic_analisis"), width = 4),
-                box(infoBoxOutput("r2_analisis"), width = 4)
+                box(selectInput("familia_glmm", "Familia (GLMM):",
+                                choices = c("Gamma" = "Gamma", "Inverse Gaussian" = "inverse.gaussian"),
+                                selected = "Gamma"),
+                    width = 6)
+                
+              ),
+              fluidRow(
+                box(infoBoxOutput("aic_analisis"), width = 6),
+                box(infoBoxOutput("r2_analisis"), width = 6)
               ),
               fluidRow(
                 box(verbatimTextOutput("modelo_formula"), width = 12)
@@ -97,7 +126,18 @@ ui <- dashboardPage(
               ),
               fluidRow(
                 box(plotlyOutput("grafico_predicciones", height = 400), width = 12)
+              ),
+              fluidRow(
+                box(title = "Validación del modelo (gráficas)", plotOutput("grafico_validacion", height = 300), width = 12)
+              ),
+              fluidRow(
+                box(title = "Validación del modelo (tests)", verbatimTextOutput("test_validacion"), width = 12)
+              ),
+              fluidRow(
+                box(title = "¿Es el modelo válido para predecir?", verbatimTextOutput("modelo_valido"), width = 12, status = "warning")
               )
+              
+              
               
       )
       ,
@@ -172,32 +212,11 @@ server <- function(input, output, session) {
   })
   
   datos_filtrados_analisis <- eventReactive(c(input$ajustar_modelo, input$ajustar_glmm), {
-    usa_politicas <- any(input$efectos_fijos %in% vars_politicas)
-    
-    data_base <- if (usa_politicas) {
-      showNotification("Estás usando variables políticas: el análisis se limita a datos hasta 2020", type = "warning")
-      df_completo_sin_na
-    } else {
-      df_sin_democracia_sin_na
-    }
     
     # Filtrar por región y país
-    data_filtrada <- data_base %>%
+    data_filtrada <- df %>%
       filter(regional_indicator %in% input$region_analisis,
              if (!is.null(input$pais_analisis) && length(input$pais_analisis) > 0) country %in% input$pais_analisis else TRUE)
-    
-    # Si se usan variables políticas, filtrar países con variación en esas variables
-    if (usa_politicas) {
-      vars_usadas <- intersect(input$efectos_fijos, vars_politicas)
-      paises_validos <- pais_con_variacion(data_filtrada, vars_usadas)
-      
-      if (length(paises_validos) == 0) {
-        showNotification("Ningún país seleccionado tiene variación en las variables políticas elegidas. Ajuste cancelado.", type = "error")
-        return(NULL)
-      }
-      
-      data_filtrada <- data_filtrada %>% filter(country %in% paises_validos)
-    }
     
     data_filtrada
   })
@@ -248,27 +267,34 @@ server <- function(input, output, session) {
     efectos_fijos_txt <- paste(efectos_fijos, collapse = " + ")
     
     if (length(input$efectos_aleatorios) == 0) {
-      formula_txt <- paste0("happiness_score ~ ", efectos_fijos_txt, " + (1 | country)")
+      formula_txt <- paste0("happiness_score ~ ", efectos_fijos_txt)
     } else {
-      efectos_aleatorios_txt <- paste(input$efectos_aleatorios, collapse = " + ")
-      formula_txt <- paste0("happiness_score ~ ", efectos_fijos_txt, " + (1 + ", efectos_aleatorios_txt, " | country)")
+      efectos_aleatorios_txt <- paste0("(1 | ", input$efectos_aleatorios, ")", collapse = " + ")
+      formula_txt <- paste0("happiness_score ~ ", efectos_fijos_txt, " + ", efectos_aleatorios_txt)
     }
     
     as.formula(formula_txt)
   })
   
+  
   modelo_ajustado <- eventReactive(
     list(input$ajustar_modelo, input$ajustar_glmm), {
       req(input$efectos_fijos)
       
-      datos <- datos_filtrados_analisis()
+      datos <- na.omit(datos_filtrados_analisis())
+      
       formula <- modelo_formula()
       
       tryCatch({
         if (modelo_tipo() == "lmm") {
           lmer(formula, data = datos)
         } else {
-          glmer(formula, data = datos, family = gaussian(link = "identity"))
+          fam <- switch(input$familia_glmm,
+                        "Gamma" = Gamma(link = "inverse"),
+                        "inverse.gaussian" = inverse.gaussian(link = "inverse"))
+          
+          glmer(formula, data = datos, family = fam)
+          
         }
       }, error = function(e) {
         showNotification("No se pudo ajustar el modelo. Revisa las variables seleccionadas.", type = "error")
@@ -278,11 +304,11 @@ server <- function(input, output, session) {
   )
   
   
-  output$modelo_formula <- renderUI({
+  output$modelo_formula <- renderPrint({
     req(modelo_formula())
-    formula_txt <- paste0("$$", deparse(modelo_formula()), "$$")
-    withMathJax(HTML(formula_txt))
+    print(modelo_formula())
   })
+  
   
   output$resumen_modelo <- renderPrint({
     req(modelo_ajustado())
@@ -314,6 +340,56 @@ server <- function(input, output, session) {
       fill = FALSE
     )
   })
+  
+  output$grafico_validacion <- renderPlot({
+    req(modelo_ajustado())
+    par(mfrow = c(1, 2))
+    plot(fitted(modelo_ajustado()), resid(modelo_ajustado()),
+         main = "Residuos vs Ajustados", xlab = "Ajustados", ylab = "Residuos")
+    abline(h = 0, col = "red")
+    qqnorm(resid(modelo_ajustado()), main = "QQ-Plot de residuos")
+    qqline(resid(modelo_ajustado()))
+  })
+  
+  output$test_validacion <- renderPrint({
+    req(modelo_ajustado())
+    
+    sim_res <- simulateResiduals(fittedModel = modelo_ajustado(), plot = FALSE)
+    
+    cat("Test de Uniformidad:\n")
+    print(testUniformity(sim_res))
+    
+    cat("\nTest de Dispersión:\n")
+    print(testDispersion(sim_res))
+    
+    cat("\nTest de Outliers:\n")
+    print(testOutliers(sim_res))
+  })
+  
+  output$modelo_valido <- renderPrint({
+    req(modelo_ajustado())
+    
+    sim_res <- simulateResiduals(fittedModel = modelo_ajustado(), plot = FALSE)
+    
+    # Ejecutar los tests
+    res_uniformity <- testUniformity(sim_res)
+    res_dispersion <- testDispersion(sim_res)
+    res_outliers <- testOutliers(sim_res)
+    
+    # Identificar los que fallan
+    fallos <- c()
+    if (res_uniformity$p.value < 0.05) fallos <- c(fallos, "uniformidad")
+    if (res_dispersion$p.value < 0.05) fallos <- c(fallos, "dispersión")
+    if (res_outliers$p.value < 0.05) fallos <- c(fallos, "outliers")
+    
+    if (length(fallos) == 0) {
+      cat("✅ Este modelo es válido para hacer predicciones porque pasa los tests de uniformidad, dispersión y outliers.")
+    } else {
+      cat("❌ Este modelo NO es válido para hacer predicciones.\n")
+      cat("Falla en los siguientes aspectos:", paste(fallos, collapse = ", "), "\n")
+    }
+  })
+  
   
   output$grafico_predicciones <- renderPlotly({
     req(modelo_ajustado())
