@@ -34,7 +34,14 @@ theme_set(theme_minimal(base_size = 12))
 
 Este capítulo recopila los principales logros del trabajo, analiza su evolución a lo largo de las diferentes fases, y plantea posibles líneas de mejora o extensión. El objetivo es evaluar el grado de cumplimiento de los objetivos iniciales y valorar críticamente los resultados obtenidos.
 
+## Valoración global del proyecto
+
+El proyecto parte de un planteamiento ambicioso: modelizar la evolución del Happiness Score a lo largo del tiempo, integrando múltiples factores sociales, económicos y políticos. Desde el inicio, el enfoque longitudinal y jerárquico fue un eje vertebrador, aunque la llegada del conjunto de datos principal —el World Happiness Report— y de las fuentes políticas externas se produjo en etapas posteriores. A medida que avanzaba el trabajo, se fueron incorporando nuevas variables, estrategias de modelado y herramientas interactivas, ampliando el alcance inicial tanto a nivel metodológico como aplicado.
+
+Esta evolución refleja no solo una mejora progresiva del producto final, sino también un proceso de aprendizaje continuo: desde el manejo avanzado de modelos mixtos en R hasta la integración de estos modelos en una aplicación interactiva. En conjunto, el proyecto ha culminado en una herramienta robusta y funcional que permite explorar, modelizar y predecir la felicidad global de forma accesible y flexible.
+
 ## Resumen del trabajo realizado
+
 A lo largo de este trabajo se ha desarrollado un sistema completo de análisis estadístico aplicado a datos longitudinales sobre felicidad mundial. El trabajo ha seguido una secuencia lógica y progresiva, que puede resumirse en las siguientes etapas:
 
 - Capítulo 2: Se introdujo el concepto de datos longitudinales, señalando sus particularidades y las limitaciones de los enfoques estadísticos clásicos (como la regresión lineal simple o múltiple) cuando se trabaja con medidas repetidas en el tiempo.
@@ -45,17 +52,23 @@ A lo largo de este trabajo se ha desarrollado un sistema completo de análisis e
 
 - Capítulo 5: Se construyeron modelos mixtos de forma controlada, utilizando estrategias bottom-up y top-down para comparar estructuras de modelo y seleccionar la más adecuada. Se evaluó la influencia de diferentes variables sobre la felicidad en función de la región o el país, y se calculó la capacidad predictiva de los modelos.
 
-- Capítulo 6: Se diseñó y programó una aplicación interactiva en Shiny que permite realizar todo este proceso de forma visual, dinámica y sin necesidad de escribir código. La app permite explorar los datos, ajustar modelos, validarlos automáticamente, y generar predicciones.
+- Capítulo 6: Se diseñó y programó una aplicación interactiva en Shiny que permite realizar todo este proceso de forma visual, dinámica y sin necesidad de escribir código. La app permite explorar los datos, ajustar modelos, validarlos automáticamente, y generar predicciones. Esta app ha sido subida a GitHub como repositorio reproducible.
 
-## Valoración de la evolución del proyecto
+## Aportaciones principales
 
-Inicialmente, el proyecto partía de una idea sencilla: modelizar el Happiness Score como función de variables explicativas. Sin embargo, a medida que se profundizó en el análisis y se incorporaron fuentes externas, el trabajo adquirió una dimensión más rica y compleja. Los avances más relevantes respecto a la idea inicial incluyen la integración de datos políticos fijos, permitiendo estudiar la influencia de regímenes, elecciones y libertades sobre la felicidad, la elección de modelos mixtos frente a modelos clásicos, lo que ha permitido capturar la estructura jerárquica y temporal de los datos de forma adecuada, el desarrollo de una interfaz interactiva completa que democratiza el acceso al análisis estadístico y favorece la exploración de hipótesis personalizadas y la incorporación de herramientas de validación automática del modelo, asegurando que las predicciones se basan en modelos estadísticamente sólidos.
+Este trabajo contribuye en varios frentes. Desde el punto de vista metodológico, demuestra cómo aplicar modelos mixtos y generalizados mixtos a un caso real con datos heterogéneos, respetando su estructura temporal y geográfica. Se abordan retos clave como la dependencia temporal, la multicolinealidad o la variabilidad intra/inter-país. El flujo completo —desde la limpieza hasta la predicción— está completamente implementado en R, y encapsulado en una interfaz accesible mediante Shiny.
 
-En este sentido, el proyecto ha superado las expectativas iniciales, convirtiéndose en una herramienta funcional de análisis longitudinal con capacidad predictiva y valor práctico.
+Desde una perspectiva aplicada, el proyecto permite estudiar la evolución del bienestar en el mundo de forma flexible, con capacidad de personalizar hipótesis por país, región o bloque geopolítico. La incorporación de variables políticas fijas aporta un enfoque complementario para analizar cómo influyen los regímenes democráticos, las libertades o la alternancia política sobre la percepción de felicidad.
 
-## Contribuciones del trabajo
+Desde el punto de vista formativo, el trabajo ha supuesto un aprendizaje práctico profundo en aspectos clave como la programación en R, el uso de librerías como lme4, glmmTMB o performance, el diseño de aplicaciones Shiny y el uso de plataformas de control de versiones como GitHub para compartir y documentar el código. La app desarrollada no solo representa un producto final, sino también una evidencia tangible del conocimiento adquirido.
 
-Las principales aportaciones del trabajo pueden resumirse en la demostración de cómo aplicar modelos mixtos a datos reales longitudinales, abordando retos como la dependencia temporal, la heterogeneidad entre países y la multicolinealidad, el diseño de un flujo completo de análisis: desde la preparación de los datos hasta la validación del modelo final, el desarrollo de una aplicación Shiny robusta, modular y extensible, que automatiza muchas tareas del análisis estadístico y permite exportar resultados y la aplicación práctica al caso de la felicidad mundial, con implicaciones potenciales en políticas públicas, análisis social y planificación estratégica.
+## Valoración de la aplicación Shiny desarrollada
+
+La aplicación Shiny desarrollada constituye una pieza clave del trabajo al traducir los modelos teóricos y análisis estadísticos en una herramienta práctica e interactiva. No solo facilita la interpretación de los resultados, sino que ofrece un entorno potente para explorar hipótesis, validar modelos y generar predicciones. Este desarrollo demuestra el potencial de combinar el análisis estadístico avanzado con herramientas de visualización e interacción para abordar problemas complejos como el estudio de la felicidad global.
+
+Entre sus principales ventajas destacan la accesibilidad, ya que no se requiere experiencia en R ni en estadística avanzada para usar la app; su flexibilidad que permite construir modelos a medida sin depender de plantillas predefinidas; la interactividad que, gracias a la interfaz dinámica, se permite ver al instante el impacto de diferentes configuraciones; la validación automática que ofrece diagnósticos objetivos para asegurar que los modelos ajustados son válidos y fiables; y la predicción contextualizada, ya que las estimaciones para el año 2025 se realizan solo si el modelo es estadísticamente adecuado.
+
+Además, la app refleja con fidelidad la estructura jerárquica de los datos y permite un análisis a múltiples niveles (tiempo, región, país), trabajando sobre datos longitudinales reales (2015–2024) enriquecidos con información política. Las variables políticas, aunque fijas (2020), se han propagado a todos los años para integrarse en el análisis como factores estructurales.
 
 ## Limitaciones
 
@@ -67,4 +80,6 @@ Existen varias líneas de mejora que podrían implementarse en el futuro para am
 
 ## Conclusión final
 
-Este trabajo ha demostrado cómo aplicar técnicas estadísticas avanzadas a problemas reales con impacto social. La combinación de análisis longitudinal, modelización flexible y visualización interactiva ha permitido ofrecer una herramienta potente y versátil. Aunque existen líneas claras de mejora, los resultados actuales constituyen una base sólida y funcional que puede ser ampliada en el futuro para contribuir a la comprensión y predicción del bienestar global.
+Este trabajo ha demostrado cómo aplicar técnicas estadísticas avanzadas a un problema complejo y socialmente relevante como el bienestar global. La combinación de modelos longitudinales, análisis político y una interfaz interactiva construida desde cero ha dado lugar a una herramienta útil, flexible y replicable. Además de sus aportaciones analíticas, el proyecto refleja una evolución formativa significativa en el manejo de herramientas estadísticas, programación y desarrollo de productos reproducibles.
+
+Aunque existen líneas claras de mejora, los resultados obtenidos constituyen una base sólida para extender el trabajo en futuras investigaciones, proyectos de política pública o aplicaciones educativas. El análisis de la felicidad, más allá de su dimensión estadística, se revela aquí como un campo fértil para integrar ciencia de datos, reflexión social y compromiso con la calidad de vida global.

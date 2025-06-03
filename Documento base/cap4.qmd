@@ -762,7 +762,7 @@ Una vez preparado el dataset final, es posible explorar cómo ha evolucionado la
 
 Con el objetivo de identificar patrones geográficos en los niveles de felicidad, se emplean mapas coropléticos que permiten visualizar espacialmente la distribución del happiness_score a lo largo del tiempo. Este enfoque facilita detectar agrupaciones regionales, contrastes entre países vecinos y posibles focos de evolución atípica. Al representar la información sobre el territorio, los mapas se convierten en una herramienta clave para complementar el análisis longitudinal y contextualizar las dinámicas regionales de la felicidad.
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
+```{r}
 #| label: fig-mapa-mundi
 #| echo: false
 #| warning: false
@@ -771,16 +771,12 @@ library(plotly)
 library(dplyr)
 library(readr)
 
-# Dataset de Plotly con códigos ISO
 df_base <- read.csv('https://raw.githubusercontent.com/plotly/datasets/master/2014_world_gdp_with_codes.csv')
-
-# Leer el CSV local de felicidad
 df_felicidad <- df_sin_democracia_sin_na
 
-# Unir datasets por nombre de país
 df_mapa1 <- df_base %>%
   left_join(filter(df_felicidad, year == 2024), by = c("COUNTRY" = "country")) %>%
-  filter(!is.na(happiness_score))  # Evitar NA en mapa
+  filter(!is.na(happiness_score))
 
 l <- list(color = toRGB("grey"), width = 0.5)
 g <- list(showframe = FALSE, showcoastlines = FALSE, projection = list(type = 'Mercator'))
@@ -794,24 +790,18 @@ fig1 <- plot_geo(df_mapa1) %>%
   layout(title = 'Países con datos de felicidad (2024)', geo = g)
 
 if (knitr::is_latex_output()) {
-  # Guardar HTML y exportar como imagen
   html_file <- "mapa_interactivo.html"
   png_file <- "mapa_interactivo.png"
   saveWidget(fig1, file = html_file, selfcontained = TRUE)
   webshot2::webshot(html_file, file = png_file, vwidth = 1200, vheight = 800)
-  
-  # Insertar imagen con LaTeX puro para evitar errores
-  cat('\\begin{center}\n')
-  cat('\\includegraphics[width=0.9\\linewidth]{mapa_interactivo.png}\n')
-  cat('\\end{center}\n')
+  knitr::include_graphics("mapa_interactivo.png")
 } else {
   fig1
 }
 
-
 ```
 
-El mapa de felicidad por país en 2024 muestra una clara heterogeneidad geográfica en la percepción del bienestar, capturada a través del Happiness Score. Se observan regiones del norte global, como Europa Occidental, América del Norte y Oceanía, con los niveles más altos de felicidad (colores amarillos y verde claro), mientras que regiones del sur global, especialmente África Subsahariana y algunas partes de Asia como Afganistán o India, presentan valores notablemente más bajos (colores azul oscuro o morado).
+El mapa de felicidad por país en 2024 de la @fig-mapa-mundi muestra una clara heterogeneidad geográfica en la percepción del bienestar, capturada a través del Happiness Score. Se observan regiones del norte global, como Europa Occidental, América del Norte y Oceanía, con los niveles más altos de felicidad (colores amarillos y verde claro), mientras que regiones del sur global, especialmente África Subsahariana y algunas partes de Asia como Afganistán o India, presentan valores notablemente más bajos (colores azul oscuro o morado).
 
 Países como Finlandia, Noruega y Nueva Zelanda destacan con las puntuaciones más altas, reflejando contextos estables y altos niveles de desarrollo económico y social. En contraste, países como Zimbabwe, Sudán del Sur o Afganistán presentan los niveles más bajos, lo cual es coherente con contextos de conflicto, pobreza o inestabilidad política.
 
@@ -821,31 +811,21 @@ En conjunto, el gráfico evidencia de forma visual el impacto que pueden tener f
 
 Además del análisis temporal por país, resulta de interés observar cómo varía la felicidad entre regiones, y cómo se distribuye internamente en cada una de ellas. Para ello, se emplean gráficos de violín, que permiten visualizar simultáneamente la dispersión, la mediana y la densidad de los valores de happiness_score en cada región. Esta representación facilita la comparación entre regiones y la detección de desigualdades internas que podrían pasar desapercibidas en un análisis puramente temporal.
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
+```{r}
 #| label: fig-felicidad-region
 #| echo: false
 #| warning: false
 #| fig-cap: "Distribución de la felicidad agrupada por región en los años 2015, 2020 y 2024"
-# Orden geográfico manual (puedes ajustarlo si tienes una lógica diferente)
 orden_regiones <- c(
-  "Western Europe",
-  "Central and Eastern Europe",
-  "Commonwealth of Independent States",
-  "Middle East and North Africa",
-  "Sub-Saharan Africa",
-  "South Asia",
-  "Southeast Asia",
-  "East Asia",
-  "Latin America and Caribbean",
-  "North America and ANZ"
+  "Western Europe", "Central and Eastern Europe", "Commonwealth of Independent States",
+  "Middle East and North Africa", "Sub-Saharan Africa", "South Asia",
+  "Southeast Asia", "East Asia", "Latin America and Caribbean", "North America and ANZ"
 )
 
-# Filtrar y reordenar niveles de las regiones
 df_violin <- df_sin_democracia_sin_na %>%
   filter(year %in% c(2015, 2020, 2024)) %>%
   mutate(regional_indicator = factor(regional_indicator, levels = orden_regiones))
 
-# Crear gráfico con facetas por año y mediana
 p <- ggplot(df_violin, aes(x = regional_indicator, y = happiness_score, fill = regional_indicator)) +
   geom_violin(alpha = 0.6, trim = FALSE) +
   stat_summary(fun = median, geom = "point", color = "black", shape = 18, size = 2) +
@@ -853,24 +833,20 @@ p <- ggplot(df_violin, aes(x = regional_indicator, y = happiness_score, fill = r
   facet_wrap(~ year, ncol = 1) +
   labs(
     title = "Distribución de Felicidad por Región (2015, 2020, 2024)",
-    x = "Región",
-    y = "Happiness Score"
+    x = "Región", y = "Happiness Score"
   ) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    legend.position = "none"
-  )
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
 
-# Mostrar interactivo si es HTML, guardar imagen si es PDF
 if (knitr::is_latex_output()) {
   ggsave("violines_felicidad_por_anio.png", p, width = 10, height = 12)
-  cat("![](violines_felicidad_por_anio.png)")
+  knitr::include_graphics("violines_felicidad_por_anio.png")
 } else {
   ggplotly(p)
 }
+
 ```
 
-Observando la distribución de la felicidad por región, si nos fijamos en la mediana, que se muestra con un rombo negro en cada violín, vemos que hay regiones como Europa Occidental o Norte América y Australia que mantienen medianas altas y estables a lo largo del tiempo, mientras que el Sur de Asia y África Sub-Sahariana tienen medianas bajas, aunque relativamente estables.
+Observando la distribución de la felicidad por región de la @fig-felicidad-region, si nos fijamos en la mediana, que se muestra con un rombo negro en cada violín, vemos que hay regiones como Europa Occidental o Norte América y Australia que mantienen medianas altas y estables a lo largo del tiempo, mientras que el Sur de Asia y África Sub-Sahariana tienen medianas bajas, aunque relativamente estables.
 
 En estos gráficos también se puede observar cierta bimodalidad, ya que algunas regiones, como Latino América y el Caribe o el Oriente Medio y África del Norte muestran dos modos (zonas más anchas del violín), lo que sugiere heterogeneidad interna: algunos países con altos niveles de felicidad conviven con otros con puntuaciones mucho más bajas. Asia del Sur presenta una distribución muy desigual en 2024, con un notable ensanchamiento en la parte inferior del gráfico, reflejando una baja felicidad en ciertos países (como Afganistán).
 
@@ -878,31 +854,21 @@ En general, la forma de las distribuciones se mantiene similar entre 2015 y 2024
 
 A continuación, analizamos la percepción de la corrupción, una variable que diversos estudios han señalado como influyente en la percepción de felicidad. En la siguiente figura se representa la distribución de esta variable mediante gráficos de violines, lo que nos permite observar sus diferencias entre regiones. Este tipo de representación facilita comparar no solo los valores centrales, sino también la dispersión y asimetría en cada grupo geográfico. Se observa que algunas regiones presentan niveles percibidos de corrupción notablemente más bajos, lo que podría estar asociado a mayores niveles de bienestar subjetivo.
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
+```{r}
 #| label: fig-percepcion-corrupcion
 #| echo: false
 #| warning: false
 #| fig-cap: "Distribución de la percepción de corrupción agrupada por región en los años 2015, 2020 y 2024"
-# Orden geográfico de las regiones
 orden_regiones <- c(
-  "Western Europe",
-  "Central and Eastern Europe",
-  "Commonwealth of Independent States",
-  "Middle East and North Africa",
-  "Sub-Saharan Africa",
-  "South Asia",
-  "Southeast Asia",
-  "East Asia",
-  "Latin America and Caribbean",
-  "North America and ANZ"
+  "Western Europe", "Central and Eastern Europe", "Commonwealth of Independent States",
+  "Middle East and North Africa", "Sub-Saharan Africa", "South Asia",
+  "Southeast Asia", "East Asia", "Latin America and Caribbean", "North America and ANZ"
 )
 
-# Filtrar solo los años deseados y aplicar orden
-df_corrupcion <- df_sin_democracia_sin_na %>% 
+df_corrupcion <- df_sin_democracia_sin_na %>%
   filter(year %in% c(2015, 2020, 2024)) %>%
   mutate(regional_indicator = factor(regional_indicator, levels = orden_regiones))
 
-# Gráfico con violines por región y año
 p <- ggplot(df_corrupcion, aes(x = regional_indicator, y = corruption, fill = regional_indicator)) +
   geom_violin(alpha = 0.6, trim = FALSE) +
   stat_summary(fun = median, geom = "point", color = "black", shape = 18, size = 2) +
@@ -910,24 +876,20 @@ p <- ggplot(df_corrupcion, aes(x = regional_indicator, y = corruption, fill = re
   facet_wrap(~ year, ncol = 1) +
   labs(
     title = "Distribución de la Percepción de Corrupción por Región (2015, 2020, 2024)",
-    x = "Región",
-    y = "Percepción de Corrupción"
+    x = "Región", y = "Percepción de Corrupción"
   ) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    legend.position = "none"
-  )
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
 
-# Mostrar según el tipo de output
 if (knitr::is_latex_output()) {
   ggsave("violines_corrupcion_por_anio.png", p, width = 10, height = 12)
-  cat("![](violines_corrupcion_por_anio.png)")
+  knitr::include_graphics("violines_corrupcion_por_anio.png")
 } else {
   ggplotly(p)
 }
+
 ```
 
-El gráfico de violines permite observar la evolución de la percepción de corrupción en las distintas regiones a lo largo del tiempo, mostrando tanto la mediana como la distribución completa de los datos. Lo más destacable es la aparición de una clara bimodalidad en algunas regiones a partir de 2020 y especialmente en 2024, lo que sugiere una divergencia creciente entre países dentro de la misma región.
+El gráfico de violines de la @fig-percepcion-corrupcion permite observar la evolución de la percepción de corrupción en las distintas regiones a lo largo del tiempo, mostrando tanto la mediana como la distribución completa de los datos. Lo más destacable es la aparición de una clara bimodalidad en algunas regiones a partir de 2020 y especialmente en 2024, lo que sugiere una divergencia creciente entre países dentro de la misma región.
 
 Europa Occidental mantiene una distribución relativamente estable a lo largo del tiempo, con una percepción de corrupción baja en general (valores altos), aunque en 2024 aparece una mayor dispersión que en 2015 y 2020. Sin embargo, en Europa Central y Oriental se observa un patrón inverso. En 2015 y 2020, la percepción es bastante alta (valores cercanos a 1), pero en 2024 se evidencia una caída brusca en la percepción positiva (valores muy bajos), lo que indica un empeoramiento de la percepción ciudadana sobre la corrupción en algunos países, como puede ser el caso de Hungría o Polonia.
 

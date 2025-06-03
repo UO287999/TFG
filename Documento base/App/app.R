@@ -9,7 +9,7 @@ library(tidyr)
 library(readr)
 library(performance)
 library(DHARMa)
-
+library(glmmTMB)
 
 # Leer los datos base
 df_happiness <- read.csv("../df_sin_democracia_sin_na.csv")
@@ -62,6 +62,7 @@ ui <- dashboardPage(
   ),
   dashboardBody(
     tabItems(
+      selected='info',
       tabItem(tabName = "descriptiva",
               fluidRow(
                 box(selectizeInput("vars_desc", "Selecciona hasta 2 variables:", 
@@ -108,12 +109,16 @@ ui <- dashboardPage(
                   actionButton("ajustar_glmm", "Ajustar GLMM", icon = icon("cogs")),
                   width = 6
                 ),
-                box(selectInput("familia_glmm", "Familia (GLMM):",
-                                choices = c("Gamma" = "Gamma", "Inverse Gaussian" = "inverse.gaussian"),
-                                selected = "Gamma"),
-                    width = 6)
-                
-              ),
+                box(
+                  selectInput("familia_glmm", "Familia (GLMM):",
+                              choices = c("Gamma" = "Gamma", "Inverse Gaussian" = "inverse.gaussian"),
+                              selected = "Gamma"),
+                  selectInput("link_glmm", "Link (GLMM):",
+                              choices = c("Inverse" = "inverse", "Log" = "log", "Identity" = "identity"),
+                              selected = "log"),
+                  width = 6
+                )),
+              
               fluidRow(
                 box(infoBoxOutput("aic_analisis"), width = 6),
                 box(infoBoxOutput("r2_analisis"), width = 6)
@@ -269,7 +274,7 @@ server <- function(input, output, session) {
     if (length(input$efectos_aleatorios) == 0) {
       formula_txt <- paste0("happiness_score ~ ", efectos_fijos_txt)
     } else {
-      efectos_aleatorios_txt <- paste0("(1 | ", input$efectos_aleatorios, ")", collapse = " + ")
+      efectos_aleatorios_txt <- paste0("(1 + ", paste(input$efectos_aleatorios, collapse = " + "), " | country)")
       formula_txt <- paste0("happiness_score ~ ", efectos_fijos_txt, " + ", efectos_aleatorios_txt)
     }
     
@@ -290,14 +295,14 @@ server <- function(input, output, session) {
           lmer(formula, data = datos)
         } else {
           fam <- switch(input$familia_glmm,
-                        "Gamma" = Gamma(link = "inverse"),
-                        "inverse.gaussian" = inverse.gaussian(link = "inverse"))
+                        "Gamma" = Gamma(link = input$link_glmm),
+                        "inverse.gaussian" = inverse.gaussian(link = input$link_glmm))
           
-          glmer(formula, data = datos, family = fam)
+          glmmTMB(formula, data = datos, family = fam)
           
         }
       }, error = function(e) {
-        showNotification("No se pudo ajustar el modelo. Revisa las variables seleccionadas.", type = "error")
+        showNotification(paste("Error al ajustar el modelo:", conditionMessage(e)), type = "error")
         NULL
       })
     }
