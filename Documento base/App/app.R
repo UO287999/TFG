@@ -45,7 +45,7 @@ write.csv(df, "df_unificado.csv", row.names = FALSE)
 
 # Variables permitidas como efectos fijos
 efectos_fijos_posibles <- c(
-  "regional_indicator", "gdp", "support", "life_exp", "freedom", 
+  "year", "regional_indicator", "gdp", "support", "life_exp", "freedom", 
   "generosity", "corruption", "status", "political_rights", "civil_liberties",
   "fair_election", "regime_category", "democracy",
   "electoral_category", "presidential", "alternation"
@@ -57,12 +57,11 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Descriptiva", tabName = "descriptiva", icon = icon("globe")),
       menuItem("Análisis", tabName = "analisis", icon = icon("chart-line")),
-      menuItem("Información", tabName = "info", icon = icon("info-circle"))
+      menuItem("Información", tabName = "info", icon = icon("info-circle"), selected=TRUE)
     )
   ),
   dashboardBody(
     tabItems(
-      selected='info',
       tabItem(tabName = "descriptiva",
               fluidRow(
                 box(selectizeInput("vars_desc", "Selecciona hasta 2 variables:", 
@@ -108,16 +107,8 @@ ui <- dashboardPage(
                   actionButton("ajustar_modelo", "Ajustar LMM", icon = icon("play")),
                   actionButton("ajustar_glmm", "Ajustar GLMM", icon = icon("cogs")),
                   width = 6
-                ),
-                box(
-                  selectInput("familia_glmm", "Familia (GLMM):",
-                              choices = c("Gamma" = "Gamma", "Inverse Gaussian" = "inverse.gaussian"),
-                              selected = "Gamma"),
-                  selectInput("link_glmm", "Link (GLMM):",
-                              choices = c("Inverse" = "inverse", "Log" = "log", "Identity" = "identity"),
-                              selected = "log"),
-                  width = 6
-                )),
+                )
+              ),
               
               fluidRow(
                 box(infoBoxOutput("aic_analisis"), width = 6),
@@ -130,9 +121,6 @@ ui <- dashboardPage(
                 box(verbatimTextOutput("resumen_modelo"), width = 12)
               ),
               fluidRow(
-                box(plotlyOutput("grafico_predicciones", height = 400), width = 12)
-              ),
-              fluidRow(
                 box(title = "Validación del modelo (gráficas)", plotOutput("grafico_validacion", height = 300), width = 12)
               ),
               fluidRow(
@@ -140,42 +128,79 @@ ui <- dashboardPage(
               ),
               fluidRow(
                 box(title = "¿Es el modelo válido para predecir?", verbatimTextOutput("modelo_valido"), width = 12, status = "warning")
+              ),
+              fluidRow(
+                box(plotlyOutput("grafico_predicciones", height = 400), width = 12)
               )
-              
-              
-              
       )
       ,
       tabItem(tabName = "info",
               fluidRow(
                 box(title = "¿Qué hace esta aplicación?", width = 12, status = "primary", solidHeader = TRUE,
                     p("Esta aplicación interactiva permite explorar y modelizar los determinantes de la felicidad a nivel mundial,
-                utilizando datos longitudinales de múltiples países y años. Ha sido desarrollada como parte de un trabajo de fin de grado
-                sobre el análisis de datos longitudinales en el ámbito biosanitario.")
+           utilizando datos longitudinales de múltiples países y años (2015–2024). Ha sido desarrollada como parte de un Trabajo de Fin de Grado
+           sobre el análisis de datos longitudinales en el ámbito biosanitario."),
+                    p("El análisis combina datos del ", strong("World Happiness Report"), " con variables políticas obtenidas de bases como ",
+                      em("Freedom in the World"), " y ", em("Democracy Data"), " (fijadas en 2020 y replicadas).")
                 )
               ),
+              
               fluidRow(
                 box(title = "Pestaña: Descriptiva", width = 12, status = "info", solidHeader = TRUE,
-                    p("En esta pestaña se pueden visualizar la evolución temporal y espacial de distintas variables (como 'Happiness Score', 'GDP', 'Freedom'...).
-                Puedes seleccionar hasta 2 variables para comparar, un año específico para el mapa y una o varias regiones o países."),
-                    p("Una vez selecciones las opciones deseadas, pulsa 'Actualizar gráficos' para que se genere la visualización.")
+                    p("Permite visualizar la evolución temporal y espacial de las variables más relevantes. Puedes:"),
+                    tags$ul(
+                      tags$li("Seleccionar hasta 2 variables numéricas para comparar (ej: Happiness Score, GDP, Freedom)."),
+                      tags$li("Elegir un año específico para visualizar un mapa mundial interactivo."),
+                      tags$li("Filtrar por región y país según el interés del análisis."),
+                      tags$li("Pulsar ", strong("Actualizar gráficos"), " para generar las visualizaciones.")
+                    )
                 )
               ),
+              
               fluidRow(
                 box(title = "Pestaña: Análisis", width = 12, status = "info", solidHeader = TRUE,
-                    p("Aquí puedes ajustar modelos mixtos personalizados. Escoge las variables que quieras incluir como efectos fijos o aleatorios,
-                y filtra los datos por región o país."),
-                    p("Una vez configurado, pulsa 'Ajustar modelo'. Se mostrará la fórmula del modelo, sus métricas (AIC, R²) y un gráfico con predicciones,
-                incluyendo una estimación para el año 2025.")
+                    p("Aquí puedes construir modelos estadísticos (LMM o GLMM) para analizar cómo influyen diferentes variables en el nivel de felicidad."),
+                    p("Funcionalidades disponibles:"),
+                    tags$ul(
+                      tags$li("Elegir variables como efectos fijos (ej: GDP, Support, Freedom...)."),
+                      tags$li("Añadir efectos aleatorios como ", code("year"), " o ", code("regional_indicator"), "."),
+                      tags$li("Filtrar datos por región y país."),
+                      tags$li("Visualizar la fórmula del modelo ajustado y sus métricas (ver abajo)."),
+                      tags$li("Ver el gráfico con la comparación entre valores reales y estimados, y una predicción para 2025.")
+                    ),
+                    p("La predicción para 2025 ", strong("solo se muestra si el modelo es válido"), " según los tests de DHARMa (uniformidad, dispersión, outliers).")
                 )
               ),
+              
+              fluidRow(
+                box(title = "¿Cómo interpretar AIC y R²?", width = 12, status = "warning", solidHeader = TRUE,
+                    tags$ul(
+                      tags$li(strong("AIC (Akaike Information Criterion):"), " penaliza modelos complejos y permite comparar el ajuste entre modelos. Valores más bajos indican mejor ajuste relativo."),
+                      tags$li(strong("R² marginal:"), " proporción de la varianza explicada por los efectos fijos."),
+                      tags$li(strong("R² condicional:"), " proporción de la varianza explicada por los efectos fijos y aleatorios.")
+                    )
+                )
+              ),
+              
               fluidRow(
                 box(title = "Repositorio del proyecto", width = 12, status = "success", solidHeader = TRUE,
-                    p("El código fuente completo de la aplicación y el análisis se encuentra disponible en el siguiente repositorio de GitHub:"),
+                    p("El código fuente completo de la aplicación, el análisis de datos y la memoria escrita se encuentra disponible en el siguiente repositorio de GitHub:"),
                     tags$a(href = "https://github.com/UO287999/TFG", "Ver repositorio", target = "_blank")
+                )
+              ),
+              
+              fluidRow(
+                box(title = "Información adicional", width = 12, status = "info", solidHeader = TRUE,
+                    tags$ul(
+                      tags$li("Autor: ", strong("Pablo Álvarez Arnedo (UO287999)")),
+                      tags$li("Universidad de Oviedo – Grado en Ciencia e Ingeniería de Datos"),
+                      tags$li("Fecha de la última actualización: ", Sys.Date()),
+                      tags$li("Versión de la app: 1.0")
+                    )
                 )
               )
       )
+      
       
     )
   )
@@ -183,6 +208,8 @@ ui <- dashboardPage(
 
 server <- function(input, output, session) {
   modelo_tipo <- reactiveVal("lmm")
+  modelo_valido_flag <- reactiveVal(FALSE)
+  validacion_hecha <- reactiveVal(FALSE)
   observeEvent(input$ajustar_modelo, {
     modelo_tipo("lmm")
   })
@@ -268,7 +295,8 @@ server <- function(input, output, session) {
   })
   
   modelo_formula <- reactive({
-    efectos_fijos <- unique(c("year", input$efectos_fijos))  # year siempre fijo
+    req(length(input$efectos_fijos) > 0)  # <- obliga a seleccionar al menos uno
+    efectos_fijos <- input$efectos_fijos
     efectos_fijos_txt <- paste(efectos_fijos, collapse = " + ")
     
     if (length(input$efectos_aleatorios) == 0) {
@@ -294,12 +322,7 @@ server <- function(input, output, session) {
         if (modelo_tipo() == "lmm") {
           lmer(formula, data = datos)
         } else {
-          fam <- switch(input$familia_glmm,
-                        "Gamma" = Gamma(link = input$link_glmm),
-                        "inverse.gaussian" = inverse.gaussian(link = input$link_glmm))
-          
-          glmmTMB(formula, data = datos, family = fam)
-          
+          glmmTMB(formula, data = datos, family = Gamma(link = "log"))
         }
       }, error = function(e) {
         showNotification(paste("Error al ajustar el modelo:", conditionMessage(e)), type = "error")
@@ -376,61 +399,85 @@ server <- function(input, output, session) {
     
     sim_res <- simulateResiduals(fittedModel = modelo_ajustado(), plot = FALSE)
     
-    # Ejecutar los tests
     res_uniformity <- testUniformity(sim_res)
     res_dispersion <- testDispersion(sim_res)
     res_outliers <- testOutliers(sim_res)
     
-    # Identificar los que fallan
     fallos <- c()
     if (res_uniformity$p.value < 0.05) fallos <- c(fallos, "uniformidad")
     if (res_dispersion$p.value < 0.05) fallos <- c(fallos, "dispersión")
     if (res_outliers$p.value < 0.05) fallos <- c(fallos, "outliers")
     
     if (length(fallos) == 0) {
+      modelo_valido_flag(TRUE)
       cat("✅ Este modelo es válido para hacer predicciones porque pasa los tests de uniformidad, dispersión y outliers.")
     } else {
+      modelo_valido_flag(FALSE)
       cat("❌ Este modelo NO es válido para hacer predicciones.\n")
       cat("Falla en los siguientes aspectos:", paste(fallos, collapse = ", "), "\n")
     }
+    
+    # Marcamos que la validación se ha completado
+    validacion_hecha(TRUE)
   })
+  
   
   
   output$grafico_predicciones <- renderPlotly({
     req(modelo_ajustado())
+    req(validacion_hecha())
     datos <- datos_filtrados_analisis()
+    tipo_pred <- ifelse(modelo_tipo() == "glmm", "response", "link")
     
-    # Predecir para años observados
+    # Predicciones para datos observados
     datos_pred <- datos %>%
-      select(country, year, all_of(input$efectos_fijos), all_of(input$efectos_aleatorios)) %>%
-      mutate(pred = predict(modelo_ajustado(), newdata = ., allow.new.levels = TRUE))
+      mutate(pred = predict(modelo_ajustado(), newdata = ., allow.new.levels = TRUE, type = tipo_pred))
     
-    # Generar predicción para 2025 (replicando 2024)
-    datos_2025 <- datos %>%
-      filter(year == max(year)) %>%
-      mutate(year = 2025)
-    datos_2025$pred <- predict(modelo_ajustado(), newdata = datos_2025, allow.new.levels = TRUE)
-    
-    # Unificar datos
+    # Datos con realidad y modelo ajustado
     datos_pred_completo <- bind_rows(
       datos %>% select(country, year, happiness_score) %>% mutate(tipo = "real"),
-      datos_pred %>% select(country, year, pred) %>% rename(happiness_score = pred) %>% mutate(tipo = "ajustado"),
-      datos_2025 %>% select(country, year, pred) %>% rename(happiness_score = pred) %>% mutate(tipo = "pred_2025")
+      datos_pred %>% select(country, year, pred) %>% rename(happiness_score = pred) %>% mutate(tipo = "ajustado")
     )
     
-    # Crear gráfico
+    # Si el modelo es válido, añadir predicción para 2025
+    if (modelo_valido_flag()) {
+      datos_2025 <- datos %>%
+        filter(year == max(year)) %>%
+        mutate(year = 2025)
+      datos_2025$pred <- predict(modelo_ajustado(), newdata = datos_2025, allow.new.levels = TRUE, type = tipo_pred)
+      datos_2025 <- datos_2025 %>%
+        select(country, year, pred) %>%
+        rename(happiness_score = pred) %>%
+        mutate(tipo = "pred_2025")
+      
+      datos_pred_completo <- bind_rows(datos_pred_completo, datos_2025)
+    }
+    
     p <- ggplot(datos_pred_completo, aes(x = year, y = happiness_score, color = country, group = country)) +
       geom_line(data = subset(datos_pred_completo, tipo == "real"), size = 1) +
       geom_line(data = subset(datos_pred_completo, tipo == "ajustado"), linetype = "dashed", size = 1) +
-      geom_point(data = subset(datos_pred_completo, tipo == "pred_2025"), shape = 17, size = 3) +  # mismo color que país
       theme_minimal() +
       labs(x = "Año", y = "Happiness Score",
-           title = "Predicción vs Realidad (incluye 2025)") +
+           title = "Predicción vs Realidad (incluye 2025 si el modelo es válido)") +
       scale_x_continuous(breaks = seq(min(datos$year), 2025, by = 1)) +
       theme(legend.position = "right")
     
+    if (modelo_valido_flag()) {
+      p <- p + geom_point(data = subset(datos_pred_completo, tipo == "pred_2025"),
+                          shape = 17, size = 3)
+    } else {
+      p <- p + annotate("text",
+                        x = 2023,
+                        y = min(datos$happiness_score, na.rm = TRUE) - 0.1,  # baja el texto un poco
+                        label = "⚠️ Modelo no válido para predecir 2025",
+                        hjust = 1, vjust = 0,
+                        size = 4, color = "red")
+      
+    }
+    
     ggplotly(p)
   })
+  
   
   
 }

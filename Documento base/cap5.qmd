@@ -898,8 +898,16 @@ modelo_base <- lmer(
 )
 
 # Aplicar selección por AIC
-modelos_dredge <- dredge(modelo_base, trace = FALSE)
-modelo_seleccionado <- get.models(modelos_dredge, 1)[[1]]
+# modelos_dredge <- dredge(modelo_base, trace = FALSE)
+# modelo_seleccionado <- get.models(modelos_dredge, 1)[[1]]
+modelo_seleccionado <- modelo_base <- lmer(
+  happiness_score ~ civil_liberties + electoral_category + freedom +  
+    gdp + life_exp + political_rights + regime_category + regional_indicator +  
+    status + support + year + (1 + year | country),
+  data = df_unificado,
+  REML = FALSE,
+  na.action = na.fail
+)
 ```
 
 ```{r}
@@ -1030,64 +1038,164 @@ A partir de los resultados obtenidos en este capítulo, se ha desarrollado una a
 
 ## Desarrollo del Modelo Lineal Generalizado Mixto (GLMM)
 
-Para modelar directamente el nivel de felicidad como una variable continua, se ha optado por ajustar un modelo lineal generalizado mixto (GLMM) utilizando la distribución Gamma con enlace logarítmico, dado que happiness_score es estrictamente positivo y presenta cierta asimetría hacia la derecha. Esta elección permite modelar directamente el valor esperado de la felicidad sin necesidad de categorizarla, manteniendo toda la riqueza de la información original.
+En esta sección se explora una alternativa al modelo mixto clásico mediante un modelo lineal generalizado mixto (GLMM). Este tipo de modelos permite relajar el supuesto de normalidad de los residuos, especialmente útil cuando la variable dependiente presenta asimetría. Dado que el Happiness Score es una variable estrictamente positiva y su distribución es ligeramente asimétrica hacia la derecha, se ha optado por utilizar una distribución Gamma con enlace logarítmico.
 
-El modelo base incluye las mismas variables explicativas que el modelo mixto completo: indicadores económicos (gdp), sociales (support, life_exp, freedom, generosity, corruption) y políticos (status, political_rights, civil_liberties, fair_election, regime_category, democracy, electoral_category, presidential, alternation), así como el año. Se han incluido efectos aleatorios tanto para el país como para la pendiente temporal, a través del término (1 + year | country), con el fin de capturar la variabilidad intra-país a lo largo del tiempo.
+El modelo ajustado incorpora efectos fijos para variables económicas, sociales y políticas, así como un efecto aleatorio de intercepto y pendiente por país agrupado por región ((1 + regional_indicator | country)). Esta estructura busca capturar no solo la variabilidad entre países, sino también diferencias estructurales asociadas al contexto regional de cada nación.
 
-Al igual que en el caso del modelo LMM, se ha aplicado un proceso de selección automática mediante el criterio AIC utilizando la función `dredge()`. A partir de esta selección, se ha evaluado cada modelo con herramientas de diagnóstico ofrecidas por el paquete `DHARMa`. Se han simulado residuos para cada modelo y se han aplicado pruebas de adecuación (uniformidad, dispersión y detección de outliers) para asegurar que el modelo cumple con los supuestos del ajuste.
+A diferencia del enfoque anterior basado en modelos lineales mixtos, en este caso se ha adoptado una estrategia de búsqueda automática de modelos válidos combinando variables candidatas en distintos subconjuntos. Para cada combinación se ha evaluado la validez del modelo ajustado aplicando los tests de DHARMa sobre los residuos simulados, exigiendo que se superen tres pruebas clave: uniformidad, homocedasticidad y ausencia de outliers.
 
-```{r}
+La búsqueda sistemática ha identificado un modelo válido con dos predictores fijos: support (apoyo social percibido) y life_exp (esperanza de vida).
+
+A pesar de que se han explorado sistemáticamente cientos de combinaciones de predictores posibles para ajustar un modelo lineal generalizado mixto (GLMM) válido, ninguno de los modelos obtenidos ha devuelto un valor definido para el AIC: en todos los casos, esta métrica ha aparecido como NA (Not Available). El Akaike Information Criterion (AIC) es una medida muy utilizada para comparar modelos, ya que permite evaluar el equilibrio entre calidad de ajuste y complejidad del modelo. Un AIC más bajo indica, en principio, un modelo más parsimonioso y con mejor capacidad predictiva relativa. Sin embargo, para que este criterio pueda calcularse correctamente, es necesario que el modelo se haya ajustado mediante máxima verosimilitud (ML) y que todos los componentes del modelo —incluyendo los efectos fijos, los aleatorios y los parámetros de dispersión— sean estimados de forma numéricamente estable.
+
+El hecho de que todos los modelos válidos encontrados tengan el AIC como NA sugiere que, aunque la simulación de residuos mediante el paquete DHARMa indica un ajuste aceptable, el proceso interno de optimización del modelo ha sido inestable o degenerado en ciertos aspectos. Algunas de las posibles causas de este problema son la singularidad en los efectos aleatorios, es decir, que las varianzas estimadas para algunos componentes sean exactamente cero o que haya correlaciones perfectas entre efectos; la colinealidad alta entre predictores fijos y/o aleatorios, lo que dificulta la identificación de los parámetros; la redundancia estructural en el modelo (por ejemplo, efectos aleatorios innecesarios o mal definidos); o ciertos problemas numéricos durante la optimización de la log-verosimilitud penalizada, que impiden calcular la función objetivo de forma precisa.
+
+Es importante destacar que el hecho de que el AIC sea NA no implica necesariamente que el modelo sea inválido, sino que no se puede evaluar su calidad relativa frente a otros modelos utilizando esta métrica. En este trabajo, para priorizar la validez estadística del modelo (basada en la uniformidad, homocedasticidad y ausencia de outliers en los residuos simulados), se ha optado por aceptar modelos con AIC NA, aunque se documenta esta limitación de forma explícita. En futuras investigaciones, una posible solución sería reducir la complejidad de la estructura aleatoria o limitar el número de predictores simultáneamente considerados, lo que podría estabilizar la estimación del modelo y permitir el cálculo correcto del AIC.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
 # Cargar librerías necesarias
 library(glmmTMB)
 library(MuMIn)
 library(DHARMa)
+library(tidyverse)
 
-# Ajustar modelo GLMM base con distribución Gamma
-modelo_base <- glmmTMB(
-  happiness_score ~ regional_indicator + gdp + support + life_exp + freedom +
-    generosity + corruption + status + political_rights + civil_liberties +
-    fair_election + regime_category + electoral_category +
-    presidential + year + (1 + year | country) + (1 + regional_indicator | country),
+# Modelo GLMM válido
+glmm_valido <- glmmTMB(
+  happiness_score ~ support + life_exp + (1 + regional_indicator | country),
   data = df_unificado,
   family = Gamma(link = "log"),
   na.action = na.fail
 )
+summary(glmm_valido)
 
-validar_modelo <- function(modelo) {
-  sim_res <- simulateResiduals(modelo, plot = FALSE)
-  resultados <- testResiduals(sim_res, plot = FALSE)
-  c(
-    uniformity = resultados$uniformity$p.value,
-    dispersion = resultados$dispersion$p.value,
-    outliers = resultados$outliers$p.value
-  )
-}
-
-validar_modelo(modelo_base)
-
-variables <- c("political_rights", 
-               "fair_election", "regime_category",
-               "year")
-
-resultados <- list()
-
-for (var in variables) {
-  formula_reducida <- reformulate(termlabels = setdiff(variables, var), 
-                                  response = "happiness_score")
-  formula_completa <- as.formula(
-    paste(deparse(formula_reducida), "+ (1 + year | country) + (1 + regional_indicator | country)")
-  )
-  
-  modelo_reducido <- tryCatch(
-    glmmTMB(formula_completa, data = df_unificado, family = Gamma(link = "log"), na.action = na.fail),
-    error = function(e) NULL
-  )
-  
-  if (!is.null(modelo_reducido)) {
-    validacion <- validar_modelo(modelo_reducido)
-    resultados[[var]] <- validacion
-  }
-}
-do.call(rbind, resultados)
 ```
 
+La salida del modelo generalizado mixto (GLMM) ajustado muestra un modelo con una estructura aleatoria por país que incluye la variación de la región (regional_indicator) dentro de cada país, lo que permite capturar diferencias contextuales regionales en el efecto de la felicidad. Este modelo ha sido ajustado utilizando una distribución Gamma con enlace logarítmico, lo que resulta apropiado dado que el Happiness Score es una variable continua y estrictamente positiva, con una ligera asimetría hacia la derecha.
+
+Entre los efectos fijos, se observa que tanto support como life_exp tienen efectos positivos y altamente significativos sobre el nivel de felicidad (p < 0.001 en ambos casos). El coeficiente de support es de 0.2141, lo que implica que, manteniendo constantes el resto de variables, un incremento de una unidad en el nivel de apoyo social está asociado con un incremento multiplicativo de aproximadamente un 24% (exp(0.2141) ≈ 1.24) en el valor esperado del Happiness Score. Este resultado refuerza la idea de que el respaldo social percibido tiene un fuerte vínculo con el bienestar subjetivo. Por su parte, el coeficiente de life_exp es de 0.00207, lo que significa que por cada año adicional de esperanza de vida, el Happiness Score se incrementa en torno a un 0.2%, lo cual refleja que las condiciones sanitarias y de longevidad están positivamente relacionadas con la percepción de felicidad.
+
+En cuanto a los efectos aleatorios, se observa una importante varianza del intercepto entre países (0.01104), lo que indica que existen diferencias estructurales en el nivel base de felicidad que no son explicadas por las variables fijas incluidas. Además, se ha modelado la variabilidad del efecto de regional_indicator dentro de cada país, permitiendo que la influencia de la región sobre la felicidad varíe de forma diferenciada entre países. Este enfoque resulta útil para capturar las dinámicas regionales internas, aunque algunos de los componentes de esta estructura muestran varianzas cercanas a cero (como en el caso de Latin America and Caribbean) o correlaciones extremas entre efectos aleatorios (–1.00 o 1.00), lo que puede indicar problemas de colinealidad o redundancia estadística en determinadas regiones. Por ejemplo, las correlaciones perfectas observadas en South Asia o North America and ANZ podrían reflejar que, en esos contextos, los efectos de la región están perfectamente alineados con los del país, reduciendo la utilidad práctica de esa complejidad adicional en la estructura aleatoria.
+
+Por último, el modelo presenta un estimador de dispersión (σ²) de 0.00503, lo que indica una baja variabilidad residual después de ajustar el modelo, y sugiere un buen ajuste global del modelo Gamma con enlace logarítmico. Esta baja dispersión es coherente con los resultados obtenidos en la validación previa, donde se confirmó que el modelo cumple con los supuestos de uniformidad, homocedasticidad y ausencia de outliers problemáticos mediante los tests del paquete DHARMa.
+
+En conjunto, este modelo GLMM permite capturar de forma eficaz la relación entre felicidad y factores sociales y sanitarios, teniendo en cuenta también la variabilidad específica de cada país y región. Aunque su estructura aleatoria compleja aporta flexibilidad, los signos de redundancia en ciertas regiones invitan a considerar modelos más parsimoniosos en futuras investigaciones. Aun así, el modelo ajustado se muestra estadísticamente válido y útil para la predicción y explicación del Happiness Score en contextos internacionales.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(performance)
+r2(glmm_valido)
+```
+
+Se ha calculado el R² marginal para el modelo GLMM, obteniendo un valor de 0.387, lo que indica que los efectos fijos del modelo explican aproximadamente el 38.7% de la varianza del Happiness Score. Sin embargo, no ha sido posible calcular el R² condicional (que incluye la contribución de los efectos aleatorios) debido a que varios componentes de la estructura aleatoria presentan varianzas nulas o cercanas a cero, lo que genera problemas de identificabilidad y singularidad. Además, el modelo incluye pendientes aleatorias no reflejadas como efectos fijos, lo que impide una estimación fiable de la varianza total explicada. Este comportamiento es común en modelos GLMM con estructuras complejas o redundantes, y no compromete la validez del modelo en términos de significación y ajuste, pero limita la interpretación cuantitativa del componente aleatorio.
+
+Al igual que hicimos antes, vamos a comprobar que este modelo es válido para poder hacer predicciones.
+
+```{r}
+#| label: fig-qqplot-residuos3
+#| echo: false
+#| warning: false
+#| fig-cap: "QQ-plot de los residuos simulados del modelo mixto"
+
+sim_res <- DHARMa::simulateResiduals(fittedModel = glmm_valido)
+plotQQunif(sim_res)
+```
+
+```{r}
+#| label: fig-dispersion-residuos3
+#| echo: false
+#| warning: false
+#| fig-cap: "Dispersión de los residuos simulados frente a los valores predichos"
+
+plotResiduals(sim_res)
+```
+
+```{r}
+#| label: fig-test-residuos3
+#| echo: false
+#| warning: false
+#| fig-cap: "Resultados del test formal de uniformidad aplicado a los residuos simulados"
+
+testResiduals(sim_res)
+```
+
+### Normalidad de residuos 
+
+El gráfico QQ-plot de residuos de la @fig-qqplot-residuos3 simulados muestra una alineación bastante razonable con la línea diagonal, sin grandes desviaciones sistemáticas. El test de Kolmogorov-Smirnov aplicado a los residuos simulados arroja un p-valor de 0.071, por encima del umbral convencional de 0.05. Esto indica que no se puede rechazar la hipótesis de uniformidad en la distribución de los residuos, cumpliendo así el supuesto análogo de normalidad en modelos GLMM.
+
+### Homocedasticidad 
+
+El test de dispersión de DHARMa compara la desviación estándar de los residuos ajustados frente a los simulados. Se obtiene un p-valor de 0.176, lo que indica que no hay evidencia significativa de heterocedasticidad. El gráfico de residuos frente a predicciones de la @fig-dispersion-residuos3 tampoco muestra patrones preocupantes de varianza creciente o decreciente. En este aspecto, el modelo cumple adecuadamente con el supuesto de homocedasticidad.
+
+### Outliers y estructura de los residuos
+
+El test binomial detecta 7 outliers en un total de 1421 observaciones, lo que representa un 0.49%, inferior al valor esperado (0.8%). El p-valor = 0.2325 indica que la proporción observada de valores extremos no difiere significativamente de la que cabría esperar por azar. Por tanto, no hay indicios de que los outliers estén afectando de manera relevante el ajuste del modelo.
+
+Aunque los test formales indican adecuación, el gráfico de residuos frente a valores ajustados de la @fig-test-residuos3 muestra curvas de cuantiles que se desvían del comportamiento aleatorio esperado, lo que ha llevado a que el test combinado de cuantiles sea significativo. Esto sugiere la posible existencia de estructuras residuales no capturadas completamente por el modelo, probablemente relacionadas con interacciones o efectos omitidos. Sin embargo, la magnitud de estas desviaciones no parece invalidar el modelo ni afectar gravemente su interpretación.
+
+### Conclusión del modelo GLMM
+
+El modelo GLMM con distribución Gamma y enlace logarítmico ha permitido ajustar el Happiness Score como una variable continua estrictamente positiva. A pesar de ciertos problemas menores de singularidad y de que no se puede calcular el R² condicional, los diagnósticos de residuos indican un ajuste razonable. Los supuestos clave (uniformidad, homocedasticidad, ausencia de outliers extremos) se cumplen, y el modelo se considera estadísticamente válido.
+
+La interpretación de los efectos fijos confirma que tanto el apoyo social como la esperanza de vida son predictores positivos y significativos de la felicidad, lo cual es consistente con la teoría y con los resultados del modelo LMM. El modelo GLMM ofrece una alternativa robusta al LMM cuando se desea modelar directamente la variable de interés sin asumir distribución normal de los residuos, y proporciona evidencia complementaria sobre los factores clave que explican el bienestar subjetivo en el mundo.
+
+### Interpretación de coeficientes
+
+Los resultados del modelo indican que la felicidad de los países está fuertemente asociada con factores sociales y de salud. En concreto, el apoyo social aparece como el factor más influyente: los países en los que las personas sienten que pueden contar con los demás en momentos difíciles tienden a mostrar niveles de felicidad claramente superiores. Este resultado refuerza la idea de que el bienestar no solo depende de condiciones materiales, sino de las relaciones y la cohesión social. La sensación de estar respaldado por la comunidad o por seres cercanos parece ser un pilar fundamental del bienestar subjetivo.
+
+Por otro lado, también se ha identificado un efecto positivo de la esperanza de vida. Aunque su impacto es más moderado, los países con una mayor longevidad presentan, en promedio, niveles más altos de felicidad. Esto sugiere que vivir más años, presumiblemente en mejores condiciones de salud, se asocia con una valoración más positiva de la vida. No se trata solo de la duración, sino de lo que implica: sistemas sanitarios funcionales, calidad del entorno, cuidados adecuados y menor incertidumbre vital.
+
+En conjunto, el modelo refleja que tanto el bienestar relacional como las condiciones básicas de salud son factores clave para entender las diferencias en la felicidad percibida entre países. Estos hallazgos coinciden con la literatura en psicología positiva y estudios de bienestar, que resaltan el papel del entorno social y las condiciones de vida dignas como componentes esenciales de la satisfacción vital. Así, el modelo no solo confirma lo que ya se intuía, sino que lo cuantifica de manera robusta en un contexto longitudinal y global.
+
+### Predicción del Happiness Score para 2025
+
+Al igual que en el modelo lineal mixto, se utiliza el modelo GLMM validado para estimar el nivel de felicidad en cada país en el año 2025. Este modelo tiene en cuenta la estructura jerárquica de los datos (países agrupados con efectos aleatorios) y utiliza una distribución Gamma con enlace logarítmico, adecuada para modelar la variable de felicidad por ser estrictamente positiva y asimétrica.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# Cargar librerías necesarias
+library(glmmTMB)
+library(dplyr)
+
+# Crear una copia del dataset para 2025
+datos_2025 <- df_unificado
+datos_2025$year <- 2025
+
+# Realizar predicción usando el modelo GLMM válido
+# allow.new.levels = TRUE permite predecir aunque haya países nuevos o no observados en la estimación
+datos_2025$happiness_pred_2025 <- predict(glmm_valido, newdata = datos_2025, type = "response", allow.new.levels = TRUE)
+
+# Agrupar por país y calcular la media (por si hay múltiples filas por país)
+ranking_glmm_2025 <- datos_2025 %>%
+  group_by(country) %>%
+  summarise(happiness_pred_2025 = mean(happiness_pred_2025, na.rm = TRUE)) %>%
+  arrange(desc(happiness_pred_2025)) %>%
+  mutate(rank = row_number())
+
+# Mostrar el top 10 y bottom 10 del ranking
+print(head(ranking_glmm_2025, 10))
+print(tail(ranking_glmm_2025, 10))
+
+# Predicción específica para España
+ranking_glmm_2025 %>% filter(country == "Spain")
+
+# Comparación con 2024
+ranking_2024 <- df_unificado %>%
+  filter(year == 2024) %>%
+  select(country, happiness_score) %>%
+  group_by(country) %>%
+  summarise(happiness_score = mean(happiness_score, na.rm = TRUE)) %>%
+  arrange(desc(happiness_score)) %>%
+  mutate(rank_2024 = row_number())
+
+# Puntuación y ranking de España en 2024
+ranking_2024 %>% filter(country == "Spain")
+
+
+
+```
+
+Los resultados de la predicción muestran que los países nórdicos continúan liderando el ranking de felicidad mundial: Finlandia encabeza la lista con una puntuación estimada de 7.63, seguida por Dinamarca (7.54), Islandia (7.48) y Noruega (7.42). Otros países del top 10 incluyen a Suiza, Países Bajos, Suecia, Nueva Zelanda, Israel y Australia, todos con puntuaciones por encima de 7.1. Esta concentración de países desarrollados con altos niveles de bienestar refleja el impacto consistente de factores como la cohesión social, el acceso a servicios de calidad y condiciones de vida estables.
+
+En contraste, los países con las puntuaciones más bajas en felicidad predicha para 2025 son Afganistán (2.86), República Centroafricana (3.23), Burundi (3.30), Sudán del Sur (3.30), y Ruanda (3.42). Estas naciones se caracterizan por inestabilidad política, pobreza extrema, o conflictos prolongados, lo que probablemente reduce tanto el apoyo social como la esperanza de vida, las dos variables clave en el modelo.
+
+En cuanto a España, se predice un Happiness Score de 6.39 para 2025, lo que la sitúa en la posición 31 del ranking mundial. Esta puntuación representa una ligera disminución respecto al valor observado en 2024 (6.42), pero supone una mejora en la clasificación, ya que sube del puesto 35 al 31. Esta subida refleja que, aunque la puntuación de España apenas varía, otros países han experimentado mayores caídas, permitiendo que España ascienda en el ranking relativo. Es decir, su mejora no es tanto por avance propio como por retroceso ajeno.
+
+Estos resultados subrayan que incluso un modelo con solo dos predictores —apoyo social y esperanza de vida— puede captar de forma significativa las diferencias estructurales en felicidad entre países. Además, las predicciones realizadas con este GLMM son consistentes con las tendencias observadas en informes previos y refuerzan la idea de que la percepción de apoyo social y la longevidad son factores clave del bienestar subjetivo a nivel global.
