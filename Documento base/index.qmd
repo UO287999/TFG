@@ -1,5 +1,41 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
 # Introducción
 
-```{r}
-1 + 1
-```
+En las últimas décadas, numerosos gobiernos e instituciones internacionales han comenzado a incorporar indicadores de bienestar subjetivo en sus sistemas estadísticos, reconociendo que las métricas tradicionales como el Producto Interior Bruto (PIB) no bastan por sí solas para evaluar el progreso de una sociedad. En este contexto, surge el World Happiness Report, una iniciativa impulsada por las Naciones Unidas que, desde 2012, proporciona una evaluación anual del nivel de felicidad de los países a partir de encuestas globales y datos objetivos relacionados con factores económicos, sociales y políticos.
+
+Este creciente interés por medir y comprender la felicidad plantea nuevos retos analíticos. A diferencia de otros indicadores, la felicidad presenta una fuerte variabilidad interindividual e intertemporal, lo que exige metodologías estadísticas capaces de capturar tanto las diferencias entre países como las trayectorias temporales dentro de cada uno. En este sentido, el uso de modelos longitudinales y estructuras jerárquicas se revela como un enfoque adecuado para estudiar el fenómeno de forma rigurosa y con capacidad predictiva.
+
+## Objetivo del trabajo
+
+El objetivo principal de este Trabajo de Fin de Grado es analizar la evolución de la felicidad a nivel mundial mediante técnicas estadísticas avanzadas, en particular modelos mixtos (lineales y generalizados), utilizando datos longitudinales del World Happiness Report enriquecidos con variables políticas. El trabajo busca no solo identificar los factores que más influyen en el bienestar subjetivo, sino también construir una herramienta interactiva que permita visualizar, modelizar y predecir el Happiness Score de forma accesible y reproducible.
+
+De forma más específica, el trabajo plantea integrar y limpiar diversas fuentes de datos sobre felicidad, condiciones socioeconómicas y contexto político, aplicar técnicas de análisis exploratorio para identificar patrones regionales y temporales en la evolución del bienestar, ajustar modelos mixtos que respeten la estructura jerárquica de los datos (países, regiones, años), evaluar el ajuste y la validez de dichos modelos utilizando criterios estadísticos adecuados, desarrollar una aplicación Shiny en R que permita replicar los análisis y explorar distintas configuraciones de modelos, y generar predicciones del Happiness Score para el año 2025.
+
+El trabajo adopta una perspectiva cuantitativa, basada en el uso de técnicas estadísticas robustas para modelar datos longitudinales. Se parte de una base de datos principal (World Happiness Report 2015–2024), a la que se añaden variables políticas obtenidas de fuentes como Freedom in the World y Democracy Data. Estas variables, aunque están disponibles solo para el año 2020, se han replicado a todos los años del período para permitir su uso como predictores fijos. A nivel metodológico, el análisis se estructura en tres niveles: una exploración inicial de los datos, que incluye limpieza, imputación de valores perdidos, análisis de outliers y visualizaciones; el ajuste de modelos estadísticos, utilizando modelos lineales múltiples, modelos lineales mixtos (LMM) y modelos lineales generalizados mixtos (GLMM), con efectos aleatorios por país y, en algunos casos, por región; y, finalmente, la construcción de una herramienta interactiva, mediante Shiny, que encapsula todo el proceso de análisis, desde la exploración hasta la predicción y validación automática de los modelos.
+
+Este enfoque permite capturar tanto las diferencias estructurales entre países como las dinámicas temporales internas, y facilita una interpretación integrada de los resultados.
+
+## Estructura del trabajo
+
+El contenido del trabajo se organiza en siete capítulos, que se resumen a continuación:
+
+-   Capítulo 2 – Datos longitudinales y motivación del análisis: se introduce el concepto de datos longitudinales, sus características específicas, y se justifica la necesidad de utilizar modelos mixtos en lugar de técnicas clásicas de regresión.
+
+-   Capítulo 3 – Modelos estadísticos para datos longitudinales: se presenta el marco teórico de los modelos lineales mixtos (LMM) y modelos lineales generalizados mixtos (GLMM), incluyendo su formulación, métodos de estimación, validación y predicción.
+
+-   Capítulo 4 – Análisis exploratorio y enriquecimiento de datos: se describen las tareas de limpieza, integración y análisis preliminar de los datos del World Happiness Report, complementados con variables políticas. Se generan visualizaciones y se realiza un modelo de regresión múltiple como aproximación inicial.
+
+-   Capítulo 5 – Construcción de modelos predictivos: se aplica una estrategia combinada top-down y bottom-up para ajustar modelos mixtos que expliquen el Happiness Score, evaluando distintas combinaciones de variables y efectos. Se identifican modelos válidos, se analizan sus coeficientes, y se realiza una predicción para el año 2025.
+
+-   Capítulo 6 – Aplicación Shiny para modelización interactiva: se describe en detalle la aplicación interactiva desarrollada con Shiny, que permite realizar el análisis completo (exploración, modelización, validación, predicción) desde una interfaz accesible y personalizable.
+
+-   Capítulo 7 – Conclusiones y mejoras futuras: se realiza una valoración crítica del trabajo, se identifican las principales aportaciones metodológicas y prácticas, y se proponen posibles líneas de mejora y extensión para trabajos futuros.
+
+Desde una perspectiva académica, el trabajo constituye una aplicación práctica y completa del análisis de datos longitudinales, integrando técnicas de modelización, visualización, validación y desarrollo de productos reproducibles. Permite consolidar conocimientos adquiridos durante el Grado en Ciencia e Ingeniería de Datos, en especial en estadística, ciencia de datos aplicada y desarrollo en R.
+
+Desde el punto de vista social, el trabajo aborda una problemática de alto interés público: el bienestar global. Al ofrecer una herramienta interactiva para explorar los determinantes de la felicidad en distintos contextos temporales y geográficos, el proyecto puede resultar útil para investigadores, educadores, periodistas o responsables de políticas públicas interesados en promover el bienestar en sus comunidades.
