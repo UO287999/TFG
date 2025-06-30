@@ -32,7 +32,7 @@ knitr::opts_chunk$set(
 theme_set(theme_minimal(base_size = 12))
 ```
 
-Este capítulo está dedicado exclusivamente a la aplicación interactiva desarrollada con Shiny como parte del Trabajo de Fin de Grado. La app permite explorar, modelizar y validar los determinantes de la felicidad a partir de datos longitudinales. Se ha diseñado como una herramienta accesible tanto para usuarios con formación técnica como para responsables de políticas públicas que deseen entender mejor la evolución del bienestar subjetivo en el mundo.
+Este capítulo está dedicado exclusivamente a la aplicación interactiva desarrollada con Shiny [@shiny-r] como parte del Trabajo de Fin de Grado. La app permite explorar, modelizar y validar los determinantes de la felicidad a partir de datos longitudinales. Se ha diseñado como una herramienta accesible tanto para usuarios con formación técnica como para responsables de políticas públicas que deseen entender mejor la evolución del bienestar subjetivo en el mundo.
 
 ## Estructura general de la aplicación
 

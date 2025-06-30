@@ -27,5 +27,6 @@ format:
     documentclass: scrreprt
     toc-title: "Tabla de contenidos"
     fig-title: "Figura"
+    link-citations: true
 editor: visual
 
