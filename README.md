@@ -1,12 +1,15 @@
 # Análisis de Datos Longitudinales sobre la Felicidad Mundial
 
-Este repositorio contiene el Trabajo de Fin de Grado de Pablo Álvarez Arnedo, titulado **"Análisis de datos longitudinales"**, realizado en el Grado en Ciencia e Ingeniería de Datos de la Universidad de Oviedo.
+Este repositorio contiene el Trabajo de Fin de Grado de Pablo Álvarez Arnedo, titulado **"Análisis de datos longitudinales"**, realizado en el Grado en Ciencia e Ingeniería de Datos de la Universidad de Oviedo. Todos los documentos mencionados están en la carpeta "Documento base".
 
-## Contenido
+## Contenido principal
 
-- **/Capítulos**: Documentos `.qmd` que componen la memoria estructurada del TFG, del capítulo 1 al 7.
+- **App**: Carpeta en la que se incluye la aplicación Shiny y la base de datos utilizada en la aplicación
+- **Informe**: Carpeta en la que se incluye la memoria del TFG y los documentos pertinentes
+- **_book**: Carpeta producida automáticamente para la estructuración de la memoria
+- **cap_files**: Carpetas en la que se guarda cada capítulo y las figuras creadas en este
+- **cap.qmd**: Documentos `.qmd` que componen la memoria estructurada del TFG, del capítulo 1 al 7.
 - **quarto.yml**: Configuración del proyecto Quarto para generar el documento completo en PDF o HTML.
-- **/app**: Aplicación Shiny desarrollada para explorar y modelizar la felicidad global usando modelos LMM y GLMM.
 - **datos**: Archivos `.csv` con los datos procesados y enriquecidos utilizados en el análisis.
 - **references.bib**: Archivo BibTeX con las referencias bibliográficas.
 - **figuras**: Figuras personalizadas utilizadas en la memoria.

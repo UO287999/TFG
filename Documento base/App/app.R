@@ -12,36 +12,7 @@ library(DHARMa)
 library(glmmTMB)
 
 # Leer los datos base
-df_happiness <- read.csv("../df_sin_democracia_sin_na.csv")
-df_politicas <- read.csv("../df_completo_sin_na.csv")
-
-# Variables políticas que se quieren mantener fijas desde 2020
-vars_politicas <- c(
-  "fair_election", "regime_category", "democracy",
-  "electoral_category", "presidential", "alternation"
-)
-
-# Extraer valores de 2020 para esas variables
-politicas_2020 <- df_politicas %>%
-  filter(year == 2020) %>%
-  select(country, all_of(vars_politicas))
-
-# Filtrar df_happiness solo para países que tienen datos políticos válidos
-paises_validos <- unique(politicas_2020$country)
-df_happiness_filtrado <- df_happiness %>%
-  filter(country %in% paises_validos)
-
-# Expandir datos políticos de 2020 a todos los años 2015–2024
-años <- 2015:2024
-base_expansion <- expand.grid(country = paises_validos, year = años)
-
-politicas_expandido <- base_expansion %>%
-  left_join(politicas_2020, by = "country")
-
-# Unir ambas fuentes para crear el dataframe completo y limpio
-df <- df_happiness_filtrado %>%
-  left_join(politicas_expandido, by = c("country", "year"))
-write.csv(df, "df_unificado.csv", row.names = FALSE)
+df <- read.csv("df_unificado.csv")
 
 # Variables permitidas como efectos fijos
 efectos_fijos_posibles <- c(
@@ -55,9 +26,9 @@ ui <- dashboardPage(
   dashboardHeader(title = "Modelos de Felicidad"),
   dashboardSidebar(
     sidebarMenu(
+      menuItem("Información", tabName = "info", icon = icon("info-circle"), selected=TRUE),
       menuItem("Descriptiva", tabName = "descriptiva", icon = icon("globe")),
-      menuItem("Análisis", tabName = "analisis", icon = icon("chart-line")),
-      menuItem("Información", tabName = "info", icon = icon("info-circle"), selected=TRUE)
+      menuItem("Análisis", tabName = "analisis", icon = icon("chart-line"))
     )
   ),
   dashboardBody(
@@ -138,12 +109,20 @@ ui <- dashboardPage(
               fluidRow(
                 box(title = "¿Qué hace esta aplicación?", width = 12, status = "primary", solidHeader = TRUE,
                     p("Esta aplicación interactiva permite explorar y modelizar los determinantes de la felicidad a nivel mundial,
-           utilizando datos longitudinales de múltiples países y años (2015–2024). Ha sido desarrollada como parte de un Trabajo de Fin de Grado
-           sobre el análisis de datos longitudinales en el ámbito biosanitario."),
+         utilizando datos longitudinales de múltiples países y años (2015–2024). Ha sido desarrollada como parte de un Trabajo de Fin de Grado
+         sobre el análisis de datos longitudinales en el ámbito biosanitario."),
                     p("El análisis combina datos del ", strong("World Happiness Report"), " con variables políticas obtenidas de bases como ",
-                      em("Freedom in the World"), " y ", em("Democracy Data"), " (fijadas en 2020 y replicadas).")
+                      em("Freedom in the World"), " y ", em("Democracy Data"), " (fijadas en 2020 y replicadas)."),
+                    br(),
+                    tags$h4("Fuentes de datos:"),
+                    tags$ul(
+                      tags$li(a(href = "https://www.worldhappiness.report/data-sharing/", "World Happiness Report", target = "_blank")),
+                      tags$li(a(href = "https://freedomhouse.org/report/freedom-world#Data", "Freedom in the World (Freedom House)", target = "_blank")),
+                      tags$li(a(href = "https://xmarquez.github.io/democracyData/index.html", "Democracy Data", target = "_blank"))
+                    )
                 )
-              ),
+              )
+              ,
               
               fluidRow(
                 box(title = "Pestaña: Descriptiva", width = 12, status = "info", solidHeader = TRUE,
@@ -162,7 +141,7 @@ ui <- dashboardPage(
                     p("Aquí puedes construir modelos estadísticos (LMM o GLMM) para analizar cómo influyen diferentes variables en el nivel de felicidad."),
                     p("Funcionalidades disponibles:"),
                     tags$ul(
-                      tags$li("Elegir variables como efectos fijos (ej: GDP, Support, Freedom...)."),
+                      tags$li("Elegir variables como efectos fijos (ej:", code("GDP"), ",", code("support"), ",", code("freedom"),"...)."),
                       tags$li("Añadir efectos aleatorios como ", code("year"), " o ", code("regional_indicator"), "."),
                       tags$li("Filtrar datos por región y país."),
                       tags$li("Visualizar la fórmula del modelo ajustado y sus métricas (ver abajo)."),
