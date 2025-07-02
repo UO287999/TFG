@@ -110,7 +110,7 @@ Todos estos factores hacen que el uso de modelos estadísticos convencionales, c
 
 Para ilustrar las limitaciones de la estadística clásica en el análisis de datos longitudinales, vamos a considerar un conjunto de datos sobre ingresos anuales (en euros) de 10 personas medidos a lo largo de varios años. Vamos a utilizar un modelo regresión lineal simple para modelar los ingresos en función del tiempo, ignorando la correlación entre mediciones.
 
-En este ejemplo, la variable **dependiente** $Y$ es el ingreso anual de cada persona; mientras que la variable **independiente** $X$ es el año, representando el tiempo.
+En este ejemplo, la variable dependiente $Y$ es el ingreso anual de cada persona; mientras que la variable independiente $X$ es el año, representando el tiempo.
 
 El objetivo del modelo es analizar si existe una tendencia en la evolución de los ingresos y, si la hubiese, estimar la relación entre el año y el nivel de ingresos de los individuos. Sin embargo, al aplicar un modelo de regresión lineal simple, ignoraremos la dependencia entre las observaciones de cada persona, lo que resultará en una estimación sesgada y poco fiable.
 
