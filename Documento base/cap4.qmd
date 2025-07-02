@@ -34,29 +34,29 @@ knitr::opts_chunk$set(
 theme_set(theme_minimal(base_size = 12))
 ```
 
-Como se ha señalado en la introducción, el resto del trabajo se centra en el desarrollo práctico de un ejemplo de análisis de datos longitudinales, con el fin de ilustrar de forma aplicada las técnicas estadísticas descritas en los capítulos anteriores. En este capítulo, en concreto, se presenta la base de datos principal utilizada, junto con las fuentes complementarias, y se lleva a cabo un análisis exploratorio en profundidad. Este análisis preliminar resulta esencial para comprender la estructura de los datos, identificar posibles patrones, detectar valores atípicos o faltantes, y orientar las decisiones de modelización que se abordarán en los capítulos siguientes.
+Como se ha señalado en la introducción, el trabajo se centra en el desarrollo práctico de un ejemplo de análisis de datos longitudinales, con el fin de aplicar las técnicas estadísticas descritas en los capítulos anteriores. En este capítulo, en concreto, se presenta la base de datos principal utilizada, junto con las fuentes complementarias, y se lleva a cabo un análisis exploratorio en profundidad. Este análisis inicial resulta clave para comprender la estructura de los datos, identificar posibles patrones, detectar valores atípicos o faltantes, y orientar las decisiones de modelización que se abordarán en los capítulos siguientes.
 
 ## Análisis exploratorio inicial
 
-El conjunto de datos World Happiness 2015-2024 recopila información sobre la felicidad percibida en diferentes países a lo largo de los años. Esta base de datos proviene de los informes anuales de felicidad publicados por la Red de Soluciones para el Desarrollo Sostenible de la ONU, los cuales se basan en encuestas realizadas a nivel mundial. La base tiene una buena cobertura temporal, ya que abarca datos de 2015 a 2024 y permite analizar tendencias a lo largo del tiempo, pero también geográfica, dado que incluye información de diferentes países y regiones del mundo. Es ampliamente utilizada en estudios de bienestar, calidad de vida y políticas públicas, y contiene métricas económicas y sociales que permiten un análisis estadístico y comparativo. Cada fila representa un país en un año determinado y contiene variables socioeconómicas y de bienestar que pueden influir en la percepción de felicidad de su población. Estas variables son:
+El conjunto de datos World Happiness (2015-2024) recopila información sobre la felicidad percibida en diferentes países a lo largo de los años. Esta base de datos proviene de los informes anuales de felicidad publicados por la Red de Soluciones para el Desarrollo Sostenible de la ONU, los cuales se basan en encuestas realizadas a los ciudadanos nivel mundial. La base tiene una buena cobertura temporal, ya que abarca datos de 2015 a 2024 y permite analizar tendencias a lo largo del tiempo, pero también tiene una buena cobertura geográfica porque incluye información de diferentes países y regiones del mundo. Es ampliamente utilizada en estudios de bienestar y calidad de vida, y contiene métricas económicas y sociales que permiten un análisis estadístico y comparativo. Cada fila representa un país en un año determinado y contiene variables socioeconómicas y de bienestar que pueden influir en la percepción de felicidad de su población. Estas variables son:
 
--   `Country`: Nombre del país.
+-   `Country`: nombre del país.
 
--   `Region`: Continente o agrupación geográfica del país.
+-   `Region`: continente o agrupación geográfica del país.
 
--   `Happiness Score`: Puntuación de felicidad promedio en el país (escala de 0 a 10).
+-   `Happiness Score`: puntuación de felicidad promedio en el país.
 
--   `GDP per capita`: Producto Interno Bruto per cápita ajustado por poder adquisitivo.
+-   `GDP per capita`: Producto Interno Bruto (PIB) per cápita. Mide la riqueza económica del país.
 
--   `Social Support`: Medida de apoyo social basado en la percepción de las personas sobre la ayuda que pueden recibir de familiares y amigos.
+-   `Social Support`: medida de apoyo social basada en la percepción de las personas sobre la ayuda que pueden recibir de familiares y amigos.
 
--   `Healthy Life Expectancy`: Esperanza de vida saludable en años.
+-   `Healthy Life Expectancy`: esperanza de vida saludable en años.
 
--   `Freedom to Make Life Choices`: Libertad para tomar decisiones personales, según encuestas de percepción.
+-   `Freedom to Make Life Choices`: libertad para tomar decisiones personales.
 
--   `Generosity`: Nivel de generosidad en la sociedad, basado en donaciones y ayuda a otros.
+-   `Generosity`: nivel de generosidad en la sociedad, basado en donaciones y ayuda a otros.
 
--   `Perceptions of Corruption`: Nivel de percepción de corrupción en el gobierno y los negocios. 
+-   `Perceptions of Corruption`: nivel de percepción de corrupción en el gobierno y los negocios. 
 
 ```{r warning=FALSE, include=FALSE}
 # Carga de paquetes 
@@ -193,36 +193,36 @@ g3 <- ggplot(df_box_gdp_happy, aes(x = variable, y = valor, fill = variable)) +
 
 ```
 
-Tanto la @fig-variables-happiness como @fig-variables-happiness2 nos muestran la distribución de las diferentes variables, en la que se aprecian que tampoco hay valores atípicos. Explorando opciones para enriquecer la base de datos y, potencialmente, poder construir un modelo más informativo, se han estudiado diversas alternativas y se ha decidido integrar información de dos fuentes externas que aportan indicadores políticos y de libertades civiles en los países. Estas bases de datos nos permitirán explorar hasta qué punto la democracia, los derechos políticos y las libertades influyen en la percepción de felicidad de las sociedades.
+Tanto la @fig-variables-happiness como @fig-variables-happiness2 nos muestran la distribución de las diferentes variables, en las que se aprecia que no hay valores atípicos. Explorando opciones para enriquecer la base de datos y, de esta manera, construir un modelo más informativo, se han estudiado diversas alternativas y se ha decidido integrar información de dos fuentes externas que aportan indicadores políticos y de libertades civiles en los países. Estas bases de datos nos permitirán explorar hasta qué punto la calidad de vida, la democracia, los derechos políticos y las libertades influyen en la percepción de felicidad de los ciudadanos.
 
-La primera base de datos que hemos considerado es "Freedom in the World" [@freedomhouse], un informe anual de la organización Freedom House, que evalúa el estado de las libertades políticas y civiles en el mundo. Cada país es clasificado en función de indicadores de democracia, libertades individuales y derechos políticos. El motivo por el que hemos elegido esta base de datos es porque los estudios en ciencias sociales han mostrado que la percepción de felicidad no solo está ligada a factores económicos, sino también a la capacidad de los ciudadanos para expresarse libremente, participar en la política y vivir sin restricciones autoritarias. Por ejemplo, [@Inglehart2008] señalan que los valores postmaterialistas y la democracia están positivamente correlacionados con mayores niveles de bienestar subjetivo. De manera similar, [@Helliwell2023] destacan que el soporte institucional y la libertad individual son determinantes clave del Happiness Score en el World Happiness Report. Incorporar estos datos nos permitirá ver si existe una correlación entre los niveles de libertad y la felicidad percibida en cada país. Como esta base de datos cuenta con una gran cantidad de variables, hemos elegido las siguientes variables de interés:
+La primera base de datos que hemos considerado es "Freedom in the World" [@freedomhouse], un informe anual de la organización Freedom House, que evalúa el estado de los derechos políticos y libertades civiles a nivel global. Se clasifica cada país en función de indicadores de democracia, participación política y derechos individuales. El motivo por el que hemos elegido esta base de datos es porque los estudios en ciencias sociales han mostrado que la percepción de felicidad no solo está ligada a factores económicos, sino también a la capacidad de los ciudadanos para expresarse libremente, participar en política y vivir sin restricciones autoritarias. Por ejemplo, [@Inglehart2008] señalan que la libre elección está positivamente correlacionada con mayores niveles de felicidad. De manera similar, [@Helliwell2023] destacan que el apoyo institucional y la libertad individual son factores clave del Happiness Score en el World Happiness Report. Incorporar estos datos nos permitirá ver si existe dicha correlación entre los niveles de libertad y la felicidad percibida en cada país. Como esta base de datos cuenta con una gran cantidad de variables, hemos elegido las siguientes variables de interés:
 
--   `Country/Territory`: Identificación del país o territorio.
--   `Region`: Indica la zona geográfica del país, similar al regional_indicator de la base de datos original.
--   `c/T`: Diferencia entre países y territorios, aunque este concepto puede ser delicado según el análisis.
--   `Edition`: Año del reporte, fundamental para el análisis longitudinal.
--   `Status`: Clasificación del país en cuanto a su libertad: Libre (F), Parcialmente Libre (PF) o No Libre (NF).
--   `PR rating (Political Rights)`: Puntuación de 1 a 7 sobre derechos políticos.
--   `CL rating (Civil Liberties)`: Puntuación de 1 a 7 sobre libertades civiles.
+-   `Country/Territory`: identificación del país o territorio.
+-   `Region`: indica la zona geográfica del país.
+-   `c/T`: diferencia entre países y territorios, aunque este concepto puede ser delicado según el análisis.
+-   `Edition`: año del reporte, fundamental para el análisis longitudinal.
+-   `Status`: clasificación del país en cuanto a su libertad: Libre (F), Parcialmente Libre (PF) o No Libre (NF).
+-   `PR rating (Political Rights)`: puntuación de 1 a 7 sobre derechos políticos.
+-   `CL rating (Civil Liberties)`: puntuación de 1 a 7 sobre libertades civiles.
 
-La otra base de datos que hemos elegido para nuestro análisis es "Democracy Data", una base de datos que proviene del proyecto TidyTuesday y está basado en estudios académicos sobre democracia y regímenes políticos. Clasifica los países según su sistema de gobierno y proporciona información detallada sobre su historia política. Una de las características que tiene esta base de datos es que incluye información hasta 2020, por lo que tenemos que considerar que, si vamos a trabajar con ella, tendremos las características completas de las observaciones en un período reducido. Dado que la felicidad no solo depende de factores económicos, sino también de la estabilidad política y la gobernanza, estas variables pueden ayudarnos a explicar por qué algunos países presentan niveles bajos de felicidad a pesar de tener una economía sólida. Al igual que en el caso anterior, como esta base de datos contiene más de 40 variables, hemos decidido quedarnos con aquellas que consideramos que mejor se adaptan a nuestro análisis. Estas variables son:
+La otra base de datos que hemos elegido para nuestro análisis es "Democracy Data", una base de datos que proviene del proyecto TidyTuesday [@tidytuesday2024] y está basado en estudios académicos sobre democracia y regímenes políticos. Esta base de datos clasifica a los países según su sistema de gobierno y proporciona información detallada sobre su historia política. Una de las características que tiene esta base de datos es que incluye información hasta 2020, por lo que tenemos que considerar que, si vamos a trabajar con ella, tendremos las características completas de las observaciones; pero en un período reducido de tiempo. Dado que la felicidad no solo depende de factores económicos, sino también de la estabilidad política y la forma de gobierno de un país, estas variables pueden ayudarnos a explicar por qué algunos países presentan niveles bajos de felicidad a pesar de tener una economía sólida. Al igual que en el caso anterior, como esta base de datos contiene más de 40 variables, hemos decidido quedarnos con aquellas que consideramos que mejor se adaptan a nuestro análisis. Estas variables son:
 
--   `country_name`: Nombre del país.
--   `year`: Año de observación.
--   `regime_category`: Clasificación del sistema de gobierno (democracia parlamentaria, autocracia civil, dictadura militar, monarquía, etc.).
--   `is_monarchy`: Indica si el país es una monarquía.
--   `is_democracy`: Indica si el país es una democracia.
--   `is_presidential`: Indica si el sistema es presidencialista.
--   `is_colony`: Identifica si el país sigue siendo una colonia.
--   `is_communist`: Indica si el país sigue un régimen comunista.
--   `spatial_democracy`: Evalúa el nivel de democracia en los países vecinos.
--   `has_full_suffrage`: Indica si hay sufragio universal.
--   `electoral_category`: Tipo de elecciones (no democráticas, de partido único, multipartidistas no democráticas o democráticas).
--   `spatial_electoral`: Evalúa la calidad electoral de los países vecinos.
--   `has_free_and_fair_election`: Indica si las elecciones son libres y justas.
--   `has_alternation`: Indica si existe alternancia en el poder.
+-   `country_name`: nombre del país.
+-   `year`: año de observación.
+-   `regime_category`: clasificación del sistema de gobierno (democracia parlamentaria, autocracia civil, dictadura militar, monarquía, etc.).
+-   `is_monarchy`: indica si el país es una monarquía.
+-   `is_democracy`: indica si el país es una democracia.
+-   `is_presidential`: indica si el sistema es presidencialista.
+-   `is_colony`: identifica si el país sigue siendo una colonia.
+-   `is_communist`: indica si el país sigue un régimen comunista.
+-   `spatial_democracy`: evalúa el nivel de democracia en los países vecinos.
+-   `has_full_suffrage`: indica si hay sufragio universal.
+-   `electoral_category`: tipo de elecciones (no democráticas, de partido único, multipartidistas no democráticas o democráticas).
+-   `spatial_electoral`: evalúa la calidad electoral de los países vecinos.
+-   `has_free_and_fair_election`: indica si las elecciones en el país son libres y justas.
+-   `has_alternation`: indica si existe alternancia en el poder.
 
-Agregando estas bases de datos consideramos que se puede abarcar de forma bastante completa los diferentes factores que afectan a la percepción de la felicidad. Esto nos permitirá realizar un análisis más profundo y responder preguntas sobre la relación entre política, democracia y bienestar subjetivo en distintos países. Para combinar adecuadamente estas fuentes, las variables clave utilizadas para relacionarlas fueron el país o región y el año, lo que asegura la coherencia temporal y geográfica en el análisis.
+Agregando estas bases de datos consideramos que podemos abarcar de forma bastante completa los diferentes factores que afectan a la percepción de la felicidad, lo que nos permitirá realizar un análisis más profundo y sacar conclusiones sobre la relación entre política, democracia y bienestar en distintos países. Para combinar adecuadamente estas fuentes, las variables clave utilizadas para relacionarlas fueron el país o región y el año, asegurando la coherencia temporal y geográfica en el análisis.
 
 ```{r include=FALSE, warning=FALSE, message=FALSE}
 library(dplyr)
@@ -544,13 +544,13 @@ print(cambios_variables)
 
 ## Análisis de las bases de datos complementarias
 
-Al trabajar con datos longitudinales a nivel país, surge una cuestión clave: ¿en qué medida las características políticas de cada país se mantienen estables o experimentan cambios relevantes a lo largo del tiempo? En este estudio, incorporamos información de las bases de datos Freedom in the World y Democracy Data, que permiten capturar distintos aspectos del contexto político de los países, como el tipo de régimen, la alternancia en el poder o la existencia de elecciones libres.
+Al trabajar con datos longitudinales a nivel estatal, surge una cuestión clave: ¿en qué medida las características políticas de cada país se mantienen estables o experimentan cambios relevantes a lo largo del tiempo? Para responder a esta pregunta, incorporaremos la información de las bases de datos Freedom in the World y Democracy Data que permite capturar distintos aspectos del contexto político de los países, como el tipo de régimen, la alternancia en el poder o la existencia de elecciones libres.
 
-Sin embargo, nos encontramos con dos limitaciones importantes. En primer lugar, muchas de estas variables presentan una cobertura temporal limitada, con registros ausentes en varios años dentro del periodo 2015–2023. En segundo lugar, se trata de variables que tienden a ser bastante estables: en la mayoría de los países analizados no se observan cambios relevantes a lo largo del tiempo. Estas circunstancias dificultan su tratamiento como verdaderas variables longitudinales.
+Sin embargo, nos encontramos con dos limitaciones importantes. En primer lugar, muchas de estas variables presentan una cobertura temporal limitada, con registros ausentes en varios años dentro del periodo 2015–2024. En segundo lugar, se trata de variables que tienden a ser bastante estables, ya que en la mayoría de los países analizados no se observan cambios relevantes a lo largo del tiempo. Estas circunstancias suponen un obstáculo al querer tratarlas como variables longitudinales.
 
-Por ello, optamos por incorporar estas variables como una "foto fija" del contexto político, extrayendo su valor más representativo del periodo estudiado. De esta forma, las utilizamos como covariables fijas en los modelos de felicidad, contribuyendo a enriquecer el análisis sin introducir sesgos derivados de valores faltantes o variaciones mínimas que podrían ser ruido.
+Por ello, incorporaremos estas variables como una "foto fija" del contexto político, extrayendo su valor más representativo dentro del periodo estudiado. De esta forma, las utilizamos como covariables fijas en los modelos de felicidad, de manera que enriquecemos el análisis sin introducir sesgos derivados de valores faltantes o variaciones mínimas que podrían aportar ruido en lugar de información de valor.
 
-No obstante, existen excepciones interesantes. Algunos países sí han experimentado cambios significativos en su sistema político, su forma de gobierno o su nivel de democracia. A continuación se representa gráficamente la evolución de dichas variables para estos casos específicos, con el objetivo de ilustrar de forma visual estos procesos de cambio.
+No obstante, existen excepciones que tenemos que tener en cuenta, ya que algunos países sí que han experimentado cambios significativos en su sistema político, forma de gobierno o nivel de democracia. A continuación se representa gráficamente la evolución de dichas variables para estos casos específicos, con el objetivo de ilustrar de forma visual estos cambios.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=12, fig.height=8}
 #| label: fig-variables-binarias
@@ -736,29 +736,25 @@ ggplot(cambios_pais, aes(x = variable, y = country, fill = factor(cambio))) +
 
 Estas figuras sobre la evolución de diferentes variables políticas muestran de forma clara y visual la evolución temporal de varios países que han experimentado cambios entre 2015 y 2020.
 
-En cuanto a los cambios en la alternancia en el poder, los cuales podemos apreciar en la @fig-variables-binarias, vemos cómo en Nicaragua y Venezuela esta variable refleja la falta de alternancia, mostrando la concentración del poder por parte de gobiernos autoritarios. Observando la variable democrática, vemos que países como Nicaragua y Hungría dejaron de considerarse Estados democráticos una vez llegaron al poder figuras autoritarias como Daniel Ortega y Viktor Orbán. Por último, si nos fijamos en la variable sobre elecciones libres y justas, vemos que Bolivia presenta un cambio negativo en 2019 correspondiente a las acusaciones de fraude electoral; provocando una crisis política y la renuncia del aquel entonces presidente Evo Morales. Sin embargo, no todo son cambios negativos, ya que en la @fig-variables-binarias también podemos observar avances en países como Liberia que han mejorado sus instituciones democráticas gracias a la llegada al poder del exfutbolista George Weah en las elecciones de 2017; las cuales fueron históricas ya que supusieron la primera transición presidencial pacífica en el país desde 1944.
+En cuanto a los cambios en la alternancia en el poder, los cuales podemos apreciar en la @fig-variables-binarias, vemos cómo en Nicaragua y Venezuela esta variable refleja la falta de alternancia, mostrando la acumulación del poder por parte de gobiernos autoritarios. Observando la variable democrática, vemos que países como Nicaragua y Hungría dejaron de considerarse estados democráticos una vez llegaron al poder figuras autoritarias como Daniel Ortega y Viktor Orbán. Por último, si nos fijamos en la variable sobre elecciones libres y justas, vemos que Bolivia presenta un cambio negativo en 2019 correspondiente a las acusaciones de fraude electoral; provocando una crisis política y la renuncia del aquel entonces presidente Evo Morales. Sin embargo, no todo son cambios negativos, ya que en la @fig-variables-binarias también podemos observar avances en países como Liberia que han mejorado sus instituciones democráticas gracias a la llegada al poder del exfutbolista George Weah en las elecciones de 2017; las cuales fueron históricas ya que supusieron la primera transición presidencial pacífica en el país desde 1944.
 
-Si observamos los cambios en el tipo de régimen en la @fig-regime-electoral, vemos como Hungría pasó de ser una democracia parlamentaria a una dictadura civil, resaltando el gobierno autoritario de Viktor Orbán y el deterioro de la institución democrática. Otro caso que podemos destacar es el de Venezuela, la cual sufre un retroceso democrático a partir de 2016; pasando de ser una democracia presidencial a una dictadura civil. Sin embargo, hay casos como Liberia que sucede todo lo contrario, destacando el avance en el proceso democrático y dejando de ser considerada una dictadura civil para ser considerada como una democracia presidencial. 
+Si observamos los cambios en el tipo de régimen en la @fig-regime-electoral, vemos como Hungría pasó de ser considerada una democracia parlamentaria a una dictadura civil, resaltando el gobierno autoritario de Viktor Orbán y el deterioro del sistema de gobierno. Otro caso que podemos destacar es el de Venezuela, la cual sufre un retroceso democrático a partir de 2016; pasando de ser considerada una democracia presidencial a una dictadura civil. Sin embargo, hay casos como Liberia que sucede todo lo contrario, destacando el avance en el proceso democrático mencionado en la figura anterior y dejando de ser considerada una dictadura civil para ser considerada como una democracia presidencial. 
 
-Si observamos los cambios en el tipo de elecciones en la @fig-electoral, podemos ver que Venezuela presentó hasta 3 categorías distintas: pasó de elecciones democráticas a elecciones no democráticas multi-partido y luego a tener elecciones de un sólo partido, reflejando el colapso progresivo del sistema electoral bajo el régimen de Maduro. Otro ejemplo que se puede destacar es Turquía, que pasa de tener elecciones democráticas a no democráticas multi-partido, en línea con el creciente autoritarismo del presidente Erdoğan.
+Si observamos los cambios en el tipo de elecciones en la @fig-electoral, podemos ver que Venezuela llegó a presentar hasta 3 categorías distintas: pasó de elecciones democráticas a elecciones no democráticas multi-partido y luego a tener elecciones de un sólo partido, reflejando la catástrofe sucesiva del sistema electoral bajo el régimen de Maduro. Otro ejemplo que podemos destacar es Turquía, que pasa de tener elecciones democráticas a no democráticas multi-partido, en línea con el creciente autoritarismo del presidente Erdoğan.
 
-Por último, en la @fig-cambio-variables nos muestra un único cambio en la forma de gobierno presidencial, y es porque China, que siempre fue considerada una dictadura de partido único, pasa a ser considerada presidencial; lo que sugiere posiblemente una reinterpretación metodológica. Además de los países ya mencionados anteriormente como Venezuela, Turquía o Nicaragua, los cuales han sufrido cambios en todas las variables políticas, cabe destacar el caso de Comoras, que también presenta múltiples cambios en estas variables. Estos cambios se deben a un período de inestabilidad política, en las que se aplicaron cambios en el sistema como la reforma constitucional de 2018 y las elecciones de 2019, que concentraron el poder y se limitaron la oposición.
+Por último, la @fig-cambio-variables nos muestra si algún país ha sufrido cambios en diferentes variables políticas. Además de los países ya mencionados anteriormente como Venezuela, Turquía o Nicaragua, los cuales han sufrido cambios en todas las variables políticas, cabe destacar el caso de Comoras, que también presenta múltiples cambios en estas variables. Estos cambios se deben a un período de inestabilidad política, en las que se aplicaron cambios en el sistema como la reforma constitucional de 2018 y las elecciones de 2019, que concentraron el poder y limitaron la oposición.
 
-Estas figuras refuerzan la idea de que varios países han experimentado retrocesos democráticos significativos, especialmente en torno a elecciones libres, alternancia y la clasificación del régimen. Además, evidencian que estos cambios no son simultáneos: mientras algunos países cambian en 2016, otros lo hacen en 2018 o 2020, lo cual permite contextualizar los cambios políticos con eventos históricos concretos en cada nación. Este tipo de análisis temporal no solo es útil para identificar patrones políticos, sino también para relacionar estos cambios con la percepción de felicidad de la población y evaluar si existe alguna asociación relevante.
+Estas figuras refuerzan la idea de que varios países han experimentado retrocesos democráticos significativos, especialmente en torno a elecciones libres, alternancia en el poder y la clasificación del sistema de gobierno. Además, demuestran que estos cambios no son simultáneos: mientras algunos países cambian en 2016, otros lo hacen en 2018 o 2029, lo cual permite contextualizar algunos cambios políticos con eventos históricos concretos en cada nación. Este tipo de análisis temporal no solo nos permite identificar tendencias políticas, sino que también podemos asociar estos cambios a la percepción de felicidad de la población y evaluar si existe alguna relación.
 
-Dado que uno de los objetivos principales de este análisis es estudiar la evolución de la felicidad y sus determinantes a lo largo del tiempo, necesitamos trabajar con una base de datos que tenga cobertura completa para el periodo 2015–2024. En este sentido, hemos optado por utilizar como base principal la combinación de las bases de datos World Happiness y Freedom in the World, ya que ofrecen una continuidad temporal adecuada y permiten aplicar técnicas de medidas repetidas para estudiar cómo varían las observaciones de un mismo país a lo largo de varios años.
+Dado que uno de los objetivos principales de este análisis es estudiar la evolución de la felicidad y sus factores influyentes a lo largo del tiempo, necesitamos trabajar con una base de datos que tenga cobertura completa para el periodo 2015–2024. En este sentido, hemos optado por utilizar como base principal la combinación de las bases de datos World Happiness y Freedom in the World, ya que ofrecen la continuidad temporal necesaria para poder aplicar técnicas de medidas repetidas y estudiar cómo varían las observaciones de un mismo país a lo largo de los años. Además, la base de datos Freedom in the World contiene ciertas variables políticas con algunas diferencias notables en algunos casos, por lo que combinarla con la base de datos World Happiness nos puede servir de gran ayuda a la hora de ambientar ciertos cambios en la felicidad.
 
-Por su parte, la base de datos Democracy Data presenta una limitación temporal importante, al contener información solo hasta el año 2020. Además, muchas de sus variables muestran escasa variación a lo largo del tiempo, lo que refuerza la idea de que no se comportan como verdaderas variables longitudinales.
+Por su parte, la base de datos Democracy Data presenta una limitación temporal importante, al contener información solo hasta el año 2020; además de que muchas de sus variables muestran poca o nula variación a lo largo del tiempo. Por ello, en lugar de excluir completamente esta base, la integramos como complemento, utilizándola para construir una fotografía del contexto institucional y político de cada país. Esta fotografía nos resulta especialmente útil a la hora de interpretar fenómenos detectados en el análisis longitudinal, como caídas o aumentos abruptos en el nivel de felicidad. En esos casos, el tipo de régimen, la alternancia en el poder o la existencia de elecciones libres pueden aportar información relevante para entender estas variaciones.
 
-Por ello, en lugar de excluir completamente esta base, la integramos como complemento, utilizándola para construir una fotografía del contexto institucional y político de cada país. Esta fotografía nos resulta especialmente útil a la hora de interpretar fenómenos detectados en el análisis longitudinal, como caídas o aumentos abruptos en el nivel de felicidad. En esos casos, el tipo de régimen, la alternancia en el poder o la existencia de elecciones libres pueden aportar claves importantes para entender estos cambios.
-
-Antes de comenzar con la visualización de la evolución del índice de felicidad, resulta pertinente detenernos brevemente en la base Freedom in the World, que hemos decidido conservar por su cobertura temporal completa y por ofrecer indicadores relevantes sobre libertades civiles y derechos políticos. Aunque sus variables presentan cierta estabilidad en muchos países, hemos identificado diferencias notables en algunos casos que pueden ser útiles para contextualizar cambios observados en la felicidad. Además, no se detectan valores atípicos preocupantes ni problemas graves de calidad en la información, por lo que resulta razonable integrarla en el análisis longitudinal.
-
-Una vez preparada la base de datos final, es posible explorar cómo ha evolucionado la variable objetivo —happiness_score— entre 2015 y 2024. Para ello, se recurre a herramientas visuales como mapas o gráficos de línea por región y país, que permiten detectar tanto patrones generales como fluctuaciones específicas en determinados territorios. Estas visualizaciones constituyen el primer acercamiento al análisis longitudinal y ofrecen pistas sobre posibles factores explicativos de los cambios observados.
+Una vez hemos preparado la base de datos final, podemos estudiar la evolución de la variable objetivo `happiness_score` entre 2015 y 2024. Para ello, recurriremos a herramientas visuales como mapas o gráficos para poder detectar tanto patrones y tendencias generales como variaciones específicas en determinados territorios. Estas visualizaciones nos pueden dar ciertos indicios sobre algunas variables explicativas que podemos tener en cuenta de cara al análisis longitudinal.
 
 ## Evolución de la felicidad a lo largo del tiempo
 
-Con el objetivo de identificar patrones geográficos en los niveles de felicidad, se emplean mapas coropléticos que permiten visualizar espacialmente la distribución del happiness_score a lo largo del tiempo. Este enfoque facilita detectar agrupaciones regionales, contrastes entre países vecinos y posibles focos de evolución atípica. Al representar la información sobre el territorio, los mapas se convierten en una herramienta clave para complementar el análisis longitudinal y contextualizar las dinámicas regionales de la felicidad.
+Con el propósito de determinar ciertas tendencias geográficas en los niveles de felicidad, utilizaremos mapas coropléticos que nos permiten visualizar espacialmente la distribución del `happiness_score`. Este método ayuda a detectar agrupaciones regionales, contrastes entre países vecinos y posibles comportamientos atípicos. Representando la información directamente sobre el territorio, los mapas complementan el análisis longitudinal a través de la contextualización geográfica de la puntuación de la felicidad.
 
 ```{r}
 #| label: fig-mapa-mundi
@@ -799,15 +795,13 @@ if (knitr::is_latex_output()) {
 
 ```
 
-El mapa de felicidad por país en 2024 de la @fig-mapa-mundi muestra una clara heterogeneidad geográfica en la percepción del bienestar, capturada a través del Happiness Score. Se observan regiones del norte global, como Europa Occidental, América del Norte y Oceanía, con los niveles más altos de felicidad (colores amarillos y verde claro), mientras que regiones del sur global, especialmente África Subsahariana y algunas partes de Asia como Afganistán o India, presentan valores notablemente más bajos (colores azul oscuro o morado).
+El mapa de felicidad por país en 2024 de la @fig-mapa-mundi muestra una clara diversidad geográfica en la percepción de la felicidad. Se observa que, por lo general, las regiones del hemisferio norte como Europa Occidental, América del Norte y Oceanía, tienen niveles más altos de felicidad (colores amarillos y verde claro), mientras que las regiones del hemisferio sur, especialmente África Subsahariana y algunas partes de Asia como Afganistán o India, presentan valores notablemente más bajos (colores azul oscuro o morado).
 
-Países como Finlandia, Noruega y Nueva Zelanda destacan con las puntuaciones más altas, reflejando contextos estables y altos niveles de desarrollo económico y social. En contraste, países como Zimbabwe, Sudán del Sur o Afganistán presentan los niveles más bajos, lo cual es coherente con contextos de conflicto, pobreza o inestabilidad política.
+Países como Finlandia, Dinamarca e Islandia destacan con las puntuaciones más altas, demostrando estabilidad y altos niveles de desarrollo económico y social. En contraste, países como Zimbabwe, Líbano o Afganistán presentan los niveles más bajos, lo cual es coherente ya que son países donde rodeados por el conflicto, la pobreza y la inestabilidad política.
 
-Este mapa no solo permite identificar diferencias entre regiones, sino también subrayar patrones estructurales: América Latina, por ejemplo, muestra un nivel medio de felicidad, con cierta variabilidad entre países. Es especialmente útil para detectar casos anómalos, como países con puntuaciones bajas en regiones generalmente altas o viceversa.
+A través de este mapa no sólo diferenciamos diferencias entre regiones, sino que también podemos señalar patrones estructurales: Sudamérica, por ejemplo, muestra un nivel medio de felicidad, con cierta variabilidad entre países. Este mapa es útil cuando queremos detectar casos anómalos, como países con puntuaciones bajas en regiones generalmente altas o viceversa; como puede llegar a ser el caso de Afganistán, con una puntuación muy por debajo de sus países vecinos. En general, la figura muestra el impacto que pueden tener factores estructurales como el desarrollo económico o la estabilidad política en la percepción del bienestar de los ciudadanos a nivel global.
 
-En conjunto, la figura evidencia de forma visual el impacto que pueden tener factores estructurales como el desarrollo, la gobernanza o la estabilidad en la percepción subjetiva del bienestar de los ciudadanos a nivel global.
-
-Además del análisis temporal por país, resulta de interés observar cómo varía la felicidad entre regiones, y cómo se distribuye internamente en cada una de ellas. Para ello, se emplean gráficos de violín, que permiten visualizar simultáneamente la dispersión, la mediana y la densidad de los valores de happiness_score en cada región. Esta representación facilita la comparación entre regiones y la detección de desigualdades internas que podrían pasar desapercibidas en un análisis puramente temporal.
+Además del análisis por país, resulta interesante analizar cómo cambia la felicidad entre regiones, y cómo se distribuye la felicidad en cada una de ellas. Para ello, utilizaremos diagramas de violín, que nos permiten observar la dispersión y concentración de los valores de `happiness_score`, además de su mediana y densidad; pudiendo analizar la distribución de la felicidad en cada región. Esta representación permite comparar el nivel de felicidad de las diferentes regiones y detectar posibles casos de desigualdades que podríamos no localizar en otro tipo de gráficos.
 
 ```{r}
 #| label: fig-felicidad-region
@@ -844,13 +838,13 @@ if (knitr::is_latex_output()) {
 
 ```
 
-Observando la distribución de la felicidad por región de la @fig-felicidad-region, si nos fijamos en la mediana, que se muestra con un rombo negro en cada violín, vemos que hay regiones como Europa Occidental o Norte América y Australia que mantienen medianas altas y estables a lo largo del tiempo, mientras que el Sur de Asia y África Sub-Sahariana tienen medianas bajas, aunque relativamente estables.
+Observando la distribución de la felicidad por región de la @fig-felicidad-region, si nos fijamos en la mediana (el rombo negro en cada violín), podemos contemplar cierta estabilidad en prácticamente todas las regiones; aunque hay regiones como Europa Occidental o Norteamérica y Australia que mantienen medianas altas a lo largo del tiempo, mientras que el Sur de Asia y África Sub-Sahariana tienen medianas más bajas.
 
-En estos gráficos también se puede observar cierta bimodalidad, ya que algunas regiones, como Latino América y el Caribe o el Oriente Medio y África del Norte muestran dos modas (zonas más anchas del violín), lo que sugiere heterogeneidad interna: algunos países con altos niveles de felicidad conviven con otros con puntuaciones mucho más bajas. Asia del Sur presenta una distribución muy desigual en 2024, con un notable ensanchamiento en la parte inferior del gráfico, reflejando una baja felicidad en ciertos países (como Afganistán).
+En estos gráficos también se puede observar cierta bimodalidad, ya que algunas regiones, como Oriente Medio y África del Norte muestran dos modas (zonas más anchas del violín), lo que implicar cierta variabilidad interna: algunos países con altos niveles de felicidad conviven con otros con puntuaciones mucho más bajas. Por ejemplo, Asia del Sur presenta una distribución muy desigual en 2024, con un ensanchamiento en la parte inferior del gráfico que corresponde con una felicidad baja en ciertos países (como Afganistán).
 
-En general, la forma de las distribuciones se mantiene similar entre 2015 y 2024 en muchas regiones, pero algunas muestran mayor dispersión, sobre todo en el continente asiático, ya que Oriente Medio y Asia del Sur sufren una caída considerable en la felicidad. Regiones como Europa Occidental y Norte América y Australia presentan distribuciones compactas y felicidad más alta y estable, lo que refleja mayor consistencia en el bienestar subjetivo de sus poblaciones.
+En general, la forma de las distribuciones se mantiene similar entre 2015 y 2024 en muchas regiones, pero hay algunas en las que apreciamos mayor dispersión como es el caso Oriente Medio y Asia del Sur, los cuales sufren una caída considerable en la felicidad. Al contrario de estos últimos, hay otras regiones como Europa Occidental y Norteamérica y Australia que presentan distribuciones densas con una felicidad más alta y estable, lo que refleja mayor consistencia en el bienestar de sus ciudadanos.
 
-A continuación, analizamos la percepción de la corrupción, una variable que diversos estudios han señalado como influyente en la percepción de felicidad. En la siguiente figura se representa la distribución de esta variable mediante gráficos de violines, lo que nos permite observar sus diferencias entre regiones. Este tipo de representación facilita comparar no solo los valores centrales, sino también la dispersión y asimetría en cada grupo geográfico. Se observa que algunas regiones presentan niveles percibidos de corrupción notablemente más bajos, lo que podría estar asociado a mayores niveles de bienestar subjetivo.
+A continuación analizamos la percepción de la corrupción, una variable que diversos estudios han señalado como influyente en la representación de la felicidad. En la @fig-percepcion-corrupcion se representa la distribución de esta variable mediante diagramas de violines, lo que nos permite observar también las diferencias entre regiones. Podemos analizar que hay algunas regiones que presentan niveles percibidos de corrupción notablemente más bajos, lo que podría estar asociado a mayores niveles de bienestar.
 
 ```{r}
 #| label: fig-percepcion-corrupcion
@@ -887,24 +881,22 @@ if (knitr::is_latex_output()) {
 
 ```
 
-El gráfico de violines de la @fig-percepcion-corrupcion permite observar la evolución de la percepción de corrupción en las distintas regiones a lo largo del tiempo, mostrando tanto la mediana como la distribución completa de los datos. Lo más destacable es la aparición de una clara bimodalidad en algunas regiones a partir de 2020 y especialmente en 2024, lo que sugiere una divergencia creciente entre países dentro de la misma región.
+El diagrama de violines de la @fig-percepcion-corrupcion permite observar la evolución de la percepción de corrupción en las distintas regiones a lo largo del tiempo, destacando una clara bimodalidad en algunas regiones a partir de 2020 y especialmente en 2024, lo que sugiere una variabilidad creciente entre países dentro de la misma región.
 
-Europa Occidental mantiene una distribución relativamente estable a lo largo del tiempo, con una percepción de corrupción baja en general (valores altos), aunque en 2024 aparece una mayor dispersión que en 2015 y 2020. Sin embargo, en Europa Central y Oriental se observa un patrón inverso. En 2015 y 2020, la percepción es bastante alta (valores cercanos a 1), pero en 2024 se evidencia una caída brusca en la percepción positiva (valores muy bajos), lo que indica un empeoramiento de la percepción ciudadana sobre la corrupción en algunos países, como puede ser el caso de Hungría o Polonia.
+Europa Occidental mantiene una distribución relativamente estable a lo largo del tiempo, destacando que siempre tiene países con una percepción de corrupción baja y otros con una percepción de la corrupción alta; con un valor de la mediana que sugiere una distribución simétrica. Sin embargo, en Europa Central y Oriental se observa un patrón inverso. En 2015 y 2020, la percepción es bastante alta, pero en 2024 se evidencia una bajada considerable en la percepción de la corrupción, lo que indica una mejoría de la percepción ciudadana sobre la corrupción en algunos países.
 
-Commonwealth of Independent States muestra una bimodalidad clara en 2024, mientras que en 2015 y 2020 predominaba un grupo más homogéneo. Esto sugiere que algunos países han experimentado mejoras o retrocesos significativos, diferenciándose del resto. América Latina y el Caribe también muestra un cambio claro: de una percepción moderadamente positiva en 2015 a una distribución más polarizada en 2020 y 2024, reflejando posiblemente tensiones políticas y escándalos de corrupción en países como Venezuela, Nicaragua o Bolivia.
+La Comunidad de Estados Independientes muestra una bimodalidad clara en 2024, mientras que en 2015 y 2020 tenía una distribución más concentrada. Esto se debe a que ahora hay países como Ucrania (0.04) que tienen niveles de percepción de corrupción muy bajos, mientras que el resto de países tienen una percepción de corrupción más alta. Sudamérica también muestra un cambio claro: de una percepción moderadamente alta en 2015 y 2020 a una percepción mucho más baja en 2024, aunque también podemos apreciar cierta bimodalidad debido a la baja corrupción percibida en países como Jamaica (0.05), mientras todo lo contrario ocurre en países como El Salvador (0.44).
 
-En Asia del Este se observa una distribución muy compacta en 2015 y 2020, pero con una clara ruptura en 2024, lo que podría estar relacionado con dinámicas opuestas en países como China (control político férreo) frente a otros con gobiernos más abiertos. Por el contrario, regiones como Asia del Sur y África Sub-Sahariana muestran distribuciones bajas y más estables, aunque con una ligera mejora hacia 2024 en la percepción media.
+Este análisis permite estudiar no solo la evolución de la percepción de la corrupción a lo largo del tiempo sino también la creciente variabilidad dentro de algunas regiones, lo que puede ser de utilidad para determinar si ciertos eventos políticos que desemboquen en una concentración del poder pueden estar afectando a una mayor percepción de la corrupción entre los ciudadanos. 
 
-Este análisis permite detectar no solo la evolución de la percepción media, sino también la heterogeneidad creciente dentro de regiones, y puede servir de base para cruzar estos patrones con los cambios políticos identificados previamente, evaluando si el deterioro institucional y la concentración del poder están efectivamente correlacionados con una mayor percepción de corrupción entre la ciudadanía.
-
-Con el objetivo de comprender cómo ha cambiado la situación global en términos de bienestar subjetivo y factores asociados, analizamos a continuación la evolución promedio anual de las principales variables del informe de felicidad. Esta visualización nos permitirá detectar tendencias crecientes o decrecientes y posibles impactos globales, como crisis políticas, sanitarias o económicas.
+Con el objetivo de comprender la evolución de la situación global en torno a diferentes variables políticas, analizamos a continuación la evolución promedio anual de las principales variables del informe de felicidad haciendo una comparación con 3 países que hemos destacado anteriormente por sus cambios políticos en los últimos años como son Hungría, Turquía y Venezuela. Esta visualización nos permitirá detectar posibles tendencias e impactos globales, como crisis políticas, sanitarias o económicas.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis', fig.width=12, fig.height=8}
 #| label: fig-variables-comparacion
 #| echo: false
 #| warning: false
 #| fig-cap: "Análisis temporal de las principales variables del informe de felicidad en comparación con Hungría, Turquía y Venezuela."
-#| fig-height: 8
+#| fig-height: 6
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -954,17 +946,15 @@ ggplot(data_comparada, aes(x = year, y = media, color = country)) +
 
 ```
 
-La evolución anual del promedio de variables de interés de la @fig-variables-comparacion refleja tendencias globales relevantes, pero su comparación con países concretos permite matizar dichas dinámicas y comprender mejor cómo contextos políticos específicos afectan al bienestar percibido por la población. Para ello, hemos seleccionado una serie de países que destacan por haber experimentado eventos políticos significativos o cambios institucionales durante el periodo de estudio, como Venezuela, Turquía o Hungría. Estos casos permiten ilustrar cómo la evolución de las condiciones políticas puede influir en la trayectoria del bienestar subjetivo, aportando una dimensión interpretativa más rica al análisis global.
+La evolución anual del promedio de las variables de interés de la @fig-variables-comparacion refleja tendencias globales relevantes, y comparando su evolución con la de ciertos países concretos podemos determinar ciertas dinámicas y comprender cómo ciertos contextos políticos específicos pueden afectar a la felicidad de la población.
 
-En primer lugar, Venezuela se desmarca de forma clara en varias variables. El PIB per cápita presenta una caída drástica desde 2017, situándose muy por debajo de la media global a partir de 2018, lo que refleja la aguda crisis económica que atraviesa el país. Esta caída va acompañada de un descenso en la libertad para tomar decisiones y en la felicidad percibida, lo que sugiere un deterioro generalizado del bienestar. Sin embargo, resulta llamativo el aumento pronunciado en la generosidad a partir de 2021, superando incluso a la media global. Este fenómeno podría estar vinculado a la solidaridad comunitaria surgida ante la crisis prolongada, así como a cambios metodológicos en la forma en la que se capta esta variable en contextos de alta inestabilidad.
+En primer lugar, Venezuela se desmarca de forma clara en varias variables. Mientras que a partir de 2017 el PIB per cápita se mantiene considerablemente constante, el de Venezuela empeiza a bajar, destacando una caída drástica en 2021, producto de la poca producción petrolera y la hiperinflación, reflejando la tremenda crisis económica que atraviesa el país. Cabe destacar el descenso pronunciado que se produce en la libertad para tomar decisiones y en la felicidad percibida desde 2015, lo que podía sugerir un deterioro generalizado del bienestar, pero a partir de 2019 ambas variables empiezan a subir; efecto que puede haberse dado después de que las personas más descontentas formasen parte de la migración masiva que sufrió el país en años anteriores. Dicho aumento coincide con el mismo que sufre la generosidad a partir de 2019, superando incluso a la media global, lo cual podría estar relacionado a la solidaridad comunitaria surgida ante la crisis.
 
-Por otro lado, Turquía muestra una tendencia decreciente en la libertad para tomar decisiones, especialmente desde 2018, coincidiendo con el fortalecimiento del poder ejecutivo bajo el liderazgo de Recep Tayyip Erdoğan. A pesar de mantener un PIB per cápita relativamente estable y una esperanza de vida en línea con la media global, la percepción de corrupción se mantiene sistemáticamente alta, lo cual refuerza la idea de un deterioro institucional progresivo. La felicidad percibida en Turquía permanece por debajo de la media, lo que puede reflejar un desencanto social persistente.
+Por otro lado, aunque la libertad para tomar decisiones vaya creciendo cada año, Turquía muestra una tendencia claramente decreciente, especialmente desde 2018, coincidiendo con el fortalecimiento del poder ejecutivo de Recep Tayyip Erdoğan después de las elecciones. A pesar de mantener un PIB per cápita relativamente estable y una esperanza de vida en línea con la media global, la generosidad se mantiene bastante baja con respecto a la media, lo que, unido a la bajada de la felicidad a partir de 2019, puede reflejar un descontento ciudadano con la situación actual.
 
-En el caso de Hungría, se observa una situación más ambivalente. Por un lado, variables como la esperanza de vida, el apoyo social y la felicidad percibida se mantienen por encima de la media global, lo que sugiere una cierta estabilidad material y comunitaria. No obstante, la libertad para tomar decisiones experimenta un estancamiento, y la percepción de corrupción es elevada, lo cual coincide con el proceso de retroceso democrático documentado en el país desde mediados de la década de 2010. Este contraste pone de manifiesto cómo un país puede mantener ciertos niveles de bienestar mientras erosiona sus instituciones democráticas.
+En el caso de Hungría, se observa una situación más confusa. Por un lado, variables como la esperanza de vida, el apoyo social y la felicidad percibida se mantienen por encima de la media global, lo que sugiere una cierta estabilidad a nivel civil. No obstante, la percepción de corrupción es elevada y la generosidad es bastante baja, lo cual coincide con el retroceso democrático que está sufriendo el país estos últimos años. Este contraste demuestra cómo un país puede mantener ciertos niveles de bienestar mientras sus organismos democráticos se deterioran.
 
-Este análisis complementa el estudio previo de la evolución global. Ya habíamos observado que, en conjunto, variables como la libertad para tomar decisiones y la generosidad presentan una evolución creciente, posiblemente impulsada por procesos de recuperación post-pandemia o cambios culturales. También destacaba un pico atípico en el PIB per cápita en 2016, probablemente debido a valores extremos ocasionados por mala imputación en la recolecta de datos ya que hay muchos países en 2016 que presentan un PIB de 10, como es el caso de Ecuador: pasa de tener un PIB de 5.11 en 2015 a tener un PIB de 10 en 2016, para luego tener un PIB de 5.35 en 2017. También se observa una tendencia general de aumento en la felicidad percibida hasta 2022, seguida de un leve descenso. Por el contrario, la percepción de corrupción es más errática, con oscilaciones abruptas entre años, lo que refleja fuertes diferencias entre países.
-
-La comparación entre países permite, por tanto, observar cómo procesos políticos específicos (autoritarismo, crisis económica, reformas institucionales) se reflejan en los indicadores de bienestar. Venezuela, Turquía y Hungría muestran trayectorias divergentes respecto a la media global, lo cual subraya la necesidad de un análisis desagregado para captar la complejidad del bienestar en contextos políticamente inestables o en transformación.
+Este análisis nos permite comprender el estudio previo de la evolución global. Hemos observado que algunas variables como la libertad para tomar decisiones, la generosidad o la propia felicidad han ido creciendo a lo largo del tiempo de forma estable, mientras que otras como la esperanza de vida han sufrido grandes fluctuaciones, algunas posiblemente como efectos secundarios post-pandemia. También destaca un pico atípico en el PIB per cápita en 2016, probablemente debido a valores extremos ocasionados por mala imputación en la recolecta de datos ya que hay muchos países en 2016 que presentan un PIB de 10, como es el caso de Ecuador: pasa de tener un PIB de 5.11 en 2015 a tener un PIB de 10 en 2016, para luego tener un PIB de 5.35 en 2017. También se observa una tendencia general de aumento en la felicidad percibida hasta 2022, seguida de un leve descenso. Por último, vemos que la percepción de corrupción también tiene ciertas oscilaciones entre años, lo que refleja fuertes diferencias entre países a lo largo del tiempo.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
 #| label: fig-felicidad-pais
@@ -1016,25 +1006,25 @@ ggplot(df_plot, aes(x = country, y = happiness_score, fill = happiness_score)) +
 
 ```
 
-La @fig-felicidad-pais muestra la evolución del Happiness Score por país entre los años 2015 y 2024, representando cada año en un panel independiente y añadiendo como referencia una línea roja discontinua que indica la media global de felicidad de ese año. Cada barra representa el valor de felicidad para un país concreto en un año determinado, y las barras están ordenadas de izquierda a derecha según la media de felicidad del país a lo largo del periodo completo (2015–2024). Es decir, los países más felices en promedio están situados a la izquierda en todos los años, manteniendo así un orden constante que facilita la comparación temporal. Esta visualización permite realizar un análisis comparativo tanto entre países como a lo largo del tiempo, aportando una perspectiva clara sobre la distribución del bienestar subjetivo a escala mundial.
+La @fig-felicidad-pais muestra la evolución del Happiness Score por país entre los años 2015 y 2024, en el que la línea roja discontinua indica la media global de felicidad de ese año. Además, para hacer un análisis coherente, en el que cada barra del gráfico representa el valor de felicidad para un país en un año determinado, haremos que las barras estén ordenadas de izquierda a derecha según la media de felicidad del país durante el periodo completo (2015–2024); es decir, los países más felices en promedio están situados a la izquierda en todos los años.
 
-Lo primero que llama la atención es la notable estabilidad de la media global a lo largo del periodo observado. La línea roja, que representa dicho promedio, se mantiene en un intervalo relativamente estrecho —aproximadamente entre 5.3 y 5.5 puntos—, lo que sugiere que, a nivel agregado, la percepción de felicidad mundial no ha sufrido cambios drásticos. Sin embargo, esta estabilidad global oculta dinámicas internas más complejas.
+Podemos observar que la media global de felicidad se mantiene estable a lo largo de los años en un intervalo relativamente estrecho (entre 5.3 y 5.5 puntos), sugiriendo que la felicidad mundial no ha sufrido ningún cambio contundente a lo largo de estos años. Sin embargo, esta estabilidad global en la puntuación no representa una estabilidad en todos los países.
 
-A medida que avanzan los años, especialmente a partir de 2020, se observa un aumento progresivo en la cantidad de países que se sitúan por debajo de la media global. Esta tendencia podría estar vinculada al impacto de la pandemia de COVID-19 y sus secuelas económicas, sanitarias y sociales, que afectaron de manera desigual a distintas regiones. Asimismo, podría reflejar procesos de deterioro democrático o inestabilidad política en determinados contextos, tal y como se ha explorado en análisis previos sobre variables institucionales.
+A medida que progresan los años, especialmente a partir de 2020, observamos un aumento gradual en el número de países situados por debajo de la media global. Esta tendencia puede estar vinculada al impacto de la pandemia de COVID-19 y sus consecuencias, que afectaron, aunque no de la misma forma, a distintas regiones. En relación a lo visto anteriormente, esta tendencia también podría deberse a ciertos sucesos que han llevado al deterioro democrático y a la inestabilidad política en determinadas regiones. 
 
-La figura también pone de manifiesto la persistencia de fuertes desigualdades en la distribución del bienestar subjetivo. Mientras que un pequeño grupo de países — naciones del norte de Europa como Finlandia, Dinamarca, Islandia, Noruega y Suiza— se mantiene de forma consistente en la parte superior del ranking con puntuaciones muy por encima de la media, la gran mayoría de países se concentra en la franja media o baja. Esta asimetría en la distribución revela que, si bien algunos países gozan de altos niveles de satisfacción vital sostenidos en el tiempo, muchos otros enfrentan barreras estructurales que dificultan mejorar su puntuación de felicidad; como Siria, Burundi o Afganistán.
+La figura también demuestra las fuertes desigualdades en la distribución de la felicidad: mientras que un pequeño grupo de países (naciones del norte de Europa como Finlandia, Dinamarca o Islandia) se mantiene en la parte superior del ranking con puntuaciones muy por encima de la media, la mayoría de países se concentran en la parte media/baja. Esta distribución irregular indica que, aunque algunos países tienen niveles altos de felicidad y bienestar, muchos otros enfrentan obstáculos que les impiden mejorar su puntuación de felicidad; como Siria, Burundi o Afganistán.
 
-Un fenómeno adicional que merece atención es el ligero descenso en los valores máximos del Happiness Score en los últimos años. En 2023 y 2024, incluso los países mejor posicionados parecen haber perdido algo de ventaja con respecto a años anteriores. Esta caída podría interpretarse como un efecto retardado de los acontecimientos globales recientes, o como una normalización tras niveles particularmente elevados en años previos.
+Otro aspecto a tener en cuenta en la figura es el descenso en los valores máximos del Happiness Score en los últimos años: en 2023 y 2024, los países con los niveles más altos de felicidad han sufrido una pequeña bajada. Esta caída podría darse debido a acontecimientos globales que les han impactado más tarde, o simplemente como una normalización tras haber tenido niveles bastante altos los años anteriores.
 
-En conjunto, la figura no solo reafirma que la media global se mantiene estable, sino que también evidencia un ensanchamiento de la brecha entre países y una posible tendencia al estancamiento o deterioro en la felicidad percibida a nivel nacional. La comparación interanual permite detectar trayectorias divergentes y resalta la necesidad de seguir analizando qué factores explican el desempeño diferencial de los países. Esta visualización resulta, por tanto, un complemento clave para comprender la evolución del bienestar en un contexto global marcado por desafíos económicos, políticos y sociales.
+En general, la @fig-felicidad-pais no solo confirma que la media global se mantiene estable a lo largo de los años, sino que también muestra una dilatación de la brecha entre países que nos muestra la necesidad de buscar qué factores determinan esta diferencia de la felicidad entre países.
 
-Tras analizar la evolución global de la felicidad a nivel de país, resulta interesante centrar la atención en contextos geográficos más acotados que, por su cercanía cultural, económica o política, puedan mostrar dinámicas particulares. En este sentido, se ha seleccionado un grupo de países europeos próximos a España —Portugal, Francia, Italia, Andorra, Suiza, Alemania y Reino Unido— para realizar un análisis comparativo más detallado de la evolución del bienestar subjetivo entre 2015 y 2024.
+Tras analizar la evolución global de la felicidad, resulta interesante poner el foco en regiones más delimitadas que, por su cercanía, puedan mostrar dinámicas particulares a la hora de analizar la evolución de la felicidad en España. Con este fin, hemos seleccionado un grupo de países europeos próximos a España para realizar un análisis comparativo más detallado de la evolución del bienestar entre 2015 y 2024. Estos países son Portugal, Francia, Italia, Andorra, Suiza, Alemania y Reino Unido.
 
 ## Evolución del Happiness Score en España
 
-El objetivo de este bloque es doble: por un lado, examinar la trayectoria específica de España en cuanto a su Happiness Score a lo largo del tiempo; y por otro, contextualizar dicha evolución en relación con sus países vecinos. Además, se analizarán variables complementarias como el PIB per cápita, el apoyo social, la libertad en la toma de decisiones, y las puntuaciones de derechos políticos y libertades civiles, con el fin de identificar posibles factores explicativos de las tendencias observadas.
+En este apartado queremos observar dos cosas: por un lado, estudiar la evolución de la felicidad en España a lo largo del tiempo; y por otro, comparar dicha evolución con la de sus países vecinos. Además, se analizarán variables como el PIB per cápita, el apoyo social y la libertad en la toma de decisiones para identificar posibles factores que describan esta evolución.
 
-Este enfoque regional no solo permite evaluar si España sigue dinámicas similares o divergentes respecto a su entorno inmediato, sino que también contribuye a detectar patrones de bienestar y resiliencia en Europa Occidental. Dado el contexto de crisis sucesivas —económica, sanitaria y geopolítica— en el periodo analizado, comparar la evolución de estos países cercanos ofrece una perspectiva enriquecedora sobre el impacto de factores estructurales e institucionales en la percepción de felicidad de la ciudadanía.
+A través de esta perspectiva, no solo evaluamos si España sigue la misma evolución que sus países vecinos, sino que también permite detectar tendencias de bienestar y fortalezas en Europa Occidental.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
 #| label: fig-felicidad-espana
@@ -1061,7 +1051,7 @@ ggplot(df_espana, aes(x = year, y = happiness_score)) +
   theme_minimal()
 ```
 
-La @fig-felicidad-espana, centrada exclusivamente en España, se observa una evolución relativamente estable del índice de felicidad, con pequeñas oscilaciones en torno a valores ligeramente superiores a 6.3. No obstante, destaca una caída en 2018 (mínimo del periodo), seguida de una recuperación progresiva que culmina en un pico en 2021, justo tras el primer año completo de pandemia. Este máximo puede parecer contraintuitivo, pero podría explicarse por un efecto de resiliencia colectiva o por cambios en la percepción subjetiva del bienestar ante la crisis sanitaria. Tras 2021, sin embargo, el índice inicia un leve descenso que se prolonga hasta 2024, lo que podría reflejar un efecto retardado de las consecuencias económicas, sociales y emocionales de la pandemia.
+La @fig-felicidad-espana, muestra una evolución relativamente estable de la puntuación de felicidad en España, con valores alrededor del 6.4. No obstante, destaca una bajada en 2018, seguida de una recuperación progresiva hasta 2021, el primer año después de la pandemia. Esta bajada puede deberse a los múltiples casos de corrupción que sacudieron el país y que terminaron con una moción de censura contra el presidente que supuso en un cambio de gobierno. Por el contrario, este máximo en 2021 podría deberse a la resiliencia que tuvo la ciudadanía ante la crisis sanitaria; o, viendo que en los años siguientes se produce un leve descenso de la felicidad, podría deberse a un efecto atrasado de las consecuencias de la pandemia.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
 #| label: fig-felicidad-espana-paises
@@ -1079,9 +1069,9 @@ ggplot(df_cercanos, aes(x = year, y = happiness_score, color = country, group = 
   theme_minimal()
 ```
 
-La @fig-felicidad-espana-paises contextualiza estos datos al mostrar la evolución del Happiness Score en países próximos a España: Francia, Portugal, Italia, Alemania, Reino Unido y Suiza. Una primera observación relevante es que España se sitúa de forma constante en un rango medio-bajo dentro de este grupo, por encima únicamente de Portugal (hasta 2020) y, ocasionalmente, de Italia. Países como Suiza, Alemania y Reino Unido exhiben sistemáticamente puntuaciones más altas, lo cual podría estar vinculado a mayores niveles de riqueza, estabilidad institucional o servicios sociales más desarrollados.
+La @fig-felicidad-espana-paises muestra la evolución de la felicidad en España en comparación con sus países vecinos. Lo primero que podemos observar es que España se sitúa en el rango medio-bajo del grupo, por encima únicamente de Portugal y, ocasionalmente, de Italia. Países como Suiza, Alemania y Reino Unido poseen holgadamente puntuaciones más altas (sobre todo Suiza), lo cual podría estar vinculado a mayores niveles de riqueza y estabilidad institucional.
 
-En términos de trayectoria, destaca el descenso claro en los últimos años (especialmente a partir de 2022) en la mayoría de países analizados, incluyendo aquellos con niveles históricamente altos de felicidad como Suiza o Alemania. Este patrón sugiere la presencia de factores estructurales o globales (crisis energética, inflación, tensiones geopolíticas) que estarían afectando incluso a los países tradicionalmente más satisfechos. En contraste, países como Portugal e Italia muestran una tendencia más estable o incluso creciente hasta 2022, posiblemente como resultado de procesos de recuperación o mejora relativa en relación con sus propias trayectorias históricas.
+Si analizamos la evolución de la felicidad, vemos que a partir de 2021 se produce un descenso claro en los países con niveles más altos de felicidad como Suiza o Alemania, mientras que Portugal sufre una gran subida y el resto de países se mantiene constante. Esto puede deberse a que ha habido una serie de factores, como ciertas tensiones geopolíticas, que han hecho afectado de manera directa a la felicidad de la población de muchos países.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
 #| label: fig-variables-espana
@@ -1152,149 +1142,14 @@ ggplot(df_cercanos, aes(x = year, y = freedom, color = country, group = country)
 
 ```
 
-Los gráficos presentados en las @fig-variables-espana, @fig-variables-espana2 y @fig-variables-espana3 permiten analizar la evolución de distintas dimensiones del bienestar y la calidad de vida en un conjunto de países europeos cercanos a España entre 2015 y 2024. En conjunto, nos ofrecen una perspectiva comparativa regional que ayuda a contextualizar el caso español en relación con sus vecinos.
+Los gráficos presentados en las @fig-variables-espana, @fig-variables-espana2 y @fig-variables-espana3 permiten analizar la evolución de distintos factores que pueden haber afectado al bienestar y la calidad de vida de estos países.
 
-En la @fig-variables-espana, que muestra la evolución del PIB per cápita, se observa una fuerte caída generalizada en 2017, seguida por una recuperación progresiva desde 2018. Esta evolución puede estar relacionada con una recodificación de datos o un cambio metodológico en ese año, pero también con impactos económicos de alcance regional. En cualquier caso, destaca que Suiza mantiene sistemáticamente el mayor PIB per cápita, situándose por encima del resto del grupo. Le siguen Alemania y Reino Unido, con valores elevados y estables. España se encuentra en la parte baja del grupo, junto a Portugal e Italia, aunque todos ellos muestran una tendencia ascendente en los últimos años, lo que refleja una recuperación económica moderada.
+En la @fig-variables-espana, que muestra la evolución del PIB per cápita, se observa una fuerte caída en 2017, seguida por una recuperación progresiva desde 2018; la cual, como indiqué antes, puede deberse a una recodificación o mala recopilación de datos. En cualquier caso, destaca que Suiza mantiene sistemáticamente el mayor PIB per cápita, situándose de manera notoria por encima del resto del grupo. Le sigue Alemania, con valores elevados y estables, y un poco por debajo se encuentran Reino Unido y Francia. España se encuentra en la parte baja del grupo, sólo por encima de Portugal, aunque todos muestran una tendencia ascendente que refleja prosperidad económica.
 
-En la @fig-variables-espana2, relativo al apoyo social, se aprecia un comportamiento mucho más volátil. En 2018 hay una caída muy pronunciada en todos los países, especialmente en España, Italia y Portugal, lo cual podría reflejar una crisis de confianza institucional o una percepción negativa del entorno social. Sin embargo, en 2019 se produce un repunte, seguido de cierta estabilización con una tendencia ligeramente descendente en algunos países. Suiza y Reino Unido destacan por mantener niveles consistentemente altos de apoyo social, mientras que España mejora en los últimos años tras el fuerte descenso.
+En la @fig-variables-espana2, relativo al apoyo social, se aprecia un comportamiento mucho menos constante. En 2018 hay una caída muy pronunciada en todos los países, especialmente en España, Italia y Portugal, lo cual puede deberse a una percepción negativa del entorno social como ocurrió en España debido a los casos de corrupción; o, al igual que con el PIB, a una recodificación de los datos. En 2019 se produce un repunte, y en los años siguientes se producen ciertas oscilaciones en la gran mayoría de países; destacando a España y Alemania como los países más constantes. No obstante, los cambios que se producen en el apoyo social no son comparables a los que se producen en la @fig-variables-espana ya que no tienen la misma magnitud, y por lo general siempre tienen puntuaciones bastante altas.
 
-La @fig-variables-espana3 muestra la evolución de la libertad para tomar decisiones, una dimensión vinculada a la percepción de autonomía personal. Aquí destaca el caso de Suiza, que parte de valores cercanos a 1 y los mantiene prácticamente inalterados. Alemania y Reino Unido también se sitúan en la parte superior, mientras que España parte de un nivel más bajo en 2015 y experimenta una caída hasta 2019, seguida de una recuperación constante a partir de ese momento. Por el contrario, Italia muestra una evolución ascendente sostenida, superando incluso a España en los últimos años. Esta variable presenta un patrón de mejora generalizada en la región, lo que puede reflejar avances en la percepción de libertad individual y gobernanza democrática.
+La @fig-variables-espana3 muestra la evolución de la libertad para tomar decisiones, la cual muestra valores mucho más dispares que la @fig-variables-espana2. Aquí destaca el caso de Suiza, que mantiene los valores de libertad más altos durante todo el período, y el de Portugal, que sufre un gran ascenso que lo coloca en la parte más alta. España parte de un nivel más bajo en 2015 y experimenta una caída hasta 2019, seguida de una recuperación constante a partir de ese momento manteniéndose en la parte baja de la tabla. Italia, pese a ser el países con puntuación más baja, muestra una evolución ascendente sostenida, sobre todo a partir de 2019. Esta variable presenta una mejora generalizada en la región, manifestando ciertos avances en la percepción de libertad individual.
 
-En conjunto, estas figuras permiten extraer varias conclusiones. En primer lugar, España tiende a situarse en posiciones intermedias o bajas dentro del grupo de comparación, aunque muestra señales de mejora especialmente en PIB y libertad individual. En segundo lugar, países como Suiza y Alemania destacan sistemáticamente por sus buenos resultados, lo que puede atribuirse a sus estructuras institucionales consolidadas y niveles de desarrollo económico. Finalmente, el análisis temporal revela momentos de tensión o crisis (como 2017–2018) seguidos de cierta recuperación, lo que sugiere una resiliencia estructural en la región. Esta comparativa refuerza la utilidad del análisis multinacional para entender mejor los factores que condicionan la evolución del bienestar en contextos políticamente estables pero económicamente diversos.
+A través de estas figuras podemos sacar varias conclusiones. En primer lugar, España tiende a situarse en posiciones relativamente bajas dentro del grupo de comparación, aunque muestra señales de mejora especialmente en PIB y libertad individual. Por otro lado, países como Suiza y Alemania destacan por sus buenos resultados en todos los ámbitos, lo cual explica por qué son los países con mayor puntuación de felicidad. Esta comparación demuestra que el análisis de medidas repetidas nos permite comprender mejor los factores que condicionan la evolución de la felicidad en países cercanos pero diferentes en muchos ámbitos.
 
-Aunque al inicio del capítulo ya indicamos que no se detectaron valores atípicos significativos tras el análisis inicial, conviene revisar brevemente algunas observaciones que, por su contexto o comportamiento, podrían considerarse casos especiales. Esta revisión no pretende identificar outliers estadísticos en sentido estricto, sino valorar si existen países cuya evolución difiere notablemente del patrón general y que, por tanto, merecen una atención particular en el análisis interpretativo posterior.
-
-```{r echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
-#| label: fig-felicidad-anual
-#| echo: false
-#| warning: false
-#| fig-cap: "Análisis de la distribución de la puntuación de felicidad anual."
-#| fig-width: 5
-#| fig-height: 3.5
-ggplot(df_original, aes(x = factor(year), y = happiness_score)) +
-  geom_boxplot() +
-  theme_minimal() +
-  labs(title = "Distribución de Felicidad por Año", x = "Año", y = "Happiness Score") 
-```
-
-Si observamos la @fig-felicidad-anual, de 2015 a 2020 no vemos valores atípicos, pero en 2021 vemos un valor atípico de 2.52, en 2022 de 2.40, en 2023 de 1.86 y en 2024 de 1.72. Todos estos valores atípicos corresponden con Afganistán. Vamos a entrar en más detalle para ver cuál es la evolución de dicho país.
-
-```{r echo=FALSE, warning=FALSE}
-#| label: fig-felicidad-afganistan
-#| echo: false
-#| warning: false
-#| fig-cap: "Evolución temporal de la felicidad en Afganistán."
-#| fig-width: 6
-#| fig-height: 1.5
-df_afganistan <- df_sin_democracia_sin_na %>% filter(country == "Afghanistan")
-ggplot(df_afganistan, aes(x = year, y = happiness_score)) +
-  geom_line() +
-  geom_point() +
-  labs(title = "Evolución del Happiness Score en Afganistán", x = "Año", y = "Happiness Score") +
-  scale_x_continuous(breaks = unique(df_afganistan$year))
-```
-
-```{r echo=FALSE, warning=FALSE}
-#| label: fig-afganistan2
-#| echo: false
-#| warning: false
-#| fig-cap: "Evolución temporal de la felicidad en Afganistán y en países cercanos."
-#| fig-width: 6
-#| fig-height: 1.5
-df_region <- df_sin_democracia_sin_na %>% filter(regional_indicator == "South Asia")
-ggplot(df_region, aes(x = year, y = happiness_score, color = country, group = country)) +
-  geom_line() +
-  labs(title = "Evolución del Happiness Score en Asia del Sur", x = "Año", y = "Happiness Score") +
-  scale_x_continuous(breaks = unique(df_afganistan$year))
-```
-
-Si observamos la @fig-felicidad-afganistan y @fig-afganistan2, Afganistán sufre una gran caída de la felicidad a partir de 2017 y si lo comparamos con países de su región es el que menos puntuación tiene por bastante diferencia. Esto puede haberse dado por diversos factores, como el constante estado de guerra y conflicto en el que se ha encontrado el país, la presencia de los talibanes y otros grupos armados que han aumentado la violencia y el temor en la población, la enorme tasa de pobreza, etc. Vamos a comparar la evolución de Afganistán con sus países vecinos para ver realmente qué puede estar afectando a tal bajada de la felicidad.
-
-```{r echo=FALSE, warning=FALSE}
-#| label: fig-pib-afganistan
-#| echo: false
-#| warning: false
-#| fig-cap: "Evolución temporal del PIB en Afganistán y en países cercanos."
-#| fig-width: 6
-#| fig-height: 2
-ggplot(df_region, aes(x = year, y = gdp, color = country, group = country)) +
-  geom_line() +
-  labs(title = "Evolución del PIB en Asia del Sur", x = "Año", y = "PIB") +
-  scale_x_continuous(breaks = unique(df_afganistan$year))
-```
-
-Observando la @fig-pib-afganistan, vemos que Afganistán presenta el PIB más bajo de la región durante todo el periodo, aunque la diferencia no es tan pronunciada respecto a sus vecinos. La evolución del PIB muestra una tendencia relativamente paralela, lo cual indica que la situación económica general no difiere radicalmente en términos de crecimiento.
-
-```{r echo=FALSE, warning=FALSE}
-#| label: fig-apoyo-afganistan
-#| echo: false
-#| warning: false
-#| fig-cap: "Evolución temporal del apoyo social en Afganistán y en países cercanos."
-#| fig-width: 6
-#| fig-height: 2
-ggplot(df_region, aes(x = year, y = support, color = country, group = country)) +
-  geom_line() +
-  labs(title = "Evolución del apoyo social en Asia del Sur", x = "Año", y = "Apoyo social") +
-  scale_x_continuous(breaks = unique(df_afganistan$year))
-```
-
-Sin embargo, la @fig-apoyo-afganistan muestra que el apoyo social sufre una caída drástica en Afganistán a partir de 2021, coincidiendo con el regreso de los talibanes al poder. A diferencia de los países vecinos, donde el apoyo se mantiene más estable, en Afganistán prácticamente desaparece, lo que podría explicar un deterioro importante en el bienestar subjetivo de su población.
-
-```{r echo=FALSE, warning=FALSE}
-#| label: fig-libertad-afganistan
-#| echo: false
-#| warning: false
-#| fig-cap: "Evolución temporal de la libertad de los ciudadanos en Afganistán y en países cercanos."
-#| fig-width: 6
-#| fig-height: 2
-ggplot(df_region, aes(x = year, y = freedom, color = country, group = country)) +
-  geom_line() +
-  labs(title = "Evolución de libertad en Asia del Sur", x = "Año", y = "Libertad") +
-  scale_x_continuous(breaks = unique(df_afganistan$year)) +
-  theme(
-    legend.text = element_text(size = 7),
-    legend.title = element_text(size = 8)
-  )
-```
-
-En términos de libertad para tomar decisiones vitales, la @fig-libertad-afganistan muestra que Afganistán se sitúa consistentemente por debajo de la media regional. Este valor, que ya era bajo en años anteriores, cae aún más tras 2021, reflejando la pérdida de autonomía percibida por sus ciudadanos.
-
-```{r echo=FALSE, warning=FALSE}
-#| label: fig-der-afganistan
-#| echo: false
-#| warning: false
-#| fig-cap: "Evolución temporal de la privación de derechos políticos en Afganistán y en países cercanos."
-#| fig-width: 6
-#| fig-height: 2
-ggplot(df_region, aes(x = year, y = political_rights, color = country, group = country)) +
-  geom_line() +
-  labs(title = "Privación de derechos en Asia del Sur", x = "Año", y = "Privación de derechos") +
-  scale_x_continuous(breaks = unique(df_afganistan$year)) +
-  theme(
-    legend.text = element_text(size = 7),
-    legend.title = element_text(size = 8)
-  )
-```
-
-La @fig-der-afganistan muestra que la pérdida de libertad se ve reforzada por el deterioro de los derechos políticos, donde Afganistán muestra los valores más altos de privación dentro de la región. El país se convierte en un claro outlier en este aspecto a partir de 2021.
-
-```{r echo=FALSE, warning=FALSE}
-#| label: fig-lib-afganistan
-#| echo: false
-#| warning: false
-#| fig-cap: "Evolución temporal de la privación de libertades civiles en Afganistán y en países cercanos."
-#| fig-width: 6
-#| fig-height: 2
-ggplot(df_region, aes(x = year, y = civil_liberties, color = country, group = country)) +
-  geom_line() +
-  labs(title = "Privación de libertades civiles en Asia del Sur", x = "Año", y = "Privación de libertades") +
-  scale_x_continuous(breaks = unique(df_afganistan$year)) +
-  theme(
-    legend.text = element_text(size = 7),
-    legend.title = element_text(size = 8)
-  )
-```
-
-Por último, observando la @fig-lib-afganistan, la privación de libertades civiles también coloca a Afganistán en una posición crítica frente a sus vecinos. Este conjunto de restricciones políticas y sociales contribuye directamente a su puntuación tan baja de felicidad, y subraya la necesidad de considerar el contexto institucional al interpretar estos datos.
-
-En resumen, a lo largo de este capítulo se ha llevado a cabo un análisis exploratorio exhaustivo de la base de datos utilizada, prestando especial atención a la evolución temporal y la variabilidad geográfica del índice de felicidad, así como a su relación con diversos factores socioeconómicos y políticos. Mediante visualizaciones, resúmenes estadísticos y comparaciones entre países y regiones, hemos identificado patrones relevantes y desigualdades persistentes en la percepción del bienestar subjetivo. No obstante, todo lo realizado hasta ahora corresponde a una fase descriptiva del análisis. A partir del siguiente capítulo, daremos un paso más allá para intentar explicar el comportamiento del `Happiness Score`, construyendo modelos estadísticos que permitan identificar qué variables influyen de forma significativa en su evolución y cómo interactúan entre sí. Este enfoque nos permitirá extraer conclusiones más sólidas y generar conocimiento útil para comprender mejor los determinantes de la felicidad a nivel global.
+En resumen, en este capítulo se ha realizado un análisis exploratorio exhaustivo de la base de datos utilizada, enfocándonos en la evolución temporal y variabilidad geográfica del índice de felicidad, así como su asociación a diferentes variables políticas, sociales y económicas. A través de herramientas visuales y comparaciones entre diferentes países, hemos reconocido ciertas tendencias relevantes en la representación de la felicidad. No obstante, todo lo hecho hasta ahora supone una fase meramente descriptiva del análisis. A partir del siguiente capítulo, daremos un paso más allá para intentar explicar el comportamiento del índice de felicidad, construyendo modelos estadísticos que nos ayuden a determinar qué variables influyen de forma significativa en su evolución y cómo interactúan entre sí.

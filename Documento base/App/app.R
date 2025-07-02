@@ -118,7 +118,7 @@ ui <- dashboardPage(
                     tags$ul(
                       tags$li(a(href = "https://www.worldhappiness.report/data-sharing/", "World Happiness Report", target = "_blank")),
                       tags$li(a(href = "https://freedomhouse.org/report/freedom-world#Data", "Freedom in the World (Freedom House)", target = "_blank")),
-                      tags$li(a(href = "https://xmarquez.github.io/democracyData/index.html", "Democracy Data", target = "_blank"))
+                      tags$li(a(href = "https://github.com/rfordatascience/tidytuesday/blob/main/data/2024/2024-11-05/readme.md", "Democracy Data", target = "_blank"))
                     )
                 )
               )
