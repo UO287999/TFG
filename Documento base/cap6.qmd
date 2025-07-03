@@ -3,6 +3,7 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
+
 ```{r include=FALSE, warning=FALSE}
 library(readr)
 library(readxl)
@@ -13,9 +14,9 @@ library(outliers)
 library(plotly)
 library(tidyverse)
 library(webshot2)
-library(lmtest)      # Para bptest() y dwtest()
-library(tseries)     # Para jarque.bera.test()
-library(ggfortify)   # Para autoplot() del modelo
+library(lmtest)      
+library(tseries)     
+library(ggfortify)   
 
 ```
 
@@ -55,7 +56,6 @@ knitr::include_graphics("pestana_informacion.png")
 
 ```
 
-
 ### Pestaña "Descriptiva"
 
 En esta sección, el usuario puede seleccionar hasta dos variables numéricas (por ejemplo, `happiness_score`, `gdp`, `freedom`, etc.), elegir una o varias regiones del mundo (por ejemplo, Western Europe, Sub-Saharan Africa…), filtrar por país (opcionalmente), y generar dos tipos de visualización: un gráfico de evolución temporal, en forma de líneas, con facetas por variable, y un mapa mundial tipo choropleth, para representar el valor de una variable en un año concreto.
@@ -75,10 +75,9 @@ knitr::include_graphics("pestana_informacion.png")
 
 ```
 
-
 ### Pestaña "Análisis"
 
-Es el núcleo funcional de la aplicación, donde se pueden construir y validar modelos estadísticos. Entre las distintas funcionalidades disponibles está la elección de efectos fijos y aleatorios (el usuario puede seleccionar libremente las variables que se incluirán como efectos fijos (por ejemplo, `gdp`, `freedom`, `regime_category`, etc.) y aleatorios (`year`, `regional_indicator`), el filtrado de regiones y países para construir el subconjunto de datos con el que se ajustará el modelo, la elección del tipo de modelo: LMM (Modelo lineal mixto) o  GLMM (Modelo generalizado mixto). También se hace un ajuste del modelo, mostrando la fórmula resultante, el resumen estadístico (summary()) y las métricas de ajuste (AIC, R² marginal y condicional). Todo esto lo podemos observar en la [@fig-analisis-1]. Luego se realiza una validación del modelo, en la que se muestra la gráfica de residuos vs ajustados y QQ-Plot de residuos, y test de uniformidad, dispersión y outliers; lo cual podemos observar en la [@fig-analisis-2]. Después se produce un diagnóstico final automático, que indica si el modelo es válido para hacer predicciones y, en caso contrario, especifica en qué falla. Por último, esta pestaña incluye una visualización de predicciones, en la que muestra tres líneas para cada país seleccionado: observaciones reales, valores ajustados y predicción para el año 2025. Esta última parte la observamos en la [@fig-analisis-3].
+Es el núcleo funcional de la aplicación, donde se pueden construir y validar modelos estadísticos. Entre las distintas funcionalidades disponibles está la elección de efectos fijos y aleatorios (el usuario puede seleccionar libremente las variables que se incluirán como efectos fijos (por ejemplo, `gdp`, `freedom`, `regime_category`, etc.) y aleatorios (`year`, `regional_indicator`), el filtrado de regiones y países para construir el subconjunto de datos con el que se ajustará el modelo, la elección del tipo de modelo: LMM (Modelo lineal mixto) o GLMM (Modelo generalizado mixto). También se hace un ajuste del modelo, mostrando la fórmula resultante, el resumen estadístico (summary()) y las métricas de ajuste (AIC, R² marginal y condicional). Todo esto lo podemos observar en la [@fig-analisis-1]. Luego se realiza una validación del modelo, en la que se muestra la gráfica de residuos vs ajustados y QQ-Plot de residuos, y test de uniformidad, dispersión y outliers; lo cual podemos observar en la [@fig-analisis-2]. Después se produce un diagnóstico final automático, que indica si el modelo es válido para hacer predicciones y, en caso contrario, especifica en qué falla. Por último, esta pestaña incluye una visualización de predicciones, en la que muestra tres líneas para cada país seleccionado: observaciones reales, valores ajustados y predicción para el año 2025. Esta última parte la observamos en la [@fig-analisis-3].
 
 Esta pestaña permite aplicar el conocimiento teórico sobre modelos mixtos en un entorno interactivo y comprensible, facilitando la evaluación de distintas configuraciones de modelo sin necesidad de codificar manualmente.
 
@@ -120,7 +119,6 @@ knitr::include_graphics("pestana_analisis2.png")
 knitr::include_graphics("pestana_analisis3.png")
 
 ```
-
 
 ## Integración con el análisis longitudinal
 

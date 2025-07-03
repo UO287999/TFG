@@ -3,6 +3,7 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
+
 ```{r include=FALSE, warning=FALSE}
 library(readr)
 library(readxl)
@@ -13,9 +14,9 @@ library(outliers)
 library(plotly)
 library(tidyverse)
 library(webshot2)
-library(lmtest)      # Para bptest() y dwtest()
-library(tseries)     # Para jarque.bera.test()
-library(ggfortify)   # Para autoplot() del modelo
+library(lmtest)      
+library(tseries)     
+library(ggfortify)   
 
 ```
 

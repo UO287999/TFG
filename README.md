@@ -4,15 +4,15 @@ Este repositorio contiene el Trabajo de Fin de Grado de Pablo Álvarez Arnedo, t
 
 ## Contenido principal
 
-- **App**: Carpeta en la que se incluye la aplicación Shiny y la base de datos utilizada en la aplicación
-- **Informe**: Carpeta en la que se incluye la memoria del TFG y los documentos pertinentes
-- **_book**: Carpeta producida automáticamente para la estructuración de la memoria
-- **cap_files**: Carpetas en la que se guarda cada capítulo y las figuras creadas en este
-- **cap.qmd**: Documentos `.qmd` que componen la memoria estructurada del TFG, del capítulo 1 al 7.
-- **quarto.yml**: Configuración del proyecto Quarto para generar el documento completo en PDF o HTML.
-- **datos**: Archivos `.csv` con los datos procesados y enriquecidos utilizados en el análisis.
-- **references.bib**: Archivo BibTeX con las referencias bibliográficas.
-- **figuras**: Figuras personalizadas utilizadas en la memoria.
+- **App**: carpeta en la que se incluye la aplicación Shiny y la base de datos utilizada en la aplicación
+- **Informe**: carpeta en la que se incluye la memoria del TFG y los documentos pertinentes
+- **_book**: carpeta producida automáticamente para la estructuración de la memoria
+- **cap_files**: carpetas en la que se guarda cada capítulo y las figuras creadas en este
+- **cap.qmd**: documentos `.qmd` que componen la memoria estructurada del TFG, del capítulo 1 al 7.
+- **quarto.yml**: configuración del proyecto Quarto para generar el documento completo en PDF o HTML.
+- **datos**: archivos `.csv` con los datos procesados y enriquecidos utilizados en el análisis.
+- **references.bib**: archivo BibTeX con las referencias bibliográficas.
+- **figuras**: figuras personalizadas utilizadas en la memoria.
 
 ## Descripción del proyecto
 

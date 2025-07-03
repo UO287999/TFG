@@ -17,9 +17,7 @@ knitr::opts_chunk$set(
 theme_set(theme_minimal(base_size = 12))
 ```
 
-
 En este capítulo, exploraremos los **Modelos Lineales Mixtos (LMM)**, los **Modelos Lineales Generalizados (GLM)** y los **Modelos Lineales Generalizados Mixtos (GLMM)**, tres métodos estadísticos fundamentales para el análisis de datos longitudinales. Veremos cómo los LMM permiten modelar la variabilidad entre individuos a través de efectos aleatorios y fijos, facilitando el estudio de la correlación entre medidas repetidas. A continuación, introduciremos los GLM, que extienden la regresión lineal para manejar variables respuesta que no siguen una distribución normal, utilizando funciones de enlace y distribuciones de la familia exponencial. Finalmente, presentaremos los GLMM, que combinan las fortalezas de los modelos mixtos y los GLM para analizar datos longitudinales que no siguen una distribución normal incorporando tanto efectos aleatorios como funciones de enlace apropiadas. A lo largo del capítulo, revisaremos sus formulaciones matemáticas, sus hipótesis clave y cómo validarlas en la práctica.
-
 
 ## Comparación de modelos con efectos fijos, aleatorios y mixtos
 
@@ -42,8 +40,7 @@ En las siguientes secciones, compararemos tres enfoques distintos:
 ### Modelo con efectos fijos
 
 El primer modelo que consideramos es una regresión lineal simple, en la que asumimos que la distancia interdental (`distance`) varía en función de la edad (`age`), asumiendo que todas las observaciones son independientes e ignorando su estructura jerárquica (medidas repetidas por individuo). La ecuación del modelo es: $$
-distance_i = \beta_0 + \beta_1 age_i + \epsilon_i$$
-Aquí, $distance_i$ es la distancia interdental de la observación $i$, donde $i$ va desde 1 hasta $n$, con $n$ siendo el tamaño total de la muestra; $\beta_0$ es el intercepto común a todos los sujetos, $\beta_1$ es la pendiente (cómo cambia la distancia con la edad), y $\epsilon_i$ es el error aleatorio.
+distance_i = \beta_0 + \beta_1 age_i + \epsilon_i$$ Aquí, $distance_i$ es la distancia interdental de la observación $i$, donde $i$ va desde 1 hasta $n$, con $n$ siendo el tamaño total de la muestra; $\beta_0$ es el intercepto común a todos los sujetos, $\beta_1$ es la pendiente (cómo cambia la distancia con la edad), y $\epsilon_i$ es el error aleatorio.
 
 ```{r include=FALSE, warning=FALSE, message=FALSE}
 # Cargar paquetes
@@ -53,7 +50,7 @@ library(lme4)
 # Cargar datos longitudinales
 data(Orthodont, package = "nlme")
 
-# Ajustar modelo de regresión lineal simple (solo efectos fijos)
+# Ajustar modelo de regresión lineal simple 
 modelo_fijo <- lm(distance ~ age, data = Orthodont)
 
 # Resumen del modelo
@@ -82,20 +79,19 @@ Este modelo de la @fig-reglinsimp considera únicamente la edad (`age`) como pre
 ### Modelo con intercepto aleatorio
 
 Ahora ajustamos un modelo con efectos aleatorios, en el que permitimos que cada niño tenga su propio intercepto aleatorio ($u_i$), capturando de esta forma la variabilidad entre individuos. La ecuación del modelo es: $$
-distance_{ij} = \beta_0 + u_i +\beta_1 age_{ij} + \epsilon_{ij}$$
-donde:
+distance_{ij} = \beta_0 + u_i +\beta_1 age_{ij} + \epsilon_{ij}$$ donde:
 
-- $distance_{ij}$ representa la distancia observada para el niño $i$ en su $j$-ésima medida.
+-   $distance_{ij}$ representa la distancia observada para el niño $i$ en su $j$-ésima medida.
 
-- $age_{ij}$ es la edad correspondiente a esa misma observación.
+-   $age_{ij}$ es la edad correspondiente a esa misma observación.
 
-- $\beta_0$ es el intercepto poblacional, común a todos los individuos.
+-   $\beta_0$ es el intercepto poblacional, común a todos los individuos.
 
-- $u_i$ es el efecto aleatorio del sujeto $i$, que permite que cada niño tenga un intercepto diferente.
+-   $u_i$ es el efecto aleatorio del sujeto $i$, que permite que cada niño tenga un intercepto diferente.
 
-- $\beta_1$ es la pendiente común, que modela el cambio medio de la distancia con respecto a la edad.
+-   $\beta_1$ es la pendiente común, que modela el cambio medio de la distancia con respecto a la edad.
 
-- $\epsilon_{ij}$ es el error aleatorio, que representa la variabilidad residual no explicada por el modelo.
+-   $\epsilon_{ij}$ es el error aleatorio, que representa la variabilidad residual no explicada por el modelo.
 
 El subíndice $i$ recorre los individuos (niños), mientras que $j$ recorre las diferentes observaciones para cada individuo. De esta forma, $j = 1, \dots, n_i$, siendo $n_i$ el número de medidas realizadas para el niño $i$.
 
@@ -132,7 +128,7 @@ var_residual <- attr(VarCorr(modelo_aleatorio), "sc")^2
 library(ggplot2)
 library(lme4)
 
-# Crear data frame con intercepto y pendiente para cada sujeto (solo intercepto aleatorio)
+# Crear data frame con intercepto y pendiente para cada sujeto 
 interceptos <- ranef(modelo_aleatorio)$Subject[, 1] + fixef(modelo_aleatorio)[1]
 pendiente <- fixef(modelo_aleatorio)[2]
 sujetos <- rownames(ranef(modelo_aleatorio)$Subject)
@@ -156,15 +152,14 @@ ggplot(Orthodont, aes(x = age, y = distance, group = Subject, color = Subject)) 
 
 ```
 
-Como podemos apreciar en la @fig-efectos-aleatorios, ahora tenemos un término que asocia a cada individuo (`Subject`) su propio intercepto aleatorio, permitiendo que la relación entre la distancia y la edad varíe entre individuos en lugar de asumir un único intercepto para todos como hacíamos en la @fig-reglinsimp. Esto significa que algunos sujetos pueden tener distintos valores iniciales de `distance` sin afectar a la tendencia general de la población. La principal diferencia de los efectos aleatorios la podemos apreciar en la variabilidad del modelo, ya que tenemos una varianza del intercepto por sujeto de **`r round(var_intercept, 3)`** y una varianza residual de **`r round(var_residual, 3)`**, lo que significa que aunque cada sujeto tiene un valor inicial diferente, todavía hay una parte de la variabilidad del modelo que no se explica por los efectos fijos ni por las diferencias entre sujetos. 
+Como podemos apreciar en la @fig-efectos-aleatorios, ahora tenemos un término que asocia a cada individuo (`Subject`) su propio intercepto aleatorio, permitiendo que la relación entre la distancia y la edad varíe entre individuos en lugar de asumir un único intercepto para todos como hacíamos en la @fig-reglinsimp. Esto significa que algunos sujetos pueden tener distintos valores iniciales de `distance` sin afectar a la tendencia general de la población. La principal diferencia de los efectos aleatorios la podemos apreciar en la variabilidad del modelo, ya que tenemos una varianza del intercepto por sujeto de **`r round(var_intercept, 3)`** y una varianza residual de **`r round(var_residual, 3)`**, lo que significa que aunque cada sujeto tiene un valor inicial diferente, todavía hay una parte de la variabilidad del modelo que no se explica por los efectos fijos ni por las diferencias entre sujetos.
 
 Este modelo, al incorporar un intercepto aleatorio específico para cada niño, permite capturar la variabilidad individual no explicada por la edad.
 
 ### Modelo mixto
 
 Finalmente, ajustamos un **Modelo Lineal Mixto (LMM)** en el que consideramos tanto efectos fijos como aleatorios. Permitimos que cada niño tenga su propio intercepto ($u_i$) y pendiente ($v_i$) aleatorios, permitiendo que la relación entre edad y distancia interdental varíe entre individuos. La ecuación del modelo es: $$
-distance_{ij} = \beta_0 + u_i + (\beta_1 + v_i) age_{ij} + \epsilon_{ij}$$
-Aquí $u_i$ es el intercepto específico de cada sujeto, y $v_i$ permite que la pendiente también varíe por individuo.
+distance_{ij} = \beta_0 + u_i + (\beta_1 + v_i) age_{ij} + \epsilon_{ij}$$ Aquí $u_i$ es el intercepto específico de cada sujeto, y $v_i$ permite que la pendiente también varíe por individuo.
 
 ```{r include=FALSE, warning=FALSE, message=FALSE}
 # Cargar paquetes
@@ -211,7 +206,7 @@ ggplot(Orthodont, aes(x = age, y = distance, group = Subject, color = Subject)) 
 
 ```
 
-Ahora, al contar con interceptos aleatorios y permitir que la pendiente varíe entre sujetos, cada sujeto puede tener una tasa de crecimiento diferente en la distancia dental a lo largo del tiempo. Observando el modelo de la @fig-modelo-lmm, vemos que no sólo los interceptos cambian, sino que las pendientes son ligeramente distintas. Además, hemos reducido la varianza residual a **`r round(var_residual_completo, 3)`**, y ahora contamos con una varianza del intercepto por sujeto de **`r round(var_intercept_completo, 3)`** y una variación de la pendiente entre sujetos de **`r round(var_pendiente_completo, 3)`**. Este tipo de modelos es más realista cuando hay variabilidad individual en la evolución de la variable respuesta, además de ser más flexible ya que permite que tanto el intercepto como la pendiente varíen entre individuos. 
+Ahora, al contar con interceptos aleatorios y permitir que la pendiente varíe entre sujetos, cada sujeto puede tener una tasa de crecimiento diferente en la distancia dental a lo largo del tiempo. Observando el modelo de la @fig-modelo-lmm, vemos que no sólo los interceptos cambian, sino que las pendientes son ligeramente distintas. Además, hemos reducido la varianza residual a **`r round(var_residual_completo, 3)`**, y ahora contamos con una varianza del intercepto por sujeto de **`r round(var_intercept_completo, 3)`** y una variación de la pendiente entre sujetos de **`r round(var_pendiente_completo, 3)`**. Este tipo de modelos es más realista cuando hay variabilidad individual en la evolución de la variable respuesta, además de ser más flexible ya que permite que tanto el intercepto como la pendiente varíen entre individuos.
 
 Este último modelo generaliza la idea que vimos en el capítulo anterior, donde ajustábamos una regresión por individuo (@fig-modelo-individual). En aquel caso, teníamos una pendiente e intercepto diferentes por persona, pero ajustados de forma separada. Los modelos mixtos permiten hacer esto mismo pero de forma conjunta y efectiva, combinando la información de todos los individuos para obtener mejores estimaciones sin tener que ajustar un modelo por separado para cada uno.
 
@@ -225,25 +220,23 @@ Los Modelos Lineales Mixtos (LMM) son métodos estadísticos que permiten analiz
 
 Según Julian Faraway en *Extending the Linear Model with R* [@faraway], un efecto fijo es una constante desconocida que intentamos estimar a partir de los datos, mientras que un efecto aleatorio es una variable aleatoria que refleja variación individual no explicada por covariables; una distinción fundamental para interpretar correctamente los modelos. Otra de las ventajas de este tipo de modelos es su capacidad para generalizar estructuras de datos complejas, lo que hace recomendable su uso con datos longitudinales. No obstante, debemos tener en cuenta que el número de efectos aleatorios que se pueden incluir está limitado: no deben superar el número de observaciones por individuo, una restricción importante a la hora de ajustar modelos reales. En resumen, los LMM permiten modelar al mismo tiempo los efectos comunes a toda la población (efectos fijos) y la variabilidad individual (efectos aleatorios), proporcionando estimaciones más precisas y respetando la estructura de dependencia de los datos longitudinales.
 
-
-La ecuación para este tipo de modelos, en los que $y_{ij}$ representa la observación $j$-ésima del individuo $i$:
-$$
+La ecuación para este tipo de modelos, en los que $y_{ij}$ representa la observación $j$-ésima del individuo $i$: $$
 y_{ij} = \beta_0 + \sum_{k=1}^{K} \beta_k x_{ijk} + u_{0i} + \sum_{k=1}^{K} u_{ki} x_{ijk} + e_{ij}
 $$
 
-- $i = 1, \dots, N$: indica el individuo o sujeto.
+-   $i = 1, \dots, N$: indica el individuo o sujeto.
 
-- $j = 1, \dots, n_i$: indica la observación o medición $j$-ésima del individuo $i$. Cada sujeto puede tener un número diferente de observaciones.
+-   $j = 1, \dots, n_i$: indica la observación o medición $j$-ésima del individuo $i$. Cada sujeto puede tener un número diferente de observaciones.
 
-- $k = 1, \dots, K$: indica las variables explicativas o predictoras incluidas en el modelo, siendo $K$ el número total de variables independientes.
+-   $k = 1, \dots, K$: indica las variables explicativas o predictoras incluidas en el modelo, siendo $K$ el número total de variables independientes.
 
-- $\beta_0$ y $\beta_k$ son los efectos fijos (intercepto y pendientes comunes a todos los individuos). En conjunto, modelan el efecto medio de los predictores sobre la respuesta.
+-   $\beta_0$ y $\beta_k$ son los efectos fijos (intercepto y pendientes comunes a todos los individuos). En conjunto, modelan el efecto medio de los predictores sobre la respuesta.
 
-- $u_{0i}$ y $u_{ki}$ son los efectos aleatorios (variaciones individuales del intercepto y de las pendientes), los cuales se asumen que siguen una distribución normal de media cero. Cada individuo $i$ puede tener una pendiente propia para cada predictor $x_{ijk}$, lo que permite capturar variaciones individuales en la relación entre las variables explicativas y la variable respuesta.
+-   $u_{0i}$ y $u_{ki}$ son los efectos aleatorios (variaciones individuales del intercepto y de las pendientes), los cuales se asumen que siguen una distribución normal de media cero. Cada individuo $i$ puede tener una pendiente propia para cada predictor $x_{ijk}$, lo que permite capturar variaciones individuales en la relación entre las variables explicativas y la variable respuesta.
 
-- $x_{ijk}$ son las variables explicativas.
+-   $x_{ijk}$ son las variables explicativas.
 
-- $e_{ij}$ es el término de error residual, que recoge la variación no explicada por el modelo.
+-   $e_{ij}$ es el término de error residual, que recoge la variación no explicada por el modelo.
 
 En la práctica, este modelo se especifica en R mediante la función `lmer()` del paquete `lme4` [@lme4].
 
@@ -302,7 +295,7 @@ Una vez formulado el modelo GLM, los parámetros se estiman mediante el método 
 
 En cuanto a la validación, se analizan medidas como la devianza o el AIC para comparar modelos. También es importante evaluar la distribución de la variable respuesta y el ajuste del modelo a través de gráficos de residuos.
 
-### Ejemplo práctico 
+### Ejemplo práctico
 
 Supongamos que queremos modelar el número de llamadas que recibe un centro de emergencias por hora (`llamadas`), en función del número de operadores de guardia (`operadores`). Este tipo de datos es típico de una distribución Poisson, por lo que analizar estos datos mediante una regresión lineal tradicional no sería apropiado.
 
@@ -320,34 +313,29 @@ coef_operadores <- coef(modelo_poisson)[2]
 summary(modelo_poisson)
 ```
 
-En este modelo, estamos modelando el logaritmo del número esperado de llamadas como una función lineal del número de operadores. Tras ajustar el modelo a una muestra simulada de 100 observaciones, obtenemos la siguiente expresión para el número esperado de llamadas por hora:
-$$
+En este modelo, estamos modelando el logaritmo del número esperado de llamadas como una función lineal del número de operadores. Tras ajustar el modelo a una muestra simulada de 100 observaciones, obtenemos la siguiente expresión para el número esperado de llamadas por hora: $$
 \mathbb{E}[\text{llamadas}] = \exp(0.658 + 0.258 \cdot \text{operadores})
-$$
-La interpretación de los coeficientes es en términos del logaritmo de la tasa: por cada operador adicional, el número esperado de llamadas se multiplica por **`r round(exp(coef_operadores), 3)`**; es decir, aumenta un 29.4%. 
-
+$$ La interpretación de los coeficientes es en términos del logaritmo de la tasa: por cada operador adicional, el número esperado de llamadas se multiplica por **`r round(exp(coef_operadores), 3)`**; es decir, aumenta un 29.4%.
 
 ## Modelos Lineales Generalizados Mixtos (GLMM)
 
 Como ya hemos mencionado anteriormente, cuando trabajamos con datos longitudinales cuya variable respuesta no sigue una distribución normal, los Modelos Lineales Mixtos (LMM) dejan de ser apropiados. En estos casos, podemos extender los modelos hacia los Modelos Lineales Generalizados Mixtos (GLMM), los cuales combinan la flexibilidad de los GLM con la estructura de efectos aleatorios de los LMM. Un GLMM permite modelar variables respuesta que pertenecen a la familia exponencial (binomial, Poisson, etc.), y la correlación entre medidas repetidas para el mismo individuo mediante efectos aleatorios.
 
-La ecuación general de un GLMM [@mcculloch2008glmms] es:
-$$
+La ecuación general de un GLMM [@mcculloch2008glmms] es: $$
 g\left(\mathbb{E}(y_{ij} \mid \mathbf{b}_i)\right) = \mathbf{x}_{ij}^\top \boldsymbol{\beta} + \mathbf{z}_{ij}^\top \mathbf{b}_i
-$$
-Donde:
+$$ Donde:
 
-- $y_{ij}$ es la respuesta del individuo $i$ en la ocasión $j$.
+-   $y_{ij}$ es la respuesta del individuo $i$ en la ocasión $j$.
 
-- $\mathbf{x}_{ij}$ es el vector de covariables con efectos fijos.
+-   $\mathbf{x}_{ij}$ es el vector de covariables con efectos fijos.
 
-- $\boldsymbol{\beta}$ es el vector de coeficientes fijos.
+-   $\boldsymbol{\beta}$ es el vector de coeficientes fijos.
 
-- $\mathbf{z}_{ij}$ es el vector de covariables con efectos aleatorios.
+-   $\mathbf{z}_{ij}$ es el vector de covariables con efectos aleatorios.
 
-- $\mathbf{b}_i$ es el vector de efectos aleatorios del individuo $i$, que se asume que sigue una distribución normal multivariante $\mathbf{b}_i \sim \mathcal{N}(0, \mathbf{D})$.
+-   $\mathbf{b}_i$ es el vector de efectos aleatorios del individuo $i$, que se asume que sigue una distribución normal multivariante $\mathbf{b}_i \sim \mathcal{N}(0, \mathbf{D})$.
 
-- $g(\cdot)$ es la función de enlace, que conecta la media condicional de la respuesta con la combinación lineal de predictores.
+-   $g(\cdot)$ es la función de enlace, que conecta la media condicional de la respuesta con la combinación lineal de predictores.
 
 Dependiendo de la naturaleza de $y_{ij}$, tendremos que utilizar distintos enlaces. Para datos binarios, usaremos un enlace logit y distribución binomial; para datos de conteo, utilizaremos un enlace log y distribución de Poisson; y para tiempos o proporciones, emplearemos enlaces adaptados como log-log, logit, etc. Si la variable respuesta es binaria (por ejemplo, éxito/fracaso), se usa un modelo logístico mixto:
 
@@ -357,11 +345,11 @@ $$
 
 Donde:
 
-- $\text{logit}(p) = \log\left(\frac{p}{1 - p}\right)$
+-   $\text{logit}(p) = \log\left(\frac{p}{1 - p}\right)$
 
-- $p_{ij} = \mathbb{P}(y_{ij} = 1 \mid b_i)$
+-   $p_{ij} = \mathbb{P}(y_{ij} = 1 \mid b_i)$
 
-- $b_i \sim \mathcal{N}(0, \sigma^2_b)$ es un efecto aleatorio por sujeto.
+-   $b_i \sim \mathcal{N}(0, \sigma^2_b)$ es un efecto aleatorio por sujeto.
 
 Esto permite modelar probabilidades condicionales considerando la variabilidad entre individuos.
 
@@ -372,7 +360,7 @@ Supongamos que queremos modelar si un estudiante aprueba un examen (`aprobado = 
 ```{r include=FALSE, warning=FALSE, message=FALSE}
 library(lme4)
 
-# Simulación de datos ejemplo
+# Simulación de datos 
 set.seed(123)
 n_estudiantes <- 100
 n_examenes <- 5
@@ -383,7 +371,7 @@ df_glmm <- expand.grid(
 df_glmm$horas <- runif(nrow(df_glmm), 0, 10)
 df_glmm$grupo <- sample(c("A", "B"), nrow(df_glmm), replace = TRUE)
 
-# Probabilidad de aprobar en función de horas y grupo, más efecto aleatorio por estudiante
+# Probabilidad de aprobar en función de horas y grupo, más el efecto aleatorio por estudiante
 df_glmm$prob <- plogis(-1 + 0.4 * df_glmm$horas + ifelse(df_glmm$grupo == "B", 0.5, 0) + rnorm(n_estudiantes)[df_glmm$estudiante])
 df_glmm$aprobado <- rbinom(nrow(df_glmm), 1, df_glmm$prob)
 
@@ -406,6 +394,6 @@ En la práctica, utilizaremos la función `glmmTMB` [@glmmTMB2025] para ajustar 
 
 ## Validación del modelo y predicciones
 
-Una vez ajustado un modelo mixto, debemos comprobar que el modelo se adapta adecuadamente a los datos y que cumple los supuestos teóricos necesarios antes de realizar predicciones o extraer conclusiones. En modelos LMM, esto se produce mediante un análisis de residuos (residuos vs ajustados, QQ-plot, trayectorias individuales) que realizaremos con el paquete `DHARMa`, el cual genera residuos simulados sobre los que aplicar tests de uniformidad, dispersión y detección de valores atípicos. En modelos GLMM, aunque el principio es parecido, la validación debe adaptarse al tipo de variable respuesta, utilizando medidas como el AIC para comparar modelos y comprobaciones como la convergencia del ajuste o la significancia de los efectos aleatorios. Validar el modelo permiten concluir si el modelo es adecuado para los datos; garantizando que sus predicciones sean fiables y que las conclusiones son robustas. 
+Una vez ajustado un modelo mixto, debemos comprobar que el modelo se adapta adecuadamente a los datos y que cumple los supuestos teóricos necesarios antes de realizar predicciones o extraer conclusiones. En modelos LMM, esto se produce mediante un análisis de residuos (residuos vs ajustados, QQ-plot, trayectorias individuales) que realizaremos con el paquete `DHARMa`, el cual genera residuos simulados sobre los que aplicar tests de uniformidad, dispersión y detección de valores atípicos. En modelos GLMM, aunque el principio es parecido, la validación debe adaptarse al tipo de variable respuesta, utilizando medidas como el AIC para comparar modelos y comprobaciones como la convergencia del ajuste o la significancia de los efectos aleatorios. Validar el modelo permiten concluir si el modelo es adecuado para los datos; garantizando que sus predicciones sean fiables y que las conclusiones son robustas.
 
 Una vez validado el modelo, este puede ser utilizado para hacer predicciones. En el caso de un modelo mixto bien ajustado, las predicciones permiten estimar el valor esperado de una variable en un momento determinado considerando tanto la tendencia general como las diferencias individuales. A través del uso de modelos validados, los LMM y GLMM se postulan como métodos muy eficaces a la hora de generar estimaciones, hacer predicciones futuras o evaluar situaciones hipotéticas.

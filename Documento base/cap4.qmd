@@ -14,12 +14,11 @@ library(outliers)
 library(plotly)
 library(tidyverse)
 library(webshot2)
-library(lmtest)      # Para bptest() y dwtest()
-library(tseries)     # Para jarque.bera.test()
-library(ggfortify)   # Para autoplot() del modelo
+library(lmtest)      
+library(tseries)     
+library(ggfortify)   
 library(patchwork)
 ```
-
 
 # Análisis exploratorio de la base de datos
 
@@ -56,7 +55,7 @@ El conjunto de datos World Happiness (2015-2024) recopila información sobre la 
 
 -   `Generosity`: nivel de generosidad en la sociedad, basado en donaciones y ayuda a otros.
 
--   `Perceptions of Corruption`: nivel de percepción de corrupción en el gobierno y los negocios. 
+-   `Perceptions of Corruption`: nivel de percepción de corrupción en el gobierno y los negocios.
 
 ```{r warning=FALSE, include=FALSE}
 # Carga de paquetes 
@@ -557,14 +556,14 @@ No obstante, existen excepciones que tenemos que tener en cuenta, ya que algunos
 #| echo: false
 #| warning: false
 #| fig-cap: "Evolución temporal de las variables políticas binarias de la base de datos Democracy Data."
-# Definir las variables binarias si no están previamente definidas
+# Definir las variables binarias 
 variables_binarias <- c("alternation", "fair_election", "democracy")
 
 # Definir los países de interés
 paises_con_cambios <- c("Comoros", "Congo (Kinshasa)", "Madagascar", "Nicaragua", "Turkey", "Venezuela",
                         "Angola", "Bolivia", "Liberia", "Honduras", "Hungary", "Kenya")
 
-# Opcional: destacar un subconjunto de países para visualizar
+# Subconjunto de países a visualizar
 paises_destacados <- paises_con_cambios
 
 # Preparar los datos
@@ -590,7 +589,7 @@ df_binarias_segmentos <- df_completo %>%
   filter(!is.na(tipo_cambio)) %>%
   ungroup()
 
-# Filtrado para países destacados
+# Filtrar países destacados
 df_binarias_filtrado <- df_binarias_segmentos %>%
   filter(country %in% paises_destacados)
 
@@ -623,7 +622,7 @@ library(dplyr)
 library(ggplot2)
 library(tidyr)
 
-# Lista base de países con posibles cambios
+# Países con posibles cambios
 paises_cambio <- c("Bolivia", "Burkina Faso", "Burundi", "Comoros",
                    "Egypt", "Honduras", "Hungary", "Iraq", "Kenya",
                    "Laos", "Liberia", "Myanmar", "Nicaragua", "Turkey",
@@ -637,7 +636,7 @@ df_categoricas <- df_completo %>%
   pivot_longer(cols = c(regime_category, electoral_category),
                names_to = "variable", values_to = "valor")
 
-# 1. Gráfico para regime_category (quitamos Egipto)
+# 1. Gráfico para regime_category 
 df_regime <- df_categoricas %>%
   filter(variable == "regime_category", country != "Egypt")
 
@@ -665,7 +664,7 @@ library(dplyr)
 library(ggplot2)
 library(tidyr)
 
-# 2. Gráfico para electoral_category (quitamos los países indicados)
+# 2. Gráfico para electoral_category 
 excluir_electoral <- c("Burkina Faso", "Burundi", "Hungary", "Iraq", "Laos", "Myanmar", "Yemen", "Zimbabwe")
 
 df_electoral <- df_categoricas %>%
@@ -708,7 +707,7 @@ paises_cambio <- c("Angola", "Bolivia", "Burkina Faso", "Burundi", "Comoros",
 vars_politicas <- c("regime_category", "democracy", "electoral_category",
                     "fair_election", "alternation")
 
-# Crear df con 1 si hay más de un valor distinto en el tiempo
+# Crear df 
 cambios_pais <- df_completo %>%
   filter(country %in% paises_cambio) %>%
   select(country, year, all_of(vars_politicas)) %>%
@@ -720,7 +719,7 @@ cambios_pais <- df_completo %>%
   mutate(cambio = ifelse(cambios > 1, 1, 0)) %>%
   select(-cambios)
 
-# Gráfico tipo heatmap
+# Gráfico 
 ggplot(cambios_pais, aes(x = variable, y = country, fill = factor(cambio))) +
   geom_tile(color = "white") +
   scale_fill_manual(values = c("0" = "white", "1" = "#440154"), labels = c("Sin cambio", "Con cambio")) +
@@ -738,7 +737,7 @@ Estas figuras sobre la evolución de diferentes variables políticas muestran de
 
 En cuanto a los cambios en la alternancia en el poder, los cuales podemos apreciar en la @fig-variables-binarias, vemos cómo en Nicaragua y Venezuela esta variable refleja la falta de alternancia, mostrando la acumulación del poder por parte de gobiernos autoritarios. Observando la variable democrática, vemos que países como Nicaragua y Hungría dejaron de considerarse estados democráticos una vez llegaron al poder figuras autoritarias como Daniel Ortega y Viktor Orbán. Por último, si nos fijamos en la variable sobre elecciones libres y justas, vemos que Bolivia presenta un cambio negativo en 2019 correspondiente a las acusaciones de fraude electoral; provocando una crisis política y la renuncia del aquel entonces presidente Evo Morales. Sin embargo, no todo son cambios negativos, ya que en la @fig-variables-binarias también podemos observar avances en países como Liberia que han mejorado sus instituciones democráticas gracias a la llegada al poder del exfutbolista George Weah en las elecciones de 2017; las cuales fueron históricas ya que supusieron la primera transición presidencial pacífica en el país desde 1944.
 
-Si observamos los cambios en el tipo de régimen en la @fig-regime-electoral, vemos como Hungría pasó de ser considerada una democracia parlamentaria a una dictadura civil, resaltando el gobierno autoritario de Viktor Orbán y el deterioro del sistema de gobierno. Otro caso que podemos destacar es el de Venezuela, la cual sufre un retroceso democrático a partir de 2016; pasando de ser considerada una democracia presidencial a una dictadura civil. Sin embargo, hay casos como Liberia que sucede todo lo contrario, destacando el avance en el proceso democrático mencionado en la figura anterior y dejando de ser considerada una dictadura civil para ser considerada como una democracia presidencial. 
+Si observamos los cambios en el tipo de régimen en la @fig-regime-electoral, vemos como Hungría pasó de ser considerada una democracia parlamentaria a una dictadura civil, resaltando el gobierno autoritario de Viktor Orbán y el deterioro del sistema de gobierno. Otro caso que podemos destacar es el de Venezuela, la cual sufre un retroceso democrático a partir de 2016; pasando de ser considerada una democracia presidencial a una dictadura civil. Sin embargo, hay casos como Liberia que sucede todo lo contrario, destacando el avance en el proceso democrático mencionado en la figura anterior y dejando de ser considerada una dictadura civil para ser considerada como una democracia presidencial.
 
 Si observamos los cambios en el tipo de elecciones en la @fig-electoral, podemos ver que Venezuela llegó a presentar hasta 3 categorías distintas: pasó de elecciones democráticas a elecciones no democráticas multi-partido y luego a tener elecciones de un sólo partido, reflejando la catástrofe sucesiva del sistema electoral bajo el régimen de Maduro. Otro ejemplo que podemos destacar es Turquía, que pasa de tener elecciones democráticas a no democráticas multi-partido, en línea con el creciente autoritarismo del presidente Erdoğan.
 
@@ -887,7 +886,7 @@ Europa Occidental mantiene una distribución relativamente estable a lo largo de
 
 La Comunidad de Estados Independientes muestra una bimodalidad clara en 2024, mientras que en 2015 y 2020 tenía una distribución más concentrada. Esto se debe a que ahora hay países como Ucrania (0.04) que tienen niveles de percepción de corrupción muy bajos, mientras que el resto de países tienen una percepción de corrupción más alta. Sudamérica también muestra un cambio claro: de una percepción moderadamente alta en 2015 y 2020 a una percepción mucho más baja en 2024, aunque también podemos apreciar cierta bimodalidad debido a la baja corrupción percibida en países como Jamaica (0.05), mientras todo lo contrario ocurre en países como El Salvador (0.44).
 
-Este análisis permite estudiar no solo la evolución de la percepción de la corrupción a lo largo del tiempo sino también la creciente variabilidad dentro de algunas regiones, lo que puede ser de utilidad para determinar si ciertos eventos políticos que desemboquen en una concentración del poder pueden estar afectando a una mayor percepción de la corrupción entre los ciudadanos. 
+Este análisis permite estudiar no solo la evolución de la percepción de la corrupción a lo largo del tiempo sino también la creciente variabilidad dentro de algunas regiones, lo que puede ser de utilidad para determinar si ciertos eventos políticos que desemboquen en una concentración del poder pueden estar afectando a una mayor percepción de la corrupción entre los ciudadanos.
 
 Con el objetivo de comprender la evolución de la situación global en torno a diferentes variables políticas, analizamos a continuación la evolución promedio anual de las principales variables del informe de felicidad haciendo una comparación con 3 países que hemos destacado anteriormente por sus cambios políticos en los últimos años como son Hungría, Turquía y Venezuela. Esta visualización nos permitirá detectar posibles tendencias e impactos globales, como crisis políticas, sanitarias o económicas.
 
@@ -920,7 +919,7 @@ paises_data <- df_sin_democracia_sin_na %>%
   select(year, country, all_of(vars_interes)) %>%
   pivot_longer(cols = -c(year, country), names_to = "variable", values_to = "media")
 
-# Combinar todo
+# Combinar 
 data_comparada <- bind_rows(media_global, paises_data)
 
 # Gráfico
@@ -1010,7 +1009,7 @@ La @fig-felicidad-pais muestra la evolución del Happiness Score por país entre
 
 Podemos observar que la media global de felicidad se mantiene estable a lo largo de los años en un intervalo relativamente estrecho (entre 5.3 y 5.5 puntos), sugiriendo que la felicidad mundial no ha sufrido ningún cambio contundente a lo largo de estos años. Sin embargo, esta estabilidad global en la puntuación no representa una estabilidad en todos los países.
 
-A medida que progresan los años, especialmente a partir de 2020, observamos un aumento gradual en el número de países situados por debajo de la media global. Esta tendencia puede estar vinculada al impacto de la pandemia de COVID-19 y sus consecuencias, que afectaron, aunque no de la misma forma, a distintas regiones. En relación a lo visto anteriormente, esta tendencia también podría deberse a ciertos sucesos que han llevado al deterioro democrático y a la inestabilidad política en determinadas regiones. 
+A medida que progresan los años, especialmente a partir de 2020, observamos un aumento gradual en el número de países situados por debajo de la media global. Esta tendencia puede estar vinculada al impacto de la pandemia de COVID-19 y sus consecuencias, que afectaron, aunque no de la misma forma, a distintas regiones. En relación a lo visto anteriormente, esta tendencia también podría deberse a ciertos sucesos que han llevado al deterioro democrático y a la inestabilidad política en determinadas regiones.
 
 La figura también demuestra las fuertes desigualdades en la distribución de la felicidad: mientras que un pequeño grupo de países (naciones del norte de Europa como Finlandia, Dinamarca o Islandia) se mantiene en la parte superior del ranking con puntuaciones muy por encima de la media, la mayoría de países se concentran en la parte media/baja. Esta distribución irregular indica que, aunque algunos países tienen niveles altos de felicidad y bienestar, muchos otros enfrentan obstáculos que les impiden mejorar su puntuación de felicidad; como Siria, Burundi o Afganistán.
 
@@ -1080,7 +1079,7 @@ Si analizamos la evolución de la felicidad, vemos que a partir de 2021 se produ
 #| fig-cap: "Evolución del PIB en España y sus países cercanos."
 #| fig-width: 6
 #| fig-height: 2
-# Evolución del PIB (GDP per capita)
+# Evolución del PIB 
 ggplot(df_cercanos, aes(x = year, y = gdp, color = country, group = country)) +
   geom_line(linewidth = 1) +
   labs(title = "Evolución en Países Cercanos a España", 
