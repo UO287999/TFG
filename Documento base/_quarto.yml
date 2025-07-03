@@ -2,9 +2,6 @@ project:
   type: book
 
 book:
-  title: "Documento base"
-  author: "Pablo Álvarez Arnedo"
-  date: "26/11/2024"
   chapters:
     - index.qmd
     - cap2.qmd
@@ -28,5 +25,7 @@ format:
     toc-title: "Tabla de contenidos"
     fig-title: "Figura"
     link-citations: true
+    include-in-header: header.tex
+    include-before-body: before-body.tex
 editor: visual
 
