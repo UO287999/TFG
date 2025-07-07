@@ -40,7 +40,7 @@ En las siguientes secciones, compararemos tres enfoques distintos:
 ### Modelo con efectos fijos
 
 El primer modelo que consideramos es una regresión lineal simple, en la que asumimos que la distancia interdental (`distance`) varía en función de la edad (`age`), asumiendo que todas las observaciones son independientes e ignorando su estructura jerárquica (medidas repetidas por individuo). La ecuación del modelo es: $$
-distance_i = \beta_0 + \beta_1 age_i + \epsilon_i$$ Aquí, $distance_i$ es la distancia interdental de la observación $i$, donde $i$ va desde 1 hasta $n$, con $n$ siendo el tamaño total de la muestra; $\beta_0$ es el intercepto común a todos los sujetos, $\beta_1$ es la pendiente (cómo cambia la distancia con la edad), y $\epsilon_i$ es el error aleatorio.
+distance_i = \beta_0 + \beta_1 age_i + \epsilon_i.$$ Aquí, $distance_i$ es la distancia interdental de la observación $i$, donde $i$ va desde 1 hasta $n$, con $n$ siendo el tamaño total de la muestra; $\beta_0$ es el intercepto común a todos los sujetos, $\beta_1$ es la pendiente (cómo cambia la distancia con la edad), y $\epsilon_i$ es el error aleatorio.
 
 ```{r include=FALSE, warning=FALSE, message=FALSE}
 # Cargar paquetes
@@ -79,7 +79,7 @@ Este modelo de la @fig-reglinsimp considera únicamente la edad (`age`) como pre
 ### Modelo con intercepto aleatorio
 
 Ahora ajustamos un modelo con efectos aleatorios, en el que permitimos que cada niño tenga su propio intercepto aleatorio ($u_i$), capturando de esta forma la variabilidad entre individuos. La ecuación del modelo es: $$
-distance_{ij} = \beta_0 + u_i +\beta_1 age_{ij} + \epsilon_{ij}$$ donde:
+distance_{ij} = \beta_0 + u_i +\beta_1 age_{ij} + \epsilon_{ij}.$$ donde:
 
 -   $distance_{ij}$ representa la distancia observada para el niño $i$ en su $j$-ésima medida.
 
@@ -159,7 +159,7 @@ Este modelo, al incorporar un intercepto aleatorio específico para cada niño, 
 ### Modelo mixto
 
 Finalmente, ajustamos un **Modelo Lineal Mixto (LMM)** en el que consideramos tanto efectos fijos como aleatorios. Permitimos que cada niño tenga su propio intercepto ($u_i$) y pendiente ($v_i$) aleatorios, permitiendo que la relación entre edad y distancia interdental varíe entre individuos. La ecuación del modelo es: $$
-distance_{ij} = \beta_0 + u_i + (\beta_1 + v_i) age_{ij} + \epsilon_{ij}$$ Aquí $u_i$ es el intercepto específico de cada sujeto, y $v_i$ permite que la pendiente también varíe por individuo.
+distance_{ij} = \beta_0 + u_i + (\beta_1 + v_i) age_{ij} + \epsilon_{ij}.$$ Aquí $u_i$ es el intercepto específico de cada sujeto, y $v_i$ permite que la pendiente también varíe por individuo.
 
 ```{r include=FALSE, warning=FALSE, message=FALSE}
 # Cargar paquetes
@@ -208,7 +208,7 @@ ggplot(Orthodont, aes(x = age, y = distance, group = Subject, color = Subject)) 
 
 Ahora, al contar con interceptos aleatorios y permitir que la pendiente varíe entre sujetos, cada sujeto puede tener una tasa de crecimiento diferente en la distancia dental a lo largo del tiempo. Observando el modelo de la @fig-modelo-lmm, vemos que no sólo los interceptos cambian, sino que las pendientes son ligeramente distintas. Además, hemos reducido la varianza residual a **`r round(var_residual_completo, 3)`**, y ahora contamos con una varianza del intercepto por sujeto de **`r round(var_intercept_completo, 3)`** y una variación de la pendiente entre sujetos de **`r round(var_pendiente_completo, 3)`**. Este tipo de modelos es más realista cuando hay variabilidad individual en la evolución de la variable respuesta, además de ser más flexible ya que permite que tanto el intercepto como la pendiente varíen entre individuos.
 
-Este último modelo generaliza la idea que vimos en el capítulo anterior, donde ajustábamos una regresión por individuo (@fig-modelo-individual). En aquel caso, teníamos una pendiente e intercepto diferentes por persona, pero ajustados de forma separada. Los modelos mixtos permiten hacer esto mismo pero de forma conjunta y efectiva, combinando la información de todos los individuos para obtener mejores estimaciones sin tener que ajustar un modelo por separado para cada uno.
+Este último modelo generaliza la idea que vimos en el capítulo anterior, donde ajustábamos una regresión por individuo (@fig-modelo-individual). En ese caso, teníamos una pendiente e intercepto diferentes por persona, pero ajustados de forma separada. Los modelos mixtos permiten hacer esto mismo pero de forma conjunta y efectiva, combinando la información de todos los individuos para obtener mejores estimaciones sin tener que ajustar un modelo por separado para cada uno.
 
 Si comparamos los 3 modelos, podemos observar que el modelo con solo efectos fijos asume una única relación entre edad y distancia interdental, ignorando la variabilidad entre individuos. El modelo con intercepto aleatorio permite que cada sujeto tenga su propio intercepto, pero mantiene una pendiente común para todos. El modelo mixto (LMM) final es el más completo, permitiendo que tanto el intercepto como la pendiente varíen entre individuos. Esto demuestra la importancia de los Modelos Lineales Mixtos en el análisis de datos longitudinales, ya que incorporan tanto la variabilidad individual como la estructura jerárquica de los datos.
 
@@ -221,7 +221,7 @@ Los Modelos Lineales Mixtos (LMM) son métodos estadísticos que permiten analiz
 Según Julian Faraway en *Extending the Linear Model with R* [@faraway], un efecto fijo es una constante desconocida que intentamos estimar a partir de los datos, mientras que un efecto aleatorio es una variable aleatoria que refleja variación individual no explicada por covariables; una distinción fundamental para interpretar correctamente los modelos. Otra de las ventajas de este tipo de modelos es su capacidad para generalizar estructuras de datos complejas, lo que hace recomendable su uso con datos longitudinales. No obstante, debemos tener en cuenta que el número de efectos aleatorios que se pueden incluir está limitado: no deben superar el número de observaciones por individuo, una restricción importante a la hora de ajustar modelos reales. En resumen, los LMM permiten modelar al mismo tiempo los efectos comunes a toda la población (efectos fijos) y la variabilidad individual (efectos aleatorios), proporcionando estimaciones más precisas y respetando la estructura de dependencia de los datos longitudinales.
 
 La ecuación para este tipo de modelos, en los que $y_{ij}$ representa la observación $j$-ésima del individuo $i$: $$
-y_{ij} = \beta_0 + \sum_{k=1}^{K} \beta_k x_{ijk} + u_{0i} + \sum_{k=1}^{K} u_{ki} x_{ijk} + e_{ij}
+y_{ij} = \beta_0 + \sum_{k=1}^{K} \beta_k x_{ijk} + u_{0i} + \sum_{k=1}^{K} u_{ki} x_{ijk} + e_{ij}.
 $$
 
 -   $i = 1, \dots, N$: indica el individuo o sujeto.
@@ -262,7 +262,7 @@ Como familias exponenciales de un parámetro, tenemos las distribuciones de Pois
 
 Para ello, aplicando propiedades logarítmicas, podemos definir la distribución de Poisson como: $$
 P(Y = y) = e^{-\lambda} e^{y \log \lambda} e^{-\log(y!)} \\
-= e^{y \log \lambda - \lambda - \log(y!)}
+= e^{y \log \lambda - \lambda - \log(y!)}.
 $$ Si comparamos esta función de masa de probabilidad con la función de probabilidad general para familias con un único parámetro, podemos ver que: $$
 \begin{aligned}
 a(y) &= y \\
@@ -275,9 +275,9 @@ $$ La función $b(\theta)$ es lo que denominamos **enlace canónico**, una funci
 Como familias exponenciales de dos parámetros, tenemos la distribución gamma y la normal. De forma parecida a la anterior, demostraremos que la distribución normal es una familia exponencial de dos parámetros.
 
 Podemos definir la función de densidad de una distribución normal como: $$
-f(y | \mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \left( -\frac{(y - \mu)^2}{2\sigma^2} \right)
+f(y | \mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \left( -\frac{(y - \mu)^2}{2\sigma^2} \right).
 $$ Si separamos términos y los escribimos como términos logarítmicos, tenemos que: $$
-f(y | \mu, \sigma^2) = \exp \left( y \cdot \frac{\mu}{\sigma^2} - \frac{y^2}{2\sigma^2} + \left( -\frac{\mu^2}{2\sigma^2} - \frac{1}{2} \log(2\pi\sigma^2) \right) \right)
+f(y | \mu, \sigma^2) = \exp \left( y \cdot \frac{\mu}{\sigma^2} - \frac{y^2}{2\sigma^2} + \left( -\frac{\mu^2}{2\sigma^2} - \frac{1}{2} \log(2\pi\sigma^2) \right) \right).
 $$ Si comparamos esta función de densidad con la forma general de la familia exponencial, podemos ver que: $$
 \begin{aligned}
 a(y) = y\\
@@ -288,7 +288,7 @@ d(y, \sigma^2) = -\frac{y^2}{2\sigma^2}\\
 $$ Por lo tanto, demostramos que la distribución normal también pertenece a la familia exponencial, pero con una peculiaridad respecto a la distribución de Poisson: es una familia exponencial de dos parámetros, la media $\mu$ y la varianza $\sigma^2$. En este caso, el término $b(\mu, \sigma^2)$ es el enlace canónico que conecta las variables explicativas con el modelo.
 
 En concreto, para los casos en los que la respuesta no es normal, la ecuación del modelo es la siguiente: $$
-g\left(E(y_{ij} \mid x_{ijk}, \beta_{0i}, \dots, \beta_{Ki})\right) = \beta_{0i} + \sum_{k=1}^{K} \beta_{ki}x_{ijk}
+g\left(E(y_{ij} \mid x_{ijk}, \beta_{0i}, \dots, \beta_{Ki})\right) = \beta_{0i} + \sum_{k=1}^{K} \beta_{ki}x_{ijk}.
 $$ Donde g es la función enlace y, pese a que puede parecerse mucho a la función para modelos LMM, tienen algunas diferencias, como que en el primer miembro tenemos el enlace del valor esperado en vez de la variable respuesta, y en el segundo miembro no se cuenta con los errores; por lo que no existe una matriz de correlaciones de los residuos. De esta forma, ya hemos generalizado nuestro modelo para manejar variables respuesta que no siguen una distribución normal. A través de esta generalización, podemos escribir la función de masa o densidad de probabilidad de distintas distribuciones para poder modelar el enlace canónico como función lineal de las variables predictoras.
 
 Una vez formulado el modelo GLM, los parámetros se estiman mediante el método de máxima verosimilitud (ML), que consiste en encontrar los valores de los coeficientes que maximizan la probabilidad de observar los datos reales. Como veremos más adelante, utilizaremos modelos GLM con funciones como `glm()` [@stats] donde se emplea por defecto el método de máxima verosimilitud (ML) como técnica de estimación. Este método se implementa mediante el algoritmo Iteratively Reweighted Least Squares (IRLS), a través del cual se encuentran los parámetros óptimos ajustando iterativamente los pesos de las observaciones según su varianza esperada. Esta estrategia es apropiada para distribuciones como la binomial o la gamma y permite un ajuste robusto en situaciones donde la variable respuesta no sigue una distribución normal.
@@ -314,7 +314,7 @@ summary(modelo_poisson)
 ```
 
 En este modelo, estamos modelando el logaritmo del número esperado de llamadas como una función lineal del número de operadores. Tras ajustar el modelo a una muestra simulada de 100 observaciones, obtenemos la siguiente expresión para el número esperado de llamadas por hora: $$
-\mathbb{E}[\text{llamadas}] = \exp(0.658 + 0.258 \cdot \text{operadores})
+\mathbb{E}[\text{llamadas}] = \exp(0.658 + 0.258 \cdot \text{operadores}).
 $$ La interpretación de los coeficientes es en términos del logaritmo de la tasa: por cada operador adicional, el número esperado de llamadas se multiplica por **`r round(exp(coef_operadores), 3)`**; es decir, aumenta un 29.4%.
 
 ## Modelos Lineales Generalizados Mixtos (GLMM)
@@ -322,7 +322,7 @@ $$ La interpretación de los coeficientes es en términos del logaritmo de la ta
 Como ya hemos mencionado anteriormente, cuando trabajamos con datos longitudinales cuya variable respuesta no sigue una distribución normal, los Modelos Lineales Mixtos (LMM) dejan de ser apropiados. En estos casos, podemos extender los modelos hacia los Modelos Lineales Generalizados Mixtos (GLMM), los cuales combinan la flexibilidad de los GLM con la estructura de efectos aleatorios de los LMM. Un GLMM permite modelar variables respuesta que pertenecen a la familia exponencial (binomial, Poisson, etc.), y la correlación entre medidas repetidas para el mismo individuo mediante efectos aleatorios.
 
 La ecuación general de un GLMM [@mcculloch2008glmms] es: $$
-g\left(\mathbb{E}(y_{ij} \mid \mathbf{b}_i)\right) = \mathbf{x}_{ij}^\top \boldsymbol{\beta} + \mathbf{z}_{ij}^\top \mathbf{b}_i
+g\left(\mathbb{E}(y_{ij} \mid \mathbf{b}_i)\right) = \mathbf{x}_{ij}^\top \boldsymbol{\beta} + \mathbf{z}_{ij}^\top \mathbf{b}_i.
 $$ Donde:
 
 -   $y_{ij}$ es la respuesta del individuo $i$ en la ocasión $j$.
@@ -340,7 +340,7 @@ $$ Donde:
 Dependiendo de la naturaleza de $y_{ij}$, tendremos que utilizar distintos enlaces. Para datos binarios, usaremos un enlace logit y distribución binomial; para datos de conteo, utilizaremos un enlace log y distribución de Poisson; y para tiempos o proporciones, emplearemos enlaces adaptados como log-log, logit, etc. Si la variable respuesta es binaria (por ejemplo, éxito/fracaso), se usa un modelo logístico mixto:
 
 $$
-\text{logit}(p_{ij}) = \beta_0 + \beta_1 x_{ij} + b_i
+\text{logit}(p_{ij}) = \beta_0 + \beta_1 x_{ij} + b_i.
 $$
 
 Donde:

@@ -530,11 +530,11 @@ Si nos guiáramos exclusivamente por la matriz de correlaciones, deberíamos de 
 Al construir un modelo estadístico, nos encontramos con el caso de que contamos con múltiples combinaciones posibles de variables explicativas. Para elegir la combinación más adecuada, se utilizan criterios que balancean dos aspectos fundamentales: el ajuste al conjunto de datos (lo bien que predice el modelo los datos observados), y la complejidad del modelo (cuántos parámetros se incluyen). Dos de los criterios más utilizados para este propósito son el Akaike Information Criterion (AIC) y el Bayesian Information Criterion (BIC).
 
 AIC penaliza la complejidad del modelo y busca minimizar la pérdida de información. Se calcula como: $$
-\text{AIC} = -2 \cdot \log(\hat{L}) + 2k
+\text{AIC} = -2 \cdot \log(\hat{L}) + 2k.
 $$ donde $\hat{L}$ es la verosimilitud máxima del modelo y $k$ el número de parámetros.
 
 BIC penaliza de manera más severa los modelos complejos (dependiendo del tamaño de muestra $n$): $$
-\text{BIC} = -2 \cdot \log(\hat{L}) + k \cdot \log(n)
+\text{BIC} = -2 \cdot \log(\hat{L}) + k \cdot \log(n).
 $$ Un AIC o BIC más bajo indica un mejor modelo, pero el AIC tiende a ser más flexible con modelos más complejos; mientras que el BIC favorece modelos más sencillos. 
 
 ## Modelado clásico
@@ -686,22 +686,22 @@ happinessscore_{ij} =\ & \beta_0
 + \beta_1 \cdot regionalindicator_{ij}
 + \beta_2 \cdot \text{gdp}_{ij}
 + \beta_3 \cdot \text{support}_{ij}
-+ \beta_4 \cdot lifeexp_{ij} 
-+ \beta_5 \cdot \text{freedom}_{ij} \\
-&+ \beta_6 \cdot \text{generosity}_{ij}
++ \beta_4 \cdot lifeexp_{ij} \\
+&+ \beta_5 \cdot \text{freedom}_{ij} 
++ \beta_6 \cdot \text{generosity}_{ij}
 + \beta_7 \cdot \text{corruption}_{ij}
-+ \beta_8 \cdot \text{status}_{ij}
-+ \beta_9 \cdot politicalrights_{ij} \\
-&+ \beta_{10} \cdot civilliberties_{ij}
-+ \beta_{11} \cdot fairelection_{ij} 
-+ \beta_{12} \cdot regimecategory_{ij}
-+ \beta_{13} \cdot \text{democracy}_{ij} \\
-&+ \beta_{14} \cdot electoralcategory_{ij}
-+ \beta_{15} \cdot \text{presidential}_{ij}
++ \beta_8 \cdot \text{status}_{ij} \\
+&+ \beta_9 \cdot politicalrights_{ij} 
++ \beta_{10} \cdot civilliberties_{ij}
++ \beta_{11} \cdot fairelection_{ij} \\
+&+ \beta_{12} \cdot regimecategory_{ij} 
++ \beta_{13} \cdot \text{democracy}_{ij} 
++ \beta_{14} \cdot electoralcategory_{ij} \\
+&+ \beta_{15} \cdot \text{presidential}_{ij}
 + \beta_{16} \cdot \text{alternation}_{ij}
 + \beta_{17} \cdot \text{year}_{ij} \\
 &+ u_{0i} + u_{1i} \cdot \text{year}_{ij}
-+ \varepsilon_{ij}
++ \varepsilon_{ij}.
 \end{align*}
 
 donde:
@@ -802,14 +802,14 @@ happinessscore_{ij} =\ & \beta_0
 + \beta_3 \cdot \text{freedom}_{ij} \\
 &+ \beta_4 \cdot \text{gdp}_{ij}
 + \beta_5 \cdot lifeexp_{ij}
-+ \beta_6 \cdot politicalrights_{ij}
-+ \beta_7 \cdot regimecategory_{ij} \\
-&+ \beta_8 \cdot regionalindicator_{ij}
-+ \beta_9 \cdot \text{status}_{ij}
-+ \beta_{10} \cdot \text{support}_{ij}
-+ \beta_{11} \cdot \text{year}_{ij} \\
-&+ u_{0j} + u_{1j} \cdot \text{year}_{ij}
-+ \epsilon_{ij}
++ \beta_6 \cdot politicalrights_{ij} \\
+&+ \beta_7 \cdot regimecategory_{ij} 
++ \beta_8 \cdot regionalindicator_{ij}
++ \beta_9 \cdot \text{status}_{ij} \\
+&+ \beta_{10} \cdot \text{support}_{ij}
++ \beta_{11} \cdot \text{year}_{ij} 
++ u_{0j} + u_{1j} \cdot \text{year}_{ij}
++ \epsilon_{ij}.
 \end{align*} Entre los efectos fijos, se observa que `support`, `life_exp` y especialmente `freedom` tienen efectos positivos y estadísticamente significativos sobre el nivel de felicidad, lo que indica que mayores niveles de libertad para tomar decisiones, esperanza de vida y apoyo social están fuertemente asociados con una mayor puntuación de felicidad. También destaca el indicador regional North America and ANZ, con un coeficiente positivo y significativo, lo que indica que esta región tiene niveles de felicidad altos, mientras que otras regiones como South Asia o Sub-Saharan Africa presentan efectos negativos y significativos, evidenciando una menor felicidad media en esas áreas. Dentro de las variables políticas, el régimen de Military dictatorship tiene un efecto negativo relevante, mientras que el statusPF (partly free) tiene un efecto positivo aunque de menor magnitud. En definitiva, el modelo explica adecuadamente la variabilidad de la felicidad teniendo en cuenta factores estructurales, económicos, sociales y políticos.
 
 Para evaluar la calidad del modelo, utilizaremos las siguientes medidas: el R² marginal, que representa la proporción de varianza explicada por los efectos fijos, y el R² condicional, que representa proporción de varianza explicada por todo el modelo.
@@ -839,7 +839,6 @@ Como en cualquier modelo estadístico, es esencial verificar que las suposicione
 #| fig-height: 3.5
 
 sim_res <- DHARMa::simulateResiduals(fittedModel = modelo_seleccionado)
-plotQQunif(sim_res)
 ```
 
 ```{r}
@@ -864,7 +863,7 @@ testResiduals(sim_res)
 
 ### Normalidad
 
-El gráfico QQ-plot de la @fig-qqplot-residuos2 muestra una alineación bastante ajustada de los residuos simulados con la línea teórica, lo que sugiere una distribución aproximadamente normal. Aunque se observan ligeras desviaciones en las colas, el test de Kolmogorov-Smirnov aplicado a los residuos proporciona un p-valor de **0.069**, lo que indica que no se puede rechazar la hipótesis nula de normalidad. Por tanto, los residuos sugieren normalidad y el modelo cumple satisfactoriamente con este supuesto.
+El gráfico QQ-plot de la @fig-test-residuos2 muestra una alineación bastante ajustada de los residuos simulados con la línea teórica, lo que sugiere una distribución aproximadamente normal. Aunque se observan ligeras desviaciones en las colas, el test de Kolmogorov-Smirnov aplicado a los residuos proporciona un p-valor de **0.069**, lo que indica que no se puede rechazar la hipótesis nula de normalidad. Por tanto, los residuos sugieren normalidad y el modelo cumple satisfactoriamente con este supuesto.
 
 ### Homocedasticidad
 
@@ -1033,7 +1032,6 @@ Se ha calculado el R² marginal para el modelo GLMM, obteniendo un valor de **0.
 #| fig-height: 3.5
 
 sim_res <- DHARMa::simulateResiduals(fittedModel = glmm_valido)
-plotQQunif(sim_res)
 ```
 
 ```{r}
@@ -1058,7 +1056,7 @@ testResiduals(sim_res)
 
 ### Normalidad de residuos
 
-El gráfico QQ-plot de la @fig-qqplot-residuos3 muestra una alineación bastante razonable con la línea diagonal, sin desviaciones aparentes. El test de Kolmogorov-Smirnov nos da un p-valor de **0.071**, lo que indica que no podemos rechazar la hipótesis de uniformidad, y, por tanto, cumple el supuesto de normalidad.
+El gráfico QQ-plot de la @fig-test-residuos3 muestra una alineación bastante razonable con la línea diagonal, sin desviaciones aparentes. El test de Kolmogorov-Smirnov nos da un p-valor de **0.071**, lo que indica que no podemos rechazar la hipótesis de uniformidad, y, por tanto, cumple el supuesto de normalidad.
 
 ### Homocedasticidad
 

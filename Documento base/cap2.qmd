@@ -75,16 +75,16 @@ Como podemos apreciar en la @fig-ejemplo-repetidas, tenemos por un lado interval
 La **regresión lineal simple** es un método estadístico utilizado para modelar la relación entre una variable dependiente $Y$ (respuesta) y una variable independiente $X$ (predictora) mediante una ecuación lineal. El modelo se define matemáticamente de la siguiente manera:
 
 $$
-Y = \beta_0 + \beta_1 X + \varepsilon
+Y = \beta_0 + \beta_1 X + \varepsilon.
 $$
 
 donde:
 
--   $Y_i$ representa la variable dependiente (respuesta).
--   $X_i$ es la variable independiente (predictora).
+-   $Y$ representa la variable dependiente (respuesta).
+-   $X$ es la variable independiente (predictora).
 -   $\beta_0$ es el intercepto, que indica el valor esperado de $Y$ cuando $X = 0$.
 -   $\beta_1$ es la pendiente, que mide el cambio esperado en $Y$ por cada unidad de cambio en $X$.
--   $\varepsilon_i$ representa el término de error, que captura la variabilidad no explicada por el modelo.
+-   $\varepsilon$ representa el término de error, que captura la variabilidad no explicada por el modelo.
 
 Para que la regresión lineal simple sea válida y produzca estimaciones fiables, deben cumplirse ciertos supuestos fundamentales:
 
