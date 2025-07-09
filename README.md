@@ -12,7 +12,7 @@ Este repositorio contiene el Trabajo de Fin de Grado de Pablo Álvarez Arnedo, t
 - **quarto.yml**: configuración del proyecto Quarto para generar el documento completo en PDF o HTML.
 - **datos**: archivos `.csv` con los datos procesados y enriquecidos utilizados en el análisis.
 - **references.bib**: archivo BibTeX con las referencias bibliográficas.
-- **figuras**: figuras personalizadas utilizadas en la memoria.
+- Figuras personalizadas utilizadas en la memoria.
 
 ## Descripción del proyecto
 
