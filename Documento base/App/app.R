@@ -128,7 +128,7 @@ ui <- dashboardPage(
                 box(title = "Pestaña: Descriptiva", width = 12, status = "info", solidHeader = TRUE,
                     p("Permite visualizar la evolución temporal y espacial de las variables más relevantes. Puedes:"),
                     tags$ul(
-                      tags$li("Seleccionar hasta 2 variables numéricas para comparar (ej: Happiness Score, GDP, Freedom)."),
+                      tags$li("Seleccionar hasta 2 variables numéricas para comparar (ej:", code("Happiness Score"), ",", code("GDP"), ",", code("freedom"),"...)."),
                       tags$li("Elegir un año específico para visualizar un mapa mundial interactivo."),
                       tags$li("Filtrar por región y país según el interés del análisis."),
                       tags$li("Pulsar ", strong("Actualizar gráficos"), " para generar las visualizaciones.")
@@ -144,10 +144,10 @@ ui <- dashboardPage(
                       tags$li("Elegir variables como efectos fijos (ej:", code("GDP"), ",", code("support"), ",", code("freedom"),"...)."),
                       tags$li("Añadir efectos aleatorios como ", code("year"), " o ", code("regional_indicator"), "."),
                       tags$li("Filtrar datos por región y país."),
-                      tags$li("Visualizar la fórmula del modelo ajustado y sus métricas (ver abajo)."),
+                      tags$li("Visualizar la fórmula del modelo ajustado y sus métricas."),
                       tags$li("Ver el gráfico con la comparación entre valores reales y estimados, y una predicción para 2025.")
                     ),
-                    p("La predicción para 2025 ", strong("solo se muestra si el modelo es válido"), " según los tests de DHARMa (uniformidad, dispersión, outliers).")
+                    p("La predicción para 2025 ", strong("sólo se muestra si el modelo es válido"), " según los tests de DHARMa (uniformidad, dispersión, outliers).")
                 )
               ),
               
